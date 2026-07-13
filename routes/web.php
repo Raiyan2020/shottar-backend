@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
-use Laravel\Telescope\Telescope;
 use Illuminate\Support\Facades\Auth;
 
 /*

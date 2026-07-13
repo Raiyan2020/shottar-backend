@@ -55,11 +55,7 @@ class Handler extends ExceptionHandler
             return response()->view('errors.405', [], 405);
         }elseif ($exception instanceof NotFoundHttpException) {
 
-                if (
-                    !($request->is('ar/admin*') || $request->is('en/admin*')) &&
-                    !$request->is('telescope*')
-
-                ) {
+                if (!($request->is('ar/admin*') || $request->is('en/admin*'))) {
                     return response()->view('errors.404', [], 404);
                 }
             }
