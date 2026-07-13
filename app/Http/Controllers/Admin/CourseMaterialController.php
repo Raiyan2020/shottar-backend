@@ -20,13 +20,27 @@ class CourseMaterialController extends Controller
 {
     use HasStatusToggle , ImageTrait;
 
-    protected $client;
+    protected ?Vimeo $client = null;
 
-    public function __construct()
+    protected function vimeo(): Vimeo
     {
-        $this->client = new Vimeo(env('VIMEO_CLIENT_ID'), env('VIMEO_CLIENT_SECRET'), env('VIMEO_ACCESS_TOKEN'));
+        if ($this->client) {
+            return $this->client;
+        }
 
+        $clientId = config('services.vimeo.client_id');
+        $clientSecret = config('services.vimeo.client_secret');
+        $accessToken = config('services.vimeo.access_token');
 
+        if (! is_string($clientId) || $clientId === '' ||
+            ! is_string($clientSecret) || $clientSecret === '' ||
+            ! is_string($accessToken) || $accessToken === '') {
+            throw new \RuntimeException(
+                'Vimeo credentials are missing. Set VIMEO_CLIENT_ID, VIMEO_CLIENT_SECRET, and VIMEO_ACCESS_TOKEN in your .env file.'
+            );
+        }
+
+        return $this->client = new Vimeo($clientId, $clientSecret, $accessToken);
     }
 
     public function index(CourseMaterialDataTable $dataTable, Subject $subject,$type)
@@ -189,7 +203,7 @@ class CourseMaterialController extends Controller
         ]);
 
         try {
-            $resp = $this->client->request(
+            $resp = $this->vimeo()->request(
                 '/me/videos',
                 [
                     'upload' => [
