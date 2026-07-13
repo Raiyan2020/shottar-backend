@@ -100,8 +100,17 @@
 
                                     <select id="subject_ids" name="subject_ids[]" class="form-control" multiple data-placeholder="{{ __('general.Select Subjects') }}">
                                         @foreach($subjects as $s)
+                                            @php
+                                                $semesterNames = $s->semesters->isNotEmpty()
+                                                    ? $s->semesters
+                                                    : collect($s->semester ? [$s->semester] : []);
+                                                $semesterLabel = $semesterNames
+                                                    ->map(fn ($sem) => trim(str_ireplace('Semester', '', $sem->name_en)))
+                                                    ->filter()
+                                                    ->implode(', ');
+                                            @endphp
                                             <option value="{{ $s->id }}" {{ in_array($s->id, $oldSelected) ? 'selected' : '' }}>
-                                                {{ $s->name_en . '(' . ($s->grade?->name_en ?? '-') . ')' }}
+                                                {{ $s->name_en }}({{ $s->grade?->name_en ?? '-' }})@if($semesterLabel)({{ $semesterLabel }})@endif
                                             </option>
                                         @endforeach
                                     </select>

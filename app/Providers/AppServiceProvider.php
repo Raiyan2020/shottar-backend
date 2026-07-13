@@ -31,10 +31,33 @@ class AppServiceProvider extends ServiceProvider
                 $subjects = Subject::whereHas('teachers', function ($q) {
                     $q->where('teacher_id', Auth::id());
                 })
-                    ->with('grade','semester')
+                    ->with('grade', 'semester', 'semesters')
                     ->get();
 
-                $view->with('teacherSubjects', $subjects);
+                // كل ترم يظهر كبند مستقل في الـ sidebar
+                $teacherSubjectItems = $subjects->flatMap(function ($subject) {
+                    $semesters = $subject->semesters->isNotEmpty()
+                        ? $subject->semesters
+                        : collect($subject->semester ? [$subject->semester] : [null]);
+
+                    return $semesters->map(function ($semester) use ($subject) {
+                        $semesterLabel = $semester
+                            ? trim(str_ireplace('Semester', '', $semester->name_en))
+                            : null;
+
+                        return (object) [
+                            'subject' => $subject,
+                            'semester' => $semester,
+                            'semester_label' => $semesterLabel,
+                            'meta' => collect([
+                                $subject->grade?->name_en,
+                                $semesterLabel,
+                            ])->filter()->implode(' · '),
+                        ];
+                    });
+                })->values();
+
+                $view->with('teacherSubjectItems', $teacherSubjectItems);
             }
         });
 

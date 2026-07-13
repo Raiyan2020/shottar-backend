@@ -26,7 +26,7 @@ class TeacherController extends Controller
 
     public function create()
     {
-        $subjects = Subject::with('grade','semester')->get();
+        $subjects = Subject::with('grade', 'semester', 'semesters')->get();
 //        return $subjects;
         return view('dashboard.admin.teachers.create', compact('subjects'));
     }
@@ -79,7 +79,7 @@ class TeacherController extends Controller
                 session()->flash('error', 'هذا المستخدم ليس معلماً.');
                 return redirect()->route('admin.teachers.index');
             }
-            $subjects = Subject::with('grade','semester')->get();
+            $subjects = Subject::with('grade', 'semester', 'semesters')->get();
 
 
             $current = DB::table('teacher_subjects')

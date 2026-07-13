@@ -106,13 +106,16 @@
                                 <div class="col-md-6 col-12">
                                     <div class="form-group">
                                         <label class="col-form-label-sm d-block">{{ __('general.Semester') }}</label>
+                                        @php
+                                            $selectedSemesters = old('semester_ids', $semesters->pluck('id')->toArray());
+                                        @endphp
                                         @foreach($semesters as $semester)
                                             <div class="form-check form-check-inline">
                                                 <input class="form-check-input" type="checkbox"
                                                        name="semester_ids[]"
                                                        id="semester_{{ $semester->id }}"
                                                        value="{{ $semester->id }}"
-                                                       {{ in_array($semester->id, old('semester_ids', [])) ? 'checked' : '' }}>
+                                                       {{ in_array($semester->id, $selectedSemesters) ? 'checked' : '' }}>
                                                 <label class="form-check-label" for="semester_{{ $semester->id }}">{{ $semester->name_ar }}</label>
                                             </div>
                                         @endforeach

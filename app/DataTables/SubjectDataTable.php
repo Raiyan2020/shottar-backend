@@ -67,12 +67,12 @@ class SubjectDataTable extends DataTable
 //            })
             ->addColumn('details', function ($subject) {
                 $grade = $subject->grade ? $subject->grade->name_en : '-';
-//                $studyType = $subject->studyType ? $subject->studyType->name_en : '-';
-                $semester = $subject->semester ? $subject->semester->name_en : '-';
+                $semesters = $subject->semesters->isNotEmpty()
+                    ? $subject->semesters->pluck('name_en')->implode(', ')
+                    : ($subject->semester?->name_en ?? '-');
 
                 return "<strong>Grade:</strong> {$grade}<br>"
-//                    ."<strong>Study Type:</strong> {$studyType}<br>"
-                    ."<strong>Semester:</strong> {$semester}";
+                    ."<strong>Semester:</strong> {$semesters}";
             })
             ->rawColumns(['action', 'status', 'image','details'])
 
@@ -101,9 +101,14 @@ class SubjectDataTable extends DataTable
                 });
             })
             ->filterColumn('semester_id', function ($query, $keyword) {
-                $query->whereHas('semester', function ($q) use ($keyword) {
-                    $q->where('name_ar', 'like', "%{$keyword}%")
-                      ->orWhere('name_en', 'like', "%{$keyword}%");
+                $query->where(function ($q) use ($keyword) {
+                    $q->whereHas('semesters', function ($sq) use ($keyword) {
+                        $sq->where('name_ar', 'like', "%{$keyword}%")
+                            ->orWhere('name_en', 'like', "%{$keyword}%");
+                    })->orWhereHas('semester', function ($sq) use ($keyword) {
+                        $sq->where('name_ar', 'like', "%{$keyword}%")
+                            ->orWhere('name_en', 'like', "%{$keyword}%");
+                    });
                 });
             });
 
@@ -113,7 +118,7 @@ class SubjectDataTable extends DataTable
 
     public function query(Subject $model)
     {
-        return $model->with(['grade', 'studyType', 'semester'])->newQuery();
+        return $model->with(['grade', 'studyType', 'semester', 'semesters'])->newQuery();
     }
 
     public function html()

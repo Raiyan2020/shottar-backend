@@ -155,16 +155,14 @@
         @endif
         @if(auth()->user()->hasRole('teacher'))
             <li class="menu-header">Sections</li>
-            @foreach($teacherSubjects ?? [] as $subject)
-                <li class="menu-item {{ request()->is('teacher/subjects/'.$subject->id) ? 'active' : '' }}">
-                    <a href="{{ route('teacher.subjects.sections.index', $subject->id) }}" class="menu-link"
-                       title="{{ $subject->name_en . ' - ' . ($subject->grade?->name_en ?? '-') . ' - ' . ($subject->semester?->name_en ?? '-') }}">
+            @foreach($teacherSubjectItems ?? [] as $item)
+                <li class="menu-item {{ request()->is('teacher/subjects/'.$item->subject->id) ? 'active' : '' }}">
+                    <a href="{{ route('teacher.subjects.sections.index', $item->subject->id) }}" class="menu-link"
+                       title="{{ $item->subject->name_en . ($item->meta ? ' - ' . $item->meta : '') }}">
                         <i class="menu-icon tf-icons ti ti-book"></i>
                         <div style="white-space: normal; line-height: 1.25;">
-                            {{ $subject->name_en }}
-                            <small class="d-block text-muted">
-                                {{ $subject->grade?->name_en ?? '-' }} · {{ $subject->semester?->name_en ?? '-' }}
-                            </small>
+                            {{ $item->subject->name_en }}
+                            <small class="d-block text-muted">{{ $item->meta ?: '-' }}</small>
                         </div>
                     </a>
                 </li>
