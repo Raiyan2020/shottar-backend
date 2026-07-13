@@ -38,6 +38,13 @@ class Subject extends Model
         return $this->belongsTo(Semester::class);
     }
 
+    // الفصول الدراسية التي تُدرَّس فيها المادة (قد تكون أكثر من فصل)
+    public function semesters()
+    {
+        return $this->belongsToMany(Semester::class, 'semester_subject', 'subject_id', 'semester_id')
+            ->withTimestamps();
+    }
+
     public function lessonSections()
     {
         return $this->hasMany(LessonSection::class);

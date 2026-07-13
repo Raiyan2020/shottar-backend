@@ -38,17 +38,26 @@ class SubjectController extends Controller
     {
         // معالجة رفع الصورة إذا وجدت
         $data = $request->validated();
-        if ($request->has('image')) {
+
+        $semesterIds = $data['semester_ids'] ?? [];
+        unset($data['semester_ids']);
+        // نحتفظ بأول فصل في العمود القديم للتوافق مع باقي أجزاء النظام (API/عرض)
+        $data['semester_id'] = $semesterIds[0] ?? null;
+
+        if ($request->hasFile('image')) {
             $image_path = $this->uploadImage('admin', $request->image);
         }
         $data['image'] = $image_path ?? null; // إذا لم تكن الصورة موجودة، اجعلها فارغة
 
-        Subject::create($data);
+        $subject = Subject::create($data);
+        $subject->semesters()->sync($semesterIds);
+
         return redirect()->route('admin.subjects.index')->with('success', 'Subject created successfully');
     }
 
     public function edit(Subject $subject)
     {
+        $subject->load('semesters');
         $grades = Grade::where('status', 1)->get();
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
@@ -58,12 +67,21 @@ class SubjectController extends Controller
     public function update(SubjectRequest $request, Subject $subject)
     {
         $data = $request->validated();
-        if ($request->has('image')) {
+
+        $semesterIds = $data['semester_ids'] ?? [];
+        unset($data['semester_ids']);
+        if (!empty($semesterIds)) {
+            $data['semester_id'] = $semesterIds[0];
+        }
+
+        if ($request->hasFile('image')) {
             $image_path = $this->uploadImage('admin', $request->image);
             $data['image'] = $image_path ?? null;
         }
 
         $subject->update($data);
+        $subject->semesters()->sync($semesterIds);
+
         return redirect()->route('admin.subjects.index')->with('success', 'Subject updated successfully');
     }
 

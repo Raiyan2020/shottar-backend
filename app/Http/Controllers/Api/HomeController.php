@@ -50,7 +50,12 @@ class HomeController extends Controller
         // ✅ جلب جميع المواد لهذا الصف والفصل
         $subjectQuery = Subject::with(['courseMaterials'])
             ->where('grade_id', $gradeId)
-            ->where('semester_id', $semesterId);
+            ->where(function ($q) use ($semesterId) {
+                $q->where('semester_id', $semesterId)
+                    ->orWhereHas('semesters', function ($sq) use ($semesterId) {
+                        $sq->where('semesters.id', $semesterId);
+                    });
+            });
 
         // ✅ تطبيق فلتر البحث إن وُجد
         if ($search) {

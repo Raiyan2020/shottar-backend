@@ -50,7 +50,12 @@ class SubjectController extends Controller
         $subjectQuery = Subject::with(['courseMaterials','grade','semester'])
             ->where('status', 1)
             ->where('grade_id', $gradeId)
-            ->where('semester_id', $semesterId);
+            ->where(function ($q) use ($semesterId) {
+                $q->where('semester_id', $semesterId)
+                    ->orWhereHas('semesters', function ($sq) use ($semesterId) {
+                        $sq->where('semesters.id', $semesterId);
+                    });
+            });
 
         if ($search) {
             $subjectQuery->where(function ($q) use ($search) {
@@ -123,7 +128,12 @@ class SubjectController extends Controller
         // جلب جميع المواد التي تنتمي لنفس الصفوف والفصول
         $allSubjects = Subject::with('courseMaterials')
             ->whereIn('grade_id', $gradeIds)
-            ->whereIn('semester_id', $semesterIds)
+            ->where(function ($q) use ($semesterIds) {
+                $q->whereIn('semester_id', $semesterIds)
+                    ->orWhereHas('semesters', function ($sq) use ($semesterIds) {
+                        $sq->whereIn('semesters.id', $semesterIds);
+                    });
+            })
             ->get();
 
         $filteredSubjects = $allSubjects->whereIn('id', $purchasedSubjects->pluck('id'));

@@ -89,7 +89,7 @@
                                     <select id="subject_ids" name="subject_ids[]" class="form-control" multiple data-placeholder="{{ __('general.Select Subjects') }}">
                                         @foreach($subjects as $s)
                                             <option value="{{ $s->id }}" {{ in_array($s->id, old('subject_ids', [])) ? 'selected' : '' }}>
-                                                {{ $s->name_en . '(' . $s->grade?->name_en . ')'.'('.$s->semester?->name_en . ')' }}
+                                                {{ $s->name_en . '(' . $s->grade?->name_en . ')' }}
                                             </option>
                                         @endforeach
                                     </select>

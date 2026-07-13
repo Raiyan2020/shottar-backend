@@ -102,25 +102,25 @@
 {{--                                    </div>--}}
 {{--                                </div>--}}
 
-                                <!-- Semester Select -->
+                                <!-- Semester Select (multiple) -->
                                 <div class="col-md-6 col-12">
                                     <div class="form-group">
-                                        <label for="semester_id" class="col-form-label-sm">{{ __('general.Semester') }}</label>
-                                        <select
-                                            name="semester_id"
-                                            id="semester_id"
-                                            class="form-control form-control-sm @error('semester_id') is-invalid @enderror"
-                                            required
-                                        >
-                                            <option value="">{{ __('general.Select Semester') }}</option>
-                                            @foreach($semesters as $semester)
-                                                <option value="{{ $semester->id }}" {{ old('semester_id') == $semester->id ? 'selected' : '' }}>
-                                                    {{ $semester->name_ar }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        @error('semester_id')
-                                        <span class="col-form-label-sm text-danger">{{ $message }}</span>
+                                        <label class="col-form-label-sm d-block">{{ __('general.Semester') }}</label>
+                                        @foreach($semesters as $semester)
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" type="checkbox"
+                                                       name="semester_ids[]"
+                                                       id="semester_{{ $semester->id }}"
+                                                       value="{{ $semester->id }}"
+                                                       {{ in_array($semester->id, old('semester_ids', [])) ? 'checked' : '' }}>
+                                                <label class="form-check-label" for="semester_{{ $semester->id }}">{{ $semester->name_ar }}</label>
+                                            </div>
+                                        @endforeach
+                                        @error('semester_ids')
+                                        <span class="col-form-label-sm text-danger d-block">{{ $message }}</span>
+                                        @enderror
+                                        @error('semester_ids.*')
+                                        <span class="col-form-label-sm text-danger d-block">{{ $message }}</span>
                                         @enderror
                                     </div>
                                 </div>
