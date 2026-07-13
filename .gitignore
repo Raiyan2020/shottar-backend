@@ -1,0 +1,48 @@
+# Environment and application secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*firebase-adminsdk*.json
+storage/firebase/
+google-services.json
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Laravel runtime files
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+/storage/app/private/
+/storage/app/public/
+/storage/framework/cache/
+/storage/framework/sessions/
+/storage/framework/testing/
+/storage/framework/views/
+/storage/logs/
+
+# Logs, archives, and local tooling
+*.log
+error_log
+*.zip
+.DS_Store
+.phpunit.result.cache
+/.phpunit.cache/
+
+# Frontend build artifacts
+/public/build/
+/public/hot
+
+# User-uploaded media and non-source files in the web root
+/public/images/
+/public/php.ini
+/public/*.php
+!/public/index.php
+
+# IDE settings
+/.idea/
+/.vscode/
