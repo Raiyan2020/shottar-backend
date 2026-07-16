@@ -38,7 +38,6 @@ class Admin extends Authenticatable
     public function teachingSubjects()
     {
         return $this->belongsToMany(Subject::class, 'teacher_subjects', 'teacher_id', 'subject_id')
-            ->withPivot(['class_id', 'section_id'])
             ->withTimestamps();
     }
 }

@@ -62,7 +62,6 @@ class Subject extends Model
     public function teachers()
     {
         return $this->belongsToMany(Admin::class, 'teacher_subjects', 'subject_id', 'teacher_id')
-            ->withPivot(['class_id','section_id'])
             ->withTimestamps();
     }
 
