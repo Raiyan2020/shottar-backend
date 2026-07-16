@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContactUsController;
 use App\Http\Controllers\Admin\CourseMaterialController;
+use App\Http\Controllers\Admin\DailyChallengeController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\GradeController;
@@ -109,6 +110,10 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
 
             Route::get('/challenge/sessions', [\App\Http\Controllers\Admin\ChallengeSessionController::class, 'index'])->name('challenge.sessions.index');
             Route::get('/challenge/sessions/{id}', [\App\Http\Controllers\Admin\ChallengeSessionController::class, 'show'])->name('challenge.sessions.show');
+
+            //daily challenges
+            Route::post('daily-challenges/toggle-status/{id}', [DailyChallengeController::class, 'toggleStatus'])->name('daily-challenges.toggleStatus');
+            Route::resource('daily-challenges', DailyChallengeController::class)->except(['show']);
 
 
 

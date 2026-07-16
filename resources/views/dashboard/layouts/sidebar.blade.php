@@ -78,6 +78,13 @@
             </a>
         </li>
 
+        <li class="menu-item {{ Route::is('admin.daily-challenges.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.daily-challenges.index') }}" class="menu-link side-sclaex">
+                <i class="menu-icon tf-icons ti ti-calendar-event"></i>
+                <div>{{__('general.Daily Challenges')}}</div>
+            </a>
+        </li>
+
         <li class="menu-item {{ Route::is('admin.orders.*') ? 'active' : '' }}">
             <a href="{{ route('admin.orders.index') }}" class="menu-link side-sclaex">
                 <i class="menu-icon tf-icons ti ti-shopping-cart"></i>

@@ -241,8 +241,22 @@ return [
     'lesson_sections' => 'الأقسام الدراسية',
     'back' => 'عودة',
 
-
-
+    // Daily Challenges
+    'Daily Challenges' => 'التحديات اليومية',
+    'Add Daily Challenge' => 'إضافة تحدي يومي',
+    'Edit Daily Challenge' => 'تعديل تحدي يومي',
+    'reward_points' => 'نقاط المكافأة',
+    'time_limit_seconds' => 'المدة الزمنية (ثانية)',
+    'challenge_date' => 'تاريخ التحدي',
+    'Select Subject' => 'اختر المادة',
+    'Select the correct answer' => 'اختر الإجابة الصحيحة',
+    'Question' => 'السؤال',
+    'answers' => 'الإجابات',
+    'Daily challenge created successfully' => 'تم إنشاء التحدي اليومي بنجاح',
+    'Daily challenge updated successfully' => 'تم تحديث التحدي اليومي بنجاح',
+    'A daily challenge already exists for this grade, semester and date.' => 'يوجد بالفعل تحدي يومي لنفس المرحلة والفصل والتاريخ.',
+    'Please select the correct answer.' => 'من فضلك اختر الإجابة الصحيحة.',
+    'You must provide exactly 4 options.' => 'يجب إدخال 4 إجابات بالضبط.',
 
 ];
 

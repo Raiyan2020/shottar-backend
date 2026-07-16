@@ -335,6 +335,21 @@
         'Order Details' => 'Order Details',
         'Items' => 'Items',
 
+        // Daily Challenges
+        'Daily Challenges' => 'Daily Challenges',
+        'Add Daily Challenge' => 'Add Daily Challenge',
+        'Edit Daily Challenge' => 'Edit Daily Challenge',
+        'reward_points' => 'Reward Points',
+        'time_limit_seconds' => 'Time Limit (seconds)',
+        'challenge_date' => 'Challenge Date',
+        'Select Subject' => 'Select Subject',
+        'Select the correct answer' => 'Select the correct answer',
+        'Daily challenge created successfully' => 'Daily challenge created successfully',
+        'Daily challenge updated successfully' => 'Daily challenge updated successfully',
+        'A daily challenge already exists for this grade, semester and date.' => 'A daily challenge already exists for this grade, semester and date.',
+        'Please select the correct answer.' => 'Please select the correct answer.',
+        'You must provide exactly 4 options.' => 'You must provide exactly 4 options.',
+
 
 
 
