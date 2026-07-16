@@ -13,6 +13,7 @@ class ContactUs extends Model
         'user_id',
         'name',
         'phone',
+        'problem_type',
         'message',
     ];
 

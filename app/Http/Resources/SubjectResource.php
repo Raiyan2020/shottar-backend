@@ -29,6 +29,9 @@ class SubjectResource extends JsonResource
             'hours' => floor($totalDurationSeconds / 3600),
             'minutes' => floor(($totalDurationSeconds % 3600) / 60),
             'progress_percent' => $progressPercent,
+            'teacher_name' => $this->relationLoaded('teachers')
+                ? optional($this->teachers->first())->name
+                : optional($this->teachers()->first())->name,
             'grade' => new GradeResource($this->whenLoaded('grade')),
             'semester' => new SemesterResource($this->whenLoaded('semester')),
 

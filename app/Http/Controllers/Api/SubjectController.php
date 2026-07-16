@@ -39,15 +39,15 @@ class SubjectController extends Controller
         }
 
 
-        if (!$semesterId || !$gradeId) {
-            return sendError('Please provide at least one of semester_id or grade_id.');
+        if (!$gradeId || !$semesterId) {
+            return sendError('Both grade_id and semester_id are required.');
         }
 
 
 
         // Query to get subjects based on semester and grade
 
-        $subjectQuery = Subject::with(['courseMaterials','grade','semester'])
+        $subjectQuery = Subject::with(['courseMaterials','grade','semester','teachers'])
             ->where('status', 1)
             ->where('grade_id', $gradeId)
             ->where(function ($q) use ($semesterId) {
@@ -126,7 +126,7 @@ class SubjectController extends Controller
         $semesterIds = $purchasedSubjects->pluck('semester_id')->unique();
 
         // جلب جميع المواد التي تنتمي لنفس الصفوف والفصول
-        $allSubjects = Subject::with('courseMaterials')
+        $allSubjects = Subject::with(['courseMaterials','grade','semester','teachers'])
             ->whereIn('grade_id', $gradeIds)
             ->where(function ($q) use ($semesterIds) {
                 $q->whereIn('semester_id', $semesterIds)

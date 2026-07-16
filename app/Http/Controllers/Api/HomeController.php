@@ -48,7 +48,7 @@ class HomeController extends Controller
         }
 
         // ✅ جلب جميع المواد لهذا الصف والفصل
-        $subjectQuery = Subject::with(['courseMaterials'])
+        $subjectQuery = Subject::with(['courseMaterials','grade','semester','teachers'])
             ->where('grade_id', $gradeId)
             ->where(function ($q) use ($semesterId) {
                 $q->where('semester_id', $semesterId)

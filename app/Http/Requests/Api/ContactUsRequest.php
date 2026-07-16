@@ -26,6 +26,7 @@ class ContactUsRequest extends FormRequest
 
             'name' => 'required|string|min:3|max:50',
             'phone' => 'required|string',
+            'problem_type' => 'nullable|string|in:technical,payment,content,suggestion,other',
             'message' => 'required|string|max:500',
 
 

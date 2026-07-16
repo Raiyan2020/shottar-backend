@@ -37,6 +37,10 @@ class User extends Authenticatable
         'notification_enabled',
         'grade_id',
         'semester_id',
+        'points',
+        'streak',
+        'daily_goal',
+        'daily_goal_done',
         ];
 
     /**
@@ -69,12 +73,24 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'points' => 'integer',
+        'streak' => 'integer',
+        'daily_goal' => 'integer',
+        'daily_goal_done' => 'integer',
     ];
 
     //orders
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    // آخر اشتراك مدفوع (يُستخدم لعرض الباقة الحالية وتاريخ الانتهاء)
+    public function activeSubscriptionOrder()
+    {
+        return $this->hasOne(Order::class)
+            ->where('status', 'paid')
+            ->latest('id');
     }
 
     //notifications

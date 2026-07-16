@@ -87,9 +87,22 @@ class UserController extends Controller
     //destroy
     public function destroy()
     {
+        return $this->deleteAccount();
+    }
+
+    // حذف الحساب نهائياً (يُلغي كل التوكنات ثم يحذف المستخدم)
+    public function deleteAccount()
+    {
         $user = Auth::user();
+
+        if (! $user) {
+            return sendError('User not found.', [], 404);
+        }
+
+        $user->tokens()->delete();
         $user->delete();
-        return sendResponse(new UserResource($user));
+
+        return sendResponse(['message' => 'Account deleted successfully.'], 'Account deleted successfully.');
     }
 
     //notificationSwitch

@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\MaterialViewController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ChallengeController;
+use App\Http\Controllers\Api\DailyChallengeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -46,6 +47,7 @@ Route::controller(AuthController::class)->group(function(){
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
+    Route::delete('account', [UserController::class, 'deleteAccount']);
 //    //profile
     Route::get('show-profile/{user_id?}', [UserController::class, 'show']);
     Route::post('update-profile', [UserController::class, 'update']);
@@ -91,6 +93,9 @@ Route::middleware('auth:sanctum')->group(function () {
 //    Route::post('challenges', [ChallengeController::class, 'finishChallenge']);
     Route::post('challenges/previous', [ChallengeController::class, 'previousChallenges']);
     Route::post('challenge/result', [ChallengeController::class, 'showChallengeResult']);
+    Route::get('daily-challenge', [DailyChallengeController::class, 'show']);
+    Route::post('daily-challenge/answer', [DailyChallengeController::class, 'answer']);
+    Route::get('daily-challenge/history', [DailyChallengeController::class, 'history']);
 
 
 
