@@ -10,6 +10,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -37,7 +38,24 @@ class AuthController extends Controller
             'activation_code' => $activation_code, // set activation code
         ]);
         // إرسال كود التحقق إذا لزم الأمر
-        $send = $this->sendVerificationCode($user->phone, $activation_code);
+        try {
+            $send = $this->sendVerificationCode($user->phone, $activation_code);
+            $payload = $send->json();
+            if (!$send->successful() || (is_array($payload) && ($payload['status'] ?? true) === false)) {
+                Log::error('Shottar login OTP WhatsApp send failed', [
+                    'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
+                    'provider_status' => $send->status(),
+                    'provider_code' => is_array($payload) ? ($payload['code'] ?? null) : null,
+                ]);
+                return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
+            }
+        } catch (\Throwable $exception) {
+            Log::error('Shottar login OTP WhatsApp exception', [
+                'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
+                'exception' => $exception->getMessage(),
+            ]);
+            return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
+        }
 
         $response = [
             'user' => new UserResource($user),

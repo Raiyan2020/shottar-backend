@@ -56,17 +56,16 @@ trait Functions
 
     public function whatsapp($phone, $body ,$dedupKey = null)
     {
-//        $instanceId   = $user->whatsapp_instance_id ?? config('services.wawp.instance_id');
-//        $accessToken  = $user->whatsapp_token ?? config('services.wawp.access_token');     // access_token\
+        $instanceId = config('services.wawp.instance_id');
+        $accessToken = config('services.wawp.access_token');
 
-//        $instanceId= '3A8430C0E496';
-        $instanceId= 'FDF6B20941DD';
-        $accessToken = 'rhS3eDMYV7goCg';
+        if (empty($instanceId) || empty($accessToken)) {
+            throw new \RuntimeException('WAWP credentials are not configured.');
+        }
 
         $chatId = $this->formatWawpChatId($phone , $dedupKey);
 
-//        $url = "https://wawp.net/wp-json/awp/v1/send";
-        $url = "https://api.wawp.net/v2/send/text";
+        $url = config('services.wawp.base_url', 'https://api.wawp.net/v2/send/text');
         $response = Http::timeout(20)->post($url, [
             'instance_id'   => $instanceId,
             'access_token'  => $accessToken,
@@ -80,10 +79,12 @@ trait Functions
 
     public function whatsappImage(string $phone, string $imageUrl, ?string $caption = null): \Illuminate\Http\Client\Response
     {
-        $instanceId  = 'FDF6B20941DD';
-//        $instanceId  = '3A8430C0E496';
+        $instanceId = config('services.wawp.instance_id');
+        $accessToken = config('services.wawp.access_token');
 
-        $accessToken = 'rhS3eDMYV7goCg';
+        if (empty($instanceId) || empty($accessToken)) {
+            throw new \RuntimeException('WAWP credentials are not configured.');
+        }
 
         $chatId = $this->formatWawpChatId($phone);
 
@@ -146,14 +147,14 @@ trait Functions
         return $digits . '@c.us';
     }
 
-    public function sendVerificationCode(string $phone, int $code,$update_phone = false): void
+    public function sendVerificationCode(string $phone, int $code,$update_phone = false): \Illuminate\Http\Client\Response
     {
         if ($update_phone){
             $msg = 'Your Update Phone code is ' . $code . ' Welcome to Shottar 👩🏻‍🏫';
         }else{
         $msg = 'رمز التفعيل الخاص بك هو ' . $code . ' أهلاً بك في تطبيق شطار 👩🏻‍🏫';
         }
-        $this->whatsapp($phone, $msg);
+        return $this->whatsapp($phone, $msg);
     }
 
     function vimeoToPlayerUrl(string $link): ?string {

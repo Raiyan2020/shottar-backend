@@ -42,6 +42,12 @@ return [
         'token' => env('WHATSAPP_TOKEN'),
         'instance' => env('WHATSAPP_INSTANCE'),
     ],
+
+    'wawp' => [
+        'base_url' => env('WAWP_BASE_URL', 'https://api.wawp.net/v2/send/text'),
+        'instance_id' => env('WAWP_INSTANCE_ID'),
+        'access_token' => env('WAWP_ACCESS_TOKEN'),
+    ],
     'vimeo' => [
         'client_id' => env('VIMEO_CLIENT_ID'),
         'client_secret' => env('VIMEO_CLIENT_SECRET'),
