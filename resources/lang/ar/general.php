@@ -199,6 +199,9 @@ return [
     'Children' => 'الأطفال',
     'Update Child' => 'تحديث الطفل',
     'Orders' => 'الطلبات',
+    'orders' => 'الطلبات',
+    'customer_subscriptions' => 'اشتراكات العملاء',
+    'Subscription Details' => 'تفاصيل الاشتراك',
     'Orders School' => 'طلبات المدرسة',
     'Orders Store' => 'طلبات المتجر',
     'Customer Info' => 'معلومات العميل',
@@ -257,6 +260,9 @@ return [
     'A daily challenge already exists for this grade, semester and date.' => 'يوجد بالفعل تحدي يومي لنفس المرحلة والفصل والتاريخ.',
     'Please select the correct answer.' => 'من فضلك اختر الإجابة الصحيحة.',
     'You must provide exactly 4 options.' => 'يجب إدخال 4 إجابات بالضبط.',
+    'Back' => 'رجوع',
+    'Items' => 'العناصر',
+    'Order Details' => 'تفاصيل الطلب',
 
 ];
 

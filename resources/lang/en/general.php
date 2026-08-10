@@ -263,6 +263,8 @@
         'Lesson' => 'Lesson',
         'Note' => 'Note',
         'orders' => 'Orders',
+        'customer_subscriptions' => 'Customer Subscriptions',
+        'Subscription Details' => 'Subscription Details',
         'All Materials Price' => 'All Materials Price',
         'icon_number' => 'Icon Number',
         'Contact Us' => 'Contact Us',

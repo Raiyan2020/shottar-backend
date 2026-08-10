@@ -92,7 +92,11 @@ return [
     'preparing' => 'قيد التحضير',
     'body' => 'المحتوى',
     'send' => 'إرسال',
-
-
-
+    'payment_method' => 'طريقة الدفع',
+    'free' => 'مجاني',
+    'package' => 'الباقة',
+    'subjects' => 'المواد',
+    'failed' => 'فشل',
+    'expires_at' => 'تاريخ الانتهاء',
+    'No records available' => 'لا توجد سجلات',
 ];

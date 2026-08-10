@@ -88,7 +88,7 @@
         <li class="menu-item {{ Route::is('admin.orders.*') ? 'active' : '' }}">
             <a href="{{ route('admin.orders.index') }}" class="menu-link side-sclaex">
                 <i class="menu-icon tf-icons ti ti-shopping-cart"></i>
-                <div>{{__('general.orders')}}</div>
+                <div>{{__('general.customer_subscriptions')}}</div>
             </a>
         </li>
 

@@ -103,8 +103,8 @@ return [
     'expires_at' => 'Expires At',
     'used_count' => 'Used Count',
     'free' => 'Free',
-    'subject' =>'subject'
-
-
-
+    'subject' =>'subject',
+    'package' => 'Package',
+    'subjects' => 'Subjects',
+    'failed' => 'Failed',
 ];

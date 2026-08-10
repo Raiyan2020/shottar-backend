@@ -66,17 +66,8 @@ class UserResource extends JsonResource
 
         $lang = request()->header('lang', $this->language ?? 'ar');
 
-        if ($order->is_all_materials) {
-            $packageName = $lang === 'en' ? 'Full package' : 'الباقة الشاملة';
-        } else {
-            $count = $order->items()->count();
-            $packageName = $lang === 'en'
-                ? ($count > 0 ? "{$count} subjects" : 'Subjects package')
-                : ($count > 0 ? "{$count} مواد" : 'باقة مواد');
-        }
-
         return [
-            'package_name' => $packageName,
+            'package_name' => $order->packageName($lang),
             'subscription_end_date' => $order->expires_at
                 ? \Illuminate\Support\Carbon::parse($order->expires_at)->toDateString()
                 : null,

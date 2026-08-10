@@ -30,7 +30,7 @@ trait ImageTrait {
     public function uploadImage($folder,$image){
         $image->store('/',$folder);
         $filename = $image->hashName();
-        $path = 'images/'.'/'. $filename;
+        $path = 'images/' . $filename;
         return $path;
     }
     public function uploadImagePost($folder,$image){

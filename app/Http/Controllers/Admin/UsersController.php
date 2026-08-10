@@ -19,7 +19,10 @@ class UsersController extends Controller
     //edit
     public function edit($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with([
+            'orders' => fn ($q) => $q->with(['items.subject', 'paymentMethod'])->latest('id'),
+        ])->findOrFail($id);
+
         return view('dashboard.admin.users.edit', compact('user'));
     }
     //update

@@ -52,9 +52,7 @@ class SubjectDataTable extends DataTable
                 ]);
             })
             ->editColumn('image', function ($subject) {
-                return $subject->image
-                    ? '<img src="' . asset('storage/' . $subject->image) . '" style="width:50px;height:50px;" class="img-thumbnail" />'
-                    : '';
+                return self::imageHtml($subject->image);
             })
 //            ->editColumn('grade_id', function ($subject) {
 //                return $subject->grade ? $subject->grade->name_ar : '-';
@@ -144,10 +142,23 @@ class SubjectDataTable extends DataTable
 //            Column::make('semester_id')->title(__('general.Semester')),
             Column::make('price')->title(__('general.Price')),
 //            Column::make('duration')->title(__('general.Duration')),
-//            Column::make('image')->title(__('dataTable.image')),
+            Column::make('image')->title(__('dataTable.image')),
             Column::make('status')->title(__('dataTable.status')),
             Column::computed('action')->title(__('dataTable.action'))->exportable(false)->printable(false),
         ];
+    }
+
+    /**
+     * Subject images are stored under public/images via the admin disk,
+     * so the URL must be asset($path) — not asset('storage/'.$path).
+     */
+    public static function imageHtml(?string $image): string
+    {
+        if (!$image) {
+            return '';
+        }
+
+        return '<img src="' . asset($image) . '" style="width:50px;height:50px;" class="img-thumbnail" />';
     }
 
     protected function filename(): string
