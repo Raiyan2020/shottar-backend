@@ -36,8 +36,14 @@ class SubjectDataTable extends DataTable
                         [
                             'route' => route('admin.subjects.materials.index', ['subject' => $subject->id, 'type' => 'note']),
                             'title' => __('general.notes'),
-                            'icon' => 'bi bi-journal-text', // أيقونة المذكرات
+                            'icon' => 'bi bi-journal-text',
                             'btn' => 'btn btn-success',
+                        ],
+                        [
+                            'route' => route('admin.subjects.exams.index', $subject->id),
+                            'title' => __('general.exams'),
+                            'icon' => 'bi bi-file-earmark-pdf',
+                            'btn' => 'btn btn-danger',
                         ],
 
                     ]

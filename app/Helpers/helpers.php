@@ -139,6 +139,39 @@ function image_url(?string $path): ?string
 }
 
 /**
+ * Public URL for any stored file (PDF/images) under the public disk.
+ */
+function stored_file_url(?string $path): ?string
+{
+    $path = normalize_public_path($path);
+
+    if ($path === null || $path === '') {
+        return null;
+    }
+
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+
+    if (str_starts_with($path, 'storage/')) {
+        return asset($path);
+    }
+
+    $relative = ltrim(preg_replace('#^storage/#', '', $path), '/');
+
+    if (! \Illuminate\Support\Facades\Storage::disk('public')->exists($relative)
+        && is_file(public_path($relative))) {
+        \Illuminate\Support\Facades\Storage::disk('public')->put(
+            $relative,
+            file_get_contents(public_path($relative))
+        );
+        @unlink(public_path($relative));
+    }
+
+    return asset('storage/' . $relative);
+}
+
+/**
  * Upload an image
  *
  * @param $img

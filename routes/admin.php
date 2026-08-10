@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ContactUsController;
 use App\Http\Controllers\Admin\CourseMaterialController;
 use App\Http\Controllers\Admin\DailyChallengeController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\ExamController;
 use App\Http\Controllers\Admin\FaqController;
 use App\Http\Controllers\Admin\GradeController;
 use App\Http\Controllers\Admin\LessonSectionController;
@@ -100,6 +101,17 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
             Route::post('subjects/materials/toggle-status/{id}', [CourseMaterialController::class, 'toggleStatus'])->name('subjects.materials.toggleStatus');
             Route::post('subjects/materials/toggle-free/{id}', [CourseMaterialController::class, 'toggleIsFrees'])->name('subjects.materials.toggleIsFree');
             Route::post('subjects/{section}/materials/reorder', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'sort'])->name('materials.reorder');
+
+            Route::prefix('subjects/{subject}/exams')->name('subjects.exams.')->group(function () {
+                Route::get('/', [ExamController::class, 'index'])->name('index');
+                Route::get('/create', [ExamController::class, 'create'])->name('create');
+                Route::post('/', [ExamController::class, 'store'])->name('store');
+                Route::get('/{exam}/edit', [ExamController::class, 'edit'])->name('edit');
+                Route::put('/{exam}', [ExamController::class, 'update'])->name('update');
+                Route::delete('/{exam}', [ExamController::class, 'destroy'])->name('destroy');
+            });
+            Route::post('subjects/exams/toggle-status/{id}', [ExamController::class, 'toggleStatus'])->name('subjects.exams.toggleStatus');
+            Route::post('subjects/exams/toggle-free/{id}', [ExamController::class, 'toggleIsFree'])->name('subjects.exams.toggleIsFree');
 
 
             //challenge

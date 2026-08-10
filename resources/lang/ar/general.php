@@ -263,6 +263,12 @@ return [
     'Back' => 'رجوع',
     'Items' => 'العناصر',
     'Order Details' => 'تفاصيل الطلب',
+    'exams' => 'الامتحانات',
+    'Add Exam' => 'إضافة امتحان',
+    'Update Exam' => 'تحديث امتحان',
+    'Exam created successfully' => 'تم إنشاء الامتحان بنجاح',
+    'Exam updated successfully' => 'تم تحديث الامتحان بنجاح',
+    'PDF' => 'ملف PDF',
 
 ];
 

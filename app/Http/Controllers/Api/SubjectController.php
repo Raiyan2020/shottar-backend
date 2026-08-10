@@ -146,7 +146,7 @@ class SubjectController extends Controller
     public function details($id)
     {
 
-        $subject = Subject::with(['courseMaterials.section', 'orders'])->find($id);
+        $subject = Subject::with(['courseMaterials.section', 'orders', 'exams'])->find($id);
 
 
         if (!$subject) {

@@ -44,6 +44,16 @@ trait ImageTrait
         return $path;
     }
 
+    public function uploadPdf($file, string $directory = 'exams'): string
+    {
+        $filename = $file->hashName();
+        $path = normalize_public_path($directory . '/' . $filename);
+
+        Storage::disk('public')->putFileAs($directory, $file, $filename);
+
+        return $path;
+    }
+
     public function uploadImagePost($folder, $image)
     {
         $image->store('/', $folder);

@@ -64,6 +64,12 @@ class Subject extends Model
     {
         return $this->hasMany(CourseMaterial::class);
     }
+
+    public function exams()
+    {
+        return $this->hasMany(Exam::class)->orderBy('order_by');
+    }
+
     public function orders()
     {
         return $this->belongsToMany(Order::class, 'order_items', 'subject_id', 'order_id');

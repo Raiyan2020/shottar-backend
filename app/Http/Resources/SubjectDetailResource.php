@@ -56,6 +56,11 @@ class SubjectDetailResource extends JsonResource
             'price' => number_format($this->price, 3),
             'is_purchased' => $isPurchased,
             'sections' => $sections,
+            'exams' => ExamResource::collection(
+                $this->relationLoaded('exams')
+                    ? $this->exams->where('status', true)->values()
+                    : $this->exams()->where('status', true)->get()
+            ),
             'progress_percent' => $progressPercent,
         ];
     }
