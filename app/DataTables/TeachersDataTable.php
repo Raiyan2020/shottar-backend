@@ -45,7 +45,7 @@ class TeachersDataTable extends DataTable
             ->addColumn('created_at', function ($teacher) {
                 return $teacher->created_at?->format('Y-m-d H:i');
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['action', 'image'])
             ->filterColumn('created_at', function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
                     $q->where('created_at', 'like', '%' . $keyword . '%');

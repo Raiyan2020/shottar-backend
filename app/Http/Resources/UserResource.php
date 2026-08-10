@@ -23,7 +23,7 @@ class UserResource extends JsonResource
             'phone'=> $this->phone,
             'device_type' => $this->device_type,
             'status' => $this->status == 1 ? 'active' : ($this->status == '2' ? 'pending activation':'inactive') ,
-            'image' => $this->image ? asset($this->image) : null,
+            'image' => image_url($this->image),
             'country_code' => $this->country_code,
             'phone_not_code' => $this->phone_not_code,
             'language' => $this->language ??'ar',

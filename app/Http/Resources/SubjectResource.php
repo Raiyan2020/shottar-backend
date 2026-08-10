@@ -21,7 +21,7 @@ class SubjectResource extends JsonResource
         return [
             'id'    => $this->id,
             'name'  => $lang === 'ar' ? $this->name_ar : $this->name_en,
-            'image' => $this->image ? asset( $this->image) : null,
+            'image' => image_url($this->image),
             'price' => $this->price,
             'duration' => $this->duration,
             'total_lessons' => $this->courseMaterials->where('status', 1)->where('type','lesson')->count(),

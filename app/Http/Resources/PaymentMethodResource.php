@@ -14,7 +14,7 @@ class PaymentMethodResource extends JsonResource
         return [
             'id'    => $this->id,
             'name'  => $lang === 'en' ? $this->name_en : $this->name_ar,
-            'image' => $this->image ? asset($this->image) : null,
+            'image' => image_url($this->image),
         ];
     }
 }

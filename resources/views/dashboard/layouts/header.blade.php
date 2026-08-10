@@ -42,8 +42,11 @@
                 <a class="nav-link dropdown-toggle hide-arrow p-0" href="javascript:void(0);"
                    data-bs-toggle="dropdown">
                     <div class="avatar avatar-online">
-                        <img src="{{ $user->image ? asset($user->image) : asset('logo.png') }}"
-                             alt class="rounded-circle" />
+                        @if($avatarUrl = image_url($user->image))
+                            <img src="{{ $avatarUrl }}" alt class="rounded-circle" />
+                        @else
+                            <span class="avatar-initial rounded-circle bg-label-primary">{{ mb_substr($name, 0, 1) }}</span>
+                        @endif
                     </div>
                 </a>
                 <ul class="custom-dropdown-menu dropdown-menu-end">
@@ -52,8 +55,11 @@
                             <div class="d-flex align-items-center">
                                 <div class="flex-shrink-0 me-2">
                                     <div class="avatar avatar-online">
-                                        <img src="{{ auth()->user()->image ? asset(auth()->user()->image) : asset('logo.png') }}"
-                                             alt class="rounded-circle" />
+                                        @if($menuAvatarUrl = image_url(auth()->user()->image ?? $user->image))
+                                            <img src="{{ $menuAvatarUrl }}" alt class="rounded-circle" />
+                                        @else
+                                            <span class="avatar-initial rounded-circle bg-label-primary">{{ mb_substr($name, 0, 1) }}</span>
+                                        @endif
                                     </div>
                                 </div>
                                 <div class="flex-grow-1">

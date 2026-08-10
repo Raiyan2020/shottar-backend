@@ -37,7 +37,60 @@ function sendResponse($result, $message = null)
 
 function getimg($filename)
 {
-    return asset($filename);
+    return image_url($filename);
+}
+
+/**
+ * Collapse duplicate slashes in stored public paths (e.g. images//file.jpg).
+ */
+function normalize_public_path(?string $path): ?string
+{
+    if ($path === null || $path === '') {
+        return null;
+    }
+
+    $path = trim($path);
+
+    // Keep protocol slashes intact for absolute URLs.
+    if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $path)) {
+        return preg_replace('#(?<!:)/{2,}#', '/', $path);
+    }
+
+    $path = ltrim($path, '/');
+
+    return preg_replace('#/{2,}#', '/', $path) ?: null;
+}
+
+function is_public_image_path(?string $path): bool
+{
+    $path = normalize_public_path($path);
+
+    if (! $path) {
+        return false;
+    }
+
+    $invalid = ['path_to_image', 'null', 'undefined', 'none', 'n/a'];
+    if (in_array(strtolower($path), $invalid, true)) {
+        return false;
+    }
+
+    if (preg_match('#^https?://#i', $path)) {
+        return true;
+    }
+
+    return (bool) preg_match('#\.(jpe?g|png|gif|webp|svg|bmp)$#i', $path);
+}
+
+/**
+ * Build a public URL for a stored image path (dynamic from DB value).
+ */
+function image_url(?string $path): ?string
+{
+    if (! is_public_image_path($path)) {
+        return null;
+    }
+
+    return asset(normalize_public_path($path));
 }
 
 /**

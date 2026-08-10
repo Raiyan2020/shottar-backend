@@ -159,7 +159,7 @@
                                             class="form-control form-control-sm @error('image') is-invalid @enderror"
                                         />
                                         @if($subject->image)
-                                            <img src="{{ asset( $subject->image) }}" width="80" class="mt-1" alt="Subject Image">
+                                            <img src="{{ image_url($subject->image) }}" width="80" class="mt-1" alt="Subject Image">
                                         @endif
                                         @error('image')
                                         <span class="col-form-label-sm text-danger">{{ $message }}</span>

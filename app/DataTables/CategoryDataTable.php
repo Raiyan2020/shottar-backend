@@ -22,7 +22,11 @@ class CategoryDataTable extends DataTable
             })
             //image
             ->addColumn('image', function ($category) {
-                return '<img src="' . asset($category->image) . '" alt="' . $category->name_en . '" class="img-thumbnail" style="width: 50px; height: 50px;">';
+                $url = image_url($category->image);
+
+                return $url
+                    ? '<img src="' . $url . '" alt="' . e($category->name_en) . '" class="img-thumbnail" style="width: 50px; height: 50px;">'
+                    : '';
             })
 
             ->addColumn('filter_group', function ($category) {

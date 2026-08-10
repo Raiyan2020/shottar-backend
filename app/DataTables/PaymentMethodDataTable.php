@@ -39,9 +39,13 @@ class PaymentMethodDataTable extends DataTable
                 ]);
             })
             ->editColumn('image', function ($payment) {
-                return $payment->image ? '<img src="'.asset($payment->image).'" width="50" height="50">' : '';
+                $url = image_url($payment->image);
+
+                return $url
+                    ? '<img src="'.$url.'" width="50" height="50" class="img-thumbnail" alt="">'
+                    : '';
             })
-            ->rawColumns(['action', 'image']);
+            ->rawColumns(['action', 'image', 'status']);
 
     }
 

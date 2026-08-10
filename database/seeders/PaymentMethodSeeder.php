@@ -13,7 +13,7 @@ class PaymentMethodSeeder extends Seeder
         PaymentMethod::create([
             'name_ar' => 'دفع آبل',
             'name_en' => 'Apple Pay',
-            'image' => 'path_to_image',  // اضف المسار المناسب للصورة
+            'image' => null,
             'slug' => 'apple-pay',
             'status' => true,
         ]);
@@ -21,7 +21,7 @@ class PaymentMethodSeeder extends Seeder
         PaymentMethod::create([
             'name_ar' => 'كي نت',
             'name_en' => 'Knet',
-            'image' => 'path_to_image',  // اضف المسار المناسب للصورة
+            'image' => null,
             'slug' => 'knet',
             'status' => true,
         ]);
@@ -29,7 +29,7 @@ class PaymentMethodSeeder extends Seeder
         PaymentMethod::create([
             'name_ar' => 'فيزا',
             'name_en' => 'Visa',
-            'image' => 'path_to_image',  // اضف المسار المناسب للصورة
+            'image' => null,
             'slug' => 'visa',
             'status' => true,
         ]);

@@ -48,7 +48,7 @@ class AdminsDataTable extends DataTable
             ->addColumn('created_at', function ($admin) {
                 return $admin->created_at->format('Y-m-d H:i');
             })
-            ->rawColumns(['action'])
+            ->rawColumns(['action', 'image'])
             ->filterColumn('created_at', function ($query, $keyword) {
                 $query->where(function ($query) use ($keyword) {
                     $query->where('created_at', 'like', '%' . $keyword . '%');

@@ -56,6 +56,8 @@ trait ImageTrait {
     //deleteImage
     public function deleteImage($imagePath)
     {
+        $imagePath = normalize_public_path($imagePath);
+
         if ($imagePath && file_exists(public_path($imagePath))) {
             unlink(public_path($imagePath));
         }

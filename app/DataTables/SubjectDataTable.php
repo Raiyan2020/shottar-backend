@@ -154,11 +154,13 @@ class SubjectDataTable extends DataTable
      */
     public static function imageHtml(?string $image): string
     {
-        if (!$image) {
+        $url = image_url($image);
+
+        if (! $url) {
             return '';
         }
 
-        return '<img src="' . asset($image) . '" style="width:50px;height:50px;" class="img-thumbnail" />';
+        return '<img src="' . e($url) . '" style="width:50px;height:50px;" class="img-thumbnail" alt="" />';
     }
 
     protected function filename(): string
