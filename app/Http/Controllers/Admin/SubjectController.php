@@ -11,11 +11,10 @@ use App\Traits\HasStatusToggle;
 use App\Http\Requests\SubjectRequest;
 use App\Models\Subject;
 use App\Traits\ImageTrait;
-use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
-    use HasStatusToggle , ImageTrait;
+    use HasStatusToggle, ImageTrait;
 
     public function index(SubjectDataTable $dataTable)
     {
@@ -27,7 +26,8 @@ class SubjectController extends Controller
         $grades = Grade::where('status', 1)->get();
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
-        return view('dashboard.admin.subjects.create' , compact(
+
+        return view('dashboard.admin.subjects.create', compact(
             'grades',
             'studyTypes',
             'semesters'
@@ -36,18 +36,16 @@ class SubjectController extends Controller
 
     public function store(SubjectRequest $request)
     {
-        // معالجة رفع الصورة إذا وجدت
         $data = $request->validated();
+        unset($data['image']);
 
         $semesterIds = $data['semester_ids'] ?? [];
         unset($data['semester_ids']);
-        // نحتفظ بأول فصل في العمود القديم للتوافق مع باقي أجزاء النظام (API/عرض)
         $data['semester_id'] = $semesterIds[0] ?? null;
 
         if ($request->hasFile('image')) {
-            $image_path = $this->uploadImage('admin', $request->image);
+            $data['image'] = $this->uploadImage('public', $request->file('image'));
         }
-        $data['image'] = $image_path ?? null; // إذا لم تكن الصورة موجودة، اجعلها فارغة
 
         $subject = Subject::create($data);
         $subject->semesters()->sync($semesterIds);
@@ -61,22 +59,24 @@ class SubjectController extends Controller
         $grades = Grade::where('status', 1)->get();
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
+
         return view('dashboard.admin.subjects.edit', compact('subject', 'grades', 'studyTypes', 'semesters'));
     }
 
     public function update(SubjectRequest $request, Subject $subject)
     {
         $data = $request->validated();
+        unset($data['image']);
 
         $semesterIds = $data['semester_ids'] ?? [];
         unset($data['semester_ids']);
-        if (!empty($semesterIds)) {
+        if (! empty($semesterIds)) {
             $data['semester_id'] = $semesterIds[0];
         }
 
         if ($request->hasFile('image')) {
-            $image_path = $this->uploadImage('admin', $request->image);
-            $data['image'] = $image_path ?? null;
+            $this->deleteImage($subject->getRawOriginal('image') ?? $subject->image);
+            $data['image'] = $this->uploadImage('public', $request->file('image'));
         }
 
         $subject->update($data);
@@ -87,9 +87,8 @@ class SubjectController extends Controller
 
     public function destroy(Subject $subject)
     {
-        // حذف الصورة إذا كانت موجودة
         if ($subject->image) {
-            $this->deleteImage($subject->image);
+            $this->deleteImage($subject->getRawOriginal('image') ?? $subject->image);
         }
         $subject->delete();
 

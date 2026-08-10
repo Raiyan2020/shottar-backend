@@ -2,62 +2,69 @@
 
 namespace App\Traits;
 
-use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-trait ImageTrait {
-
-    /**
-     * @param Request $request
-     * @return $this|false|string
-     */
-
-    public function getImageAttribute($value){
+trait ImageTrait
+{
+    public function getImageAttribute($value)
+    {
         if ($value) {
             return getimg($value);
-        } elseif(filter_var($value, FILTER_VALIDATE_URL)){
-            return  $value;
-        } else
-            return  asset('storage/images/default.jpg');
+        } elseif (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        return asset('storage/images/default.jpg');
     }
 
-    public function setImageAttribute($value,$directory = 'images'){
-        if (is_file($value))
-            $this->attributes['image'] = uploader($value,$directory);
-        else
+    public function setImageAttribute($value, $directory = 'images')
+    {
+        if (is_file($value)) {
+            $this->attributes['image'] = uploader($value, $directory);
+        } else {
             $this->attributes['image'] = $value;
+        }
     }
 
     public function uploadImage($folder, $image)
     {
+        /** @var UploadedFile $image */
         $filename = $image->hashName();
+        $path = normalize_public_path('images/' . $filename);
 
-        // Store on the public disk so files are served via the existing
-        // public_html/storage -> storage/app/public symlink.
-        $image->storeAs('images', $filename, 'public');
+        Storage::disk('public')->putFileAs('images', $image, $filename);
 
-        return normalize_public_path('images/' . $filename);
-    }
+        // Remove mistaken legacy copy under app/public/images if present.
+        $legacy = public_path($path);
+        if (is_file($legacy)) {
+            @unlink($legacy);
+        }
 
-    public function uploadImagePost($folder,$image){
-        $image->store('/',$folder);
-        $filename = $image->hashName();
-        $path = 'images/' .$folder.'/'. $filename;
         return $path;
     }
 
-    public function uploadImageVideo($folder,$image){
-        $image->store('/',$folder);
+    public function uploadImagePost($folder, $image)
+    {
+        $image->store('/', $folder);
         $filename = $image->hashName();
-        $path = 'videos/'. $filename;
-        return $path;
+
+        return 'images/' . $folder . '/' . $filename;
     }
 
-    public function uploadImageFront($folder,$image){
-        $image->store('/',$folder);
+    public function uploadImageVideo($folder, $image)
+    {
+        $image->store('/', $folder);
         $filename = $image->hashName();
-        $path =  $filename;
-        return $path;
+
+        return 'videos/' . $filename;
+    }
+
+    public function uploadImageFront($folder, $image)
+    {
+        $image->store('/', $folder);
+
+        return $image->hashName();
     }
 
     public function deleteImage($imagePath)
@@ -72,9 +79,9 @@ trait ImageTrait {
             Storage::disk('public')->delete($imagePath);
         }
 
-        if (is_file(public_path($imagePath))) {
-            unlink(public_path($imagePath));
+        $legacy = public_path($imagePath);
+        if (is_file($legacy)) {
+            @unlink($legacy);
         }
     }
-
 }
