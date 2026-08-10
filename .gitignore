@@ -7,7 +7,6 @@
 *.crt
 *.p12
 *firebase-adminsdk*.json
-storage/firebase/
 google-services.json
 
 # Dependencies
@@ -43,6 +42,10 @@ error_log
 /public/php.ini
 /public/*.php
 !/public/index.php
+
+# Keep firebase folder, ignore credential files
+/storage/firebase/*
+!/storage/firebase/.gitignore
 
 # IDE settings
 /.idea/

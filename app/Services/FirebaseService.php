@@ -8,28 +8,52 @@ class FirebaseService
 {
     public function getAccessToken()
     {
-        // مسار ملف حساب الخدمة
-        $serviceAccountFile = storage_path('firebase/service_account.json');
+        $serviceAccountFile = $this->resolveCredentialsPath();
         $scopes = ['https://www.googleapis.com/auth/firebase.messaging'];
 
-        // التحقق من وجود الملف
-        if (!file_exists($serviceAccountFile)) {
-            throw new \Exception('Service account file not found at: ' . $serviceAccountFile);
+        if (! is_file($serviceAccountFile)) {
+            throw new \Exception(
+                'Firebase service account file not found at: '.$serviceAccountFile
+                .' — upload the JSON to storage/firebase/ and set FIREBASE_CREDENTIALS in .env'
+            );
         }
 
-        // تحميل بيانات حساب الخدمة
         $credentials = new ServiceAccountCredentials($scopes, $serviceAccountFile);
-
-        // جلب رمز التوثيق
         $authToken = $credentials->fetchAuthToken();
 
-        // التحقق من وجود رمز الوصول
-        if (!isset($authToken['access_token'])) {
-            throw new \Exception('Failed to retrieve access token.');
+        if (! isset($authToken['access_token'])) {
+            throw new \Exception('Failed to retrieve Firebase access token.');
         }
 
-        // إرجاع رمز الوصول فقط
         return $authToken['access_token'];
     }
 
+    protected function resolveCredentialsPath(): string
+    {
+        $configured = config('services.firebase.credentials')
+            ?: env('FIREBASE_CREDENTIALS')
+            ?: env('GOOGLE_APPLICATION_CREDENTIALS');
+
+        if (is_string($configured) && $configured !== '') {
+            // Absolute path or project-relative path.
+            if (str_starts_with($configured, '/')) {
+                return $configured;
+            }
+
+            return base_path($configured);
+        }
+
+        $candidates = [
+            storage_path('firebase/service_account.json'),
+            storage_path('firebase/firebase_credentials.json'),
+        ];
+
+        foreach ($candidates as $candidate) {
+            if (is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return storage_path('firebase/service_account.json');
+    }
 }
