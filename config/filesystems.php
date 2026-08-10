@@ -45,9 +45,10 @@ return [
         ],
         'admin' => [
             'driver' => 'local',
-            'root' => public_path('images'),
-            'url' => env('APP_URL').'/images',
+            'root' => storage_path('app/public/images'),
+            'url' => env('APP_URL').'/storage/images',
             'visibility' => 'public',
+            'throw' => false,
         ],
         'posts' => [
             'driver' => 'local',

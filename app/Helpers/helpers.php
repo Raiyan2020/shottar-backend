@@ -93,6 +93,8 @@ function is_public_image_path(?string $path): bool
 
 /**
  * Build a public URL for a stored image path (dynamic from DB value).
+ * On this server the web root serves files via /storage/... (symlink),
+ * not via /images/... under the app public directory.
  */
 function image_url(?string $path): ?string
 {
@@ -106,28 +108,33 @@ function image_url(?string $path): ?string
         return $path;
     }
 
-    // Legacy files in public/images/...
-    if (is_file(public_path($path))) {
+    // Already a storage-relative URL path
+    if (str_starts_with($path, 'storage/')) {
         return asset($path);
     }
 
-    // Same file saved under public disk (storage/app/public)
+    $basename = basename($path);
+
+    // Preferred: public disk (storage/app/public) — matched by web symlink
     if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
         return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
-    }
-
-    // Basename fallback (handles images//file.jpg leftovers)
-    $basename = basename($path);
-    if ($basename && is_file(public_path('images/' . $basename))) {
-        return asset('images/' . $basename);
     }
 
     if ($basename && \Illuminate\Support\Facades\Storage::disk('public')->exists('images/' . $basename)) {
         return \Illuminate\Support\Facades\Storage::disk('public')->url('images/' . $basename);
     }
 
-    // Dynamic URL from stored relative path (file may be uploaded next)
-    return asset($path);
+    // Legacy fallback: app/public/images (only if file really exists there)
+    if (is_file(public_path($path))) {
+        return asset($path);
+    }
+
+    if ($basename && is_file(public_path('images/' . $basename))) {
+        return asset('images/' . $basename);
+    }
+
+    // Default for newly stored relative paths (images/xxx.jpg)
+    return asset('storage/' . $path);
 }
 
 /**

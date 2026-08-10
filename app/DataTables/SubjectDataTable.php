@@ -149,8 +149,7 @@ class SubjectDataTable extends DataTable
     }
 
     /**
-     * Subject images are stored under public/images via the admin disk,
-     * so the URL must be asset($path) — not asset('storage/'.$path).
+     * Subject images are served via /storage/images/... (public disk symlink).
      */
     public static function imageHtml(?string $image): string
     {
@@ -161,11 +160,10 @@ class SubjectDataTable extends DataTable
             return '';
         }
 
-        // Don't render a broken <img> when the file is missing on disk.
-        $exists = is_file(public_path($path))
-            || is_file(public_path('images/' . basename($path)))
-            || \Illuminate\Support\Facades\Storage::disk('public')->exists($path)
-            || \Illuminate\Support\Facades\Storage::disk('public')->exists('images/' . basename($path));
+        $exists = \Illuminate\Support\Facades\Storage::disk('public')->exists($path)
+            || \Illuminate\Support\Facades\Storage::disk('public')->exists('images/' . basename($path))
+            || is_file(public_path($path))
+            || is_file(public_path('images/' . basename($path)));
 
         if (! $exists && ! preg_match('#^https?://#i', $path)) {
             return '';

@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 trait ImageTrait {
 
@@ -30,7 +31,10 @@ trait ImageTrait {
     public function uploadImage($folder, $image)
     {
         $filename = $image->hashName();
-        $image->storeAs('/', $filename, $folder);
+
+        // Store on the public disk so files are served via the existing
+        // public_html/storage -> storage/app/public symlink.
+        $image->storeAs('images', $filename, 'public');
 
         return normalize_public_path('images/' . $filename);
     }
@@ -41,26 +45,34 @@ trait ImageTrait {
         $path = 'images/' .$folder.'/'. $filename;
         return $path;
     }
-    //videos
+
     public function uploadImageVideo($folder,$image){
         $image->store('/',$folder);
         $filename = $image->hashName();
         $path = 'videos/'. $filename;
         return $path;
     }
+
     public function uploadImageFront($folder,$image){
         $image->store('/',$folder);
         $filename = $image->hashName();
         $path =  $filename;
         return $path;
     }
-    //
-    //deleteImage
+
     public function deleteImage($imagePath)
     {
         $imagePath = normalize_public_path($imagePath);
 
-        if ($imagePath && file_exists(public_path($imagePath))) {
+        if (! $imagePath) {
+            return;
+        }
+
+        if (Storage::disk('public')->exists($imagePath)) {
+            Storage::disk('public')->delete($imagePath);
+        }
+
+        if (is_file(public_path($imagePath))) {
             unlink(public_path($imagePath));
         }
     }
