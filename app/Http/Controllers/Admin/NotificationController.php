@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\DataTables\NotificationDataTable;
 use App\DataTables\NotificationsDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NotificationRequest;
 use App\Models\Notification;
 use App\Models\User;
-use App\Notifications\GeneralNotification;
 use App\Services\FirebaseNotificationService;
-use Illuminate\Support\Arr;
 
 class NotificationController extends Controller
 {
-
     protected $notificationService;
-    function __construct(FirebaseNotificationService $notificationService)
+
+    public function __construct(FirebaseNotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
     }
@@ -24,100 +21,109 @@ class NotificationController extends Controller
     public function index(NotificationsDataTable $dataTable)
     {
         return $dataTable->render('dashboard.admin.notifications.index');
-
     }
+
     public function create()
     {
-        $users = User::get(['id', 'name','phone']);
-//        return $users;
-        return view('dashboard.admin.notifications.create', compact('users'));
+        $users = User::get(['id', 'name', 'phone']);
 
+        return view('dashboard.admin.notifications.create', compact('users'));
     }
+
     public function store(NotificationRequest $request)
     {
         $data = $request->validated();
-
         $sendType = $data['send_type']; // all - one - group
 
-        // ========= SEND TO ALL ===========
         if ($sendType === 'all') {
-
-//            return $data;
-//            $this->notificationService->sendFCMTopic($data);    // اسم التوبك
-
-            $users = User::whereNotNull('device_token')
+            $tokens = User::query()
+                ->whereNotNull('device_token')
+                ->where('device_token', '!=', '')
                 ->pluck('device_token')
-                ->toArray();
-            $this->notificationService->sendNotification($users, $data['title'], $data['body']);
+                ->unique()
+                ->values()
+                ->all();
 
-            // تخزين بدون user_id
+            $this->notificationService->sendNotification(
+                $tokens,
+                $data['title'],
+                $data['body'],
+                ['type' => 'all']
+            );
+
             Notification::create([
                 'user_id' => null,
-                'title'   => $data['title'],
-                'body'    => $data['body'],
-                'type'    => 'all',
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'type' => 'all',
             ]);
 
-            return back()->with("success", __("messages.notification_sent"));
+            return back()->with('success', __('messages.notification_sent'));
         }
 
-
-        // ========= SEND TO ONE USER ===========
         if ($sendType === 'one') {
-
-            $user = User::where('id', $data['user_id'])->first();
-            $device_token = User::where('id', $data['user_id'])
+            $user = User::find($data['user_id'] ?? null);
+            $tokens = User::query()
+                ->where('id', $data['user_id'] ?? null)
                 ->whereNotNull('device_token')
+                ->where('device_token', '!=', '')
                 ->pluck('device_token')
-                ->toArray();
+                ->unique()
+                ->values()
+                ->all();
 
-            if ($user) {
-                // إرسال FCM token واحد
-                $this->notificationService->sendNotification($device_token, $data['title'], $data['body']);
+            if ($tokens !== []) {
+                $this->notificationService->sendNotification(
+                    $tokens,
+                    $data['title'],
+                    $data['body'],
+                    ['type' => 'user']
+                );
             }
 
-            // تخزين
             Notification::create([
                 'user_id' => $user?->id,
-                'title'   => $data['title'],
-                'body'    => $data['body'],
-                'type'    => 'user',
+                'title' => $data['title'],
+                'body' => $data['body'],
+                'type' => 'user',
             ]);
 
-            return back()->with("success", __("messages.notification_sent"));
+            return back()->with('success', __('messages.notification_sent'));
         }
 
-
-        // ========= SEND TO GROUP USERS ===========
         if ($sendType === 'group') {
+            $userIds = $data['users'] ?? [];
 
-            $users = User::whereIn('id', $data['users'])
+            $tokens = User::query()
+                ->whereIn('id', $userIds)
                 ->whereNotNull('device_token')
+                ->where('device_token', '!=', '')
                 ->pluck('device_token')
-                ->toArray();
+                ->unique()
+                ->values()
+                ->all();
 
-            if (!empty($users)) {
-                // إرسال إلى مجموعة tokens مرّة وحدة
-                $this->notificationService->sendNotification($users, $data['title'], $data['body']);
+            if ($tokens !== []) {
+                $this->notificationService->sendNotification(
+                    $tokens,
+                    $data['title'],
+                    $data['body'],
+                    ['type' => 'user']
+                );
             }
 
-            // تخزين الإشعار لكل مستخدم
-            foreach ($data['users'] as $id) {
+            foreach ($userIds as $id) {
                 Notification::create([
                     'user_id' => $id,
-                    'title'   => $data['title'],
-                    'body'    => $data['body'],
-                    'type'    => 'user',
+                    'title' => $data['title'],
+                    'body' => $data['body'],
+                    'type' => 'user',
                 ]);
             }
 
-            return back()->with("success", __("messages.notification_sent"));
+            return back()->with('success', __('messages.notification_sent'));
         }
 
-
-        return back()->withErrors("Invalid Send Type!");
+        return back()->withErrors('Invalid Send Type!');
     }
-
-
-    // إرسال إشعار عبر Firebase
 }
