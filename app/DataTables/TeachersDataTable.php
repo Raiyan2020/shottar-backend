@@ -45,6 +45,12 @@ class TeachersDataTable extends DataTable
             ->addColumn('created_at', function ($teacher) {
                 return $teacher->created_at?->format('Y-m-d H:i');
             })
+            ->addColumn('subjects_count', function ($teacher) {
+                return (int) ($teacher->teaching_subjects_count ?? 0);
+            })
+            ->addColumn('subscribers_count', function ($teacher) {
+                return (int) ($teacher->subscribers_count ?? 0);
+            })
             ->rawColumns(['action', 'image'])
             ->filterColumn('created_at', function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
@@ -63,10 +69,18 @@ class TeachersDataTable extends DataTable
      */
     public function query(Admin $model): QueryBuilder
     {
-        // إحضار Admins الذين لديهم دور teacher فقط
         return $model->newQuery()
-            ->role('teacher')       // يتطلب Spatie\HasRoles على Admin
-            ->select('admins.*');
+            ->role('teacher')
+            ->withCount('teachingSubjects')
+            ->select('admins.*')
+            ->selectSub(function ($query) {
+                $query->from('teacher_subjects')
+                    ->join('order_items', 'order_items.subject_id', '=', 'teacher_subjects.subject_id')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('teacher_subjects.teacher_id', 'admins.id')
+                    ->where('orders.status', 'paid')
+                    ->selectRaw('COUNT(DISTINCT orders.user_id)');
+            }, 'subscribers_count');
     }
 
     /**
@@ -123,6 +137,18 @@ class TeachersDataTable extends DataTable
             Column::make('name')
                 ->title(__('dataTable.name'))
                 ->addClass('text-center align-middle'),
+
+            Column::make('subjects_count')
+                ->title(__('general.subjects_count'))
+                ->addClass('text-center align-middle')
+                ->orderable(false)
+                ->searchable(false),
+
+            Column::make('subscribers_count')
+                ->title(__('general.subscribers_count'))
+                ->addClass('text-center align-middle')
+                ->orderable(false)
+                ->searchable(false),
 
             Column::make('created_at')
                 ->title(__('dataTable.created_at'))

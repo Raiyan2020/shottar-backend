@@ -24,7 +24,7 @@ class NotificationRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'body' => 'required|string',
-            'send_type' => 'required|string',
+            'send_type' => 'required|string|in:all,one,group,unpaid',
             //user_id
             'user_id' => 'nullable|exists:users,id',
             'users' => 'nullable|array',

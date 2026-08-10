@@ -269,6 +269,8 @@ return [
     'Exam created successfully' => 'تم إنشاء الامتحان بنجاح',
     'Exam updated successfully' => 'تم تحديث الامتحان بنجاح',
     'PDF' => 'ملف PDF',
+    'subscribers_count' => 'عدد المشتركين',
+    'subjects_count' => 'عدد المواد',
 
 ];
 

@@ -78,6 +78,9 @@ class SubjectDataTable extends DataTable
                 return "<strong>Grade:</strong> {$grade}<br>"
                     ."<strong>Semester:</strong> {$semesters}";
             })
+            ->addColumn('subscribers_count', function ($subject) {
+                return (int) ($subject->subscribers_count ?? 0);
+            })
             ->rawColumns(['action', 'status', 'image','details'])
 
             ->filterColumn('name_ar', function ($query, $keyword) {
@@ -122,7 +125,16 @@ class SubjectDataTable extends DataTable
 
     public function query(Subject $model)
     {
-        return $model->with(['grade', 'studyType', 'semester', 'semesters'])->newQuery();
+        return $model->newQuery()
+            ->with(['grade', 'studyType', 'semester', 'semesters'])
+            ->select('subjects.*')
+            ->selectSub(function ($query) {
+                $query->from('order_items')
+                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                    ->whereColumn('order_items.subject_id', 'subjects.id')
+                    ->where('orders.status', 'paid')
+                    ->selectRaw('COUNT(DISTINCT orders.user_id)');
+            }, 'subscribers_count');
     }
 
     public function html()
@@ -147,6 +159,7 @@ class SubjectDataTable extends DataTable
 //            Column::make('study_type_id')->title(__('general.Study Type')),
 //            Column::make('semester_id')->title(__('general.Semester')),
             Column::make('price')->title(__('general.Price')),
+            Column::make('subscribers_count')->title(__('general.subscribers_count'))->orderable(true)->searchable(false),
 //            Column::make('duration')->title(__('general.Duration')),
             Column::make('image')->title(__('dataTable.image')),
             Column::make('status')->title(__('dataTable.status')),

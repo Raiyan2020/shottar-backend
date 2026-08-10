@@ -258,6 +258,8 @@
         'Exam created successfully' => 'Exam created successfully',
         'Exam updated successfully' => 'Exam updated successfully',
         'PDF' => 'PDF',
+        'subscribers_count' => 'Subscribers',
+        'subjects_count' => 'Subjects',
         'sections' => 'sections',
         'Duration' => 'Duration',
         'Add Lesson' => 'Add Lesson',

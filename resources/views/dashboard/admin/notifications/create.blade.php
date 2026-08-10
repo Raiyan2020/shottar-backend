@@ -45,10 +45,13 @@
                                         <label class="col-form-label-sm">إرسال إلى</label>
                                         <select id="send_type" name="send_type" class="form-control form-control-sm" required>
                                             <option value="all">جميع المستخدمين</option>
+                                            <option value="unpaid">غير المشتركين (لم يدفعوا) @isset($unpaidCount) — {{ $unpaidCount }}@endisset</option>
                                             <option value="one">مستخدم واحد</option>
                                             <option value="group">مجموعة مستخدمين</option>
-
                                         </select>
+                                        <small class="text-muted d-block mt-1 unpaid-hint d-none">
+                                            سيتم الإرسال فقط للمستخدمين الذين ليس لديهم أي طلب/اشتراك بحالة مدفوع.
+                                        </small>
                                     </div>
                                 </div>
 
@@ -106,13 +109,20 @@
             if (type === 'one') {
                 $('.send_one_box').removeClass('d-none');
                 $('.send_group_box').addClass('d-none');
+                $('.unpaid-hint').addClass('d-none');
             }
             else if (type === 'group') {
                 $('.send_group_box').removeClass('d-none');
                 $('.send_one_box').addClass('d-none');
+                $('.unpaid-hint').addClass('d-none');
+            }
+            else if (type === 'unpaid') {
+                $('.send_one_box, .send_group_box').addClass('d-none');
+                $('.unpaid-hint').removeClass('d-none');
             }
             else {
                 $('.send_one_box, .send_group_box').addClass('d-none');
+                $('.unpaid-hint').addClass('d-none');
             }
         });
     </script>
