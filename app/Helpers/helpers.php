@@ -45,20 +45,30 @@ function getimg($filename)
  */
 function normalize_public_path(?string $path): ?string
 {
-    if ($path === null || $path === '') {
+    if ($path === null) {
         return null;
     }
 
     $path = trim($path);
+    if ($path === '') {
+        return null;
+    }
 
-    // Keep protocol slashes intact for absolute URLs.
+    // Absolute URLs: keep scheme, collapse other duplicate slashes.
     if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $path)) {
         return preg_replace('#(?<!:)/{2,}#', '/', $path);
     }
 
+    $path = str_replace('\\', '/', $path);
     $path = ltrim($path, '/');
 
-    return preg_replace('#/{2,}#', '/', $path) ?: null;
+    // Keep collapsing until stable (covers images////file.jpg).
+    do {
+        $previous = $path;
+        $path = str_replace('//', '/', $path);
+    } while ($path !== $previous);
+
+    return $path !== '' ? $path : null;
 }
 
 function is_public_image_path(?string $path): bool
@@ -86,11 +96,38 @@ function is_public_image_path(?string $path): bool
  */
 function image_url(?string $path): ?string
 {
+    $path = normalize_public_path($path);
+
     if (! is_public_image_path($path)) {
         return null;
     }
 
-    return asset(normalize_public_path($path));
+    if (preg_match('#^https?://#i', $path)) {
+        return $path;
+    }
+
+    // Legacy files in public/images/...
+    if (is_file(public_path($path))) {
+        return asset($path);
+    }
+
+    // Same file saved under public disk (storage/app/public)
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($path);
+    }
+
+    // Basename fallback (handles images//file.jpg leftovers)
+    $basename = basename($path);
+    if ($basename && is_file(public_path('images/' . $basename))) {
+        return asset('images/' . $basename);
+    }
+
+    if ($basename && \Illuminate\Support\Facades\Storage::disk('public')->exists('images/' . $basename)) {
+        return \Illuminate\Support\Facades\Storage::disk('public')->url('images/' . $basename);
+    }
+
+    // Dynamic URL from stored relative path (file may be uploaded next)
+    return asset($path);
 }
 
 /**

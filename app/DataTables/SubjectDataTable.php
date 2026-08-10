@@ -154,9 +154,20 @@ class SubjectDataTable extends DataTable
      */
     public static function imageHtml(?string $image): string
     {
-        $url = image_url($image);
+        $path = normalize_public_path($image);
+        $url = image_url($path);
 
-        if (! $url) {
+        if (! $url || ! $path) {
+            return '';
+        }
+
+        // Don't render a broken <img> when the file is missing on disk.
+        $exists = is_file(public_path($path))
+            || is_file(public_path('images/' . basename($path)))
+            || \Illuminate\Support\Facades\Storage::disk('public')->exists($path)
+            || \Illuminate\Support\Facades\Storage::disk('public')->exists('images/' . basename($path));
+
+        if (! $exists && ! preg_match('#^https?://#i', $path)) {
             return '';
         }
 

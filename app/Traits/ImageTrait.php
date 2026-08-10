@@ -27,12 +27,14 @@ trait ImageTrait {
             $this->attributes['image'] = $value;
     }
 
-    public function uploadImage($folder,$image){
-        $image->store('/',$folder);
+    public function uploadImage($folder, $image)
+    {
         $filename = $image->hashName();
-        $path = 'images/' . $filename;
-        return $path;
+        $image->storeAs('/', $filename, $folder);
+
+        return normalize_public_path('images/' . $filename);
     }
+
     public function uploadImagePost($folder,$image){
         $image->store('/',$folder);
         $filename = $image->hashName();

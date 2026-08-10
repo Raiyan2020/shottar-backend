@@ -22,6 +22,16 @@ class Subject extends Model
         'status',
     ];
 
+    public function getImageAttribute($value): ?string
+    {
+        return normalize_public_path($value);
+    }
+
+    public function setImageAttribute($value): void
+    {
+        $this->attributes['image'] = normalize_public_path($value);
+    }
+
     // العلاقات (عشان نقدر نجيب المرحلة والفصل ونوع الدراسة)
     public function grade()
     {

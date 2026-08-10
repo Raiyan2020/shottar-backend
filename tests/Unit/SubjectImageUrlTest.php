@@ -11,25 +11,57 @@ use Tests\TestCase;
 
 class SubjectImageUrlTest extends TestCase
 {
+    private string $tempImagePath;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (! is_dir(public_path('images'))) {
+            mkdir(public_path('images'), 0755, true);
+        }
+
+        $this->tempImagePath = 'images/test-subject-cover.jpg';
+        file_put_contents(public_path($this->tempImagePath), 'fake-image');
+    }
+
+    protected function tearDown(): void
+    {
+        if (is_file(public_path($this->tempImagePath))) {
+            unlink(public_path($this->tempImagePath));
+        }
+
+        parent::tearDown();
+    }
+
     public function test_datatable_image_html_uses_public_images_asset_without_storage_prefix(): void
     {
-        $path = 'images/subject-cover.jpg';
-        $html = SubjectDataTable::imageHtml($path);
+        $html = SubjectDataTable::imageHtml($this->tempImagePath);
 
-        $this->assertStringContainsString('src="' . asset($path) . '"', $html);
-        $this->assertStringContainsString('/images/subject-cover.jpg', $html);
+        $this->assertStringContainsString('src="' . asset($this->tempImagePath) . '"', $html);
+        $this->assertStringContainsString('/images/test-subject-cover.jpg', $html);
         $this->assertStringNotContainsString('/storage/images/', $html);
+        $this->assertStringNotContainsString('images//', $html);
+    }
+
+    public function test_datatable_image_html_normalizes_double_slash_paths(): void
+    {
+        $html = SubjectDataTable::imageHtml('images//' . basename($this->tempImagePath));
+
+        $this->assertStringContainsString('/images/test-subject-cover.jpg', $html);
+        $this->assertStringNotContainsString('images//', $html);
     }
 
     public function test_datatable_image_html_is_empty_when_image_is_missing(): void
     {
         $this->assertSame('', SubjectDataTable::imageHtml(null));
         $this->assertSame('', SubjectDataTable::imageHtml(''));
+        $this->assertSame('', SubjectDataTable::imageHtml('images/does-not-exist.jpg'));
     }
 
     public function test_subject_resource_returns_asset_url_for_image(): void
     {
-        $path = 'images/math.jpg';
+        $path = 'images//math.jpg';
 
         $subject = new Subject([
             'name_ar' => 'رياضيات',
@@ -43,19 +75,17 @@ class SubjectImageUrlTest extends TestCase
 
         $payload = (new SubjectResource($subject))->toArray(Request::create('/'));
 
-        $this->assertSame(asset($path), $payload['image']);
+        $this->assertSame(asset('images/math.jpg'), $payload['image']);
         $this->assertStringContainsString('/images/math.jpg', $payload['image']);
-        $this->assertStringNotContainsString('/storage/', $payload['image']);
+        $this->assertStringNotContainsString('images//', $payload['image']);
     }
 
     public function test_edit_view_uses_same_asset_path_as_datatable(): void
     {
-        $path = 'images/edit-preview.jpg';
-        $editSrc = asset($path);
-        $datatableHtml = SubjectDataTable::imageHtml($path);
+        $editSrc = image_url($this->tempImagePath);
+        $datatableHtml = SubjectDataTable::imageHtml($this->tempImagePath);
 
-        $this->assertStringContainsString('/images/edit-preview.jpg', $editSrc);
+        $this->assertSame(asset($this->tempImagePath), $editSrc);
         $this->assertStringContainsString('src="' . $editSrc . '"', $datatableHtml);
-        $this->assertStringNotContainsString('/storage/', $datatableHtml);
     }
 }

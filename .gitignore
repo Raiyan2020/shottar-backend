@@ -38,7 +38,8 @@ error_log
 /public/hot
 
 # User-uploaded media and non-source files in the web root
-/public/images/
+/public/images/*
+!/public/images/.gitignore
 /public/php.ini
 /public/*.php
 !/public/index.php
