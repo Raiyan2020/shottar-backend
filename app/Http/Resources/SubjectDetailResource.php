@@ -54,7 +54,12 @@ class SubjectDetailResource extends JsonResource
                 $lang
             ) ?? 0,
             'price' => number_format($this->price, 3),
+            'ios_product_id' => $this->ios_product_id,
             'is_purchased' => $isPurchased,
+            'grade' => $this->whenLoaded('grade', fn () => new GradeResource(
+                $this->grade,
+                $this->semester_id ? (int) $this->semester_id : null
+            )),
             'sections' => $sections,
             'exams' => ExamResource::collection(
                 $this->relationLoaded('exams')

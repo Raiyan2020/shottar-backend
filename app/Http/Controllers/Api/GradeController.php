@@ -12,7 +12,8 @@ class GradeController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $grades = Grade::where('status', 1)
+        $grades = Grade::with('iosBundleProducts')
+            ->where('status', 1)
             ->orderBy('order_by', 'asc')
             ->get();
 

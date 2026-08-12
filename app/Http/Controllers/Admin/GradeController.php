@@ -7,6 +7,9 @@ use App\Http\Controllers\Controller;
 use \App\Traits\HasStatusToggle;
 use App\Http\Requests\GradeRequest;
 use App\Models\Grade;
+use App\Models\IosBundleProduct;
+use App\Models\Semester;
+use App\Rules\IosProductIdRule;
 use Illuminate\Http\Request;
 
 class GradeController extends Controller
@@ -19,29 +22,49 @@ class GradeController extends Controller
 
     public function create()
     {
-        return view('dashboard.admin.grades.create');
+        $semesters = Semester::where('status', 1)->get();
+
+        return view('dashboard.admin.grades.create', compact('semesters'));
     }
 
     public function store(GradeRequest $request)
     {
         $data = $request->validated();
+        $iosProductIds = $data['ios_product_ids'] ?? [];
+        unset($data['ios_product_ids']);
 
         $lastOrder = Grade::max('order_by') ?? 0;
         $data['order_by'] = $lastOrder + 1;
 
-        Grade::create($data);
+        $grade = Grade::create($data);
+        $this->syncIosBundles($grade, $iosProductIds);
 
         return redirect()->route('admin.grades.index')->with('success', 'Grade created successfully');
     }
 
     public function edit(Grade $grade)
     {
-        return view('dashboard.admin.grades.edit', compact('grade'));
+        $grade->load('iosBundleProducts');
+        $semesters = Semester::where('status', 1)->get();
+        $lockedIosProductIds = $grade->iosBundleProducts
+            ->pluck('ios_product_id')
+            ->filter()
+            ->filter(fn ($id) => IosProductIdRule::isLocked($id))
+            ->values()
+            ->all();
+
+        return view('dashboard.admin.grades.edit', compact('grade', 'semesters', 'lockedIosProductIds'));
     }
 
     public function update(GradeRequest $request, Grade $grade)
     {
-        $grade->update($request->validated());
+        $data = $request->validated();
+        $iosProductIds = $data['ios_product_ids'] ?? [];
+        unset($data['ios_product_ids']);
+
+        $grade->update($data);
+        $this->syncIosBundles($grade, $iosProductIds);
+
         return redirect()->route('admin.grades.index')->with('success', 'Grade updated successfully');
     }
 
@@ -62,5 +85,23 @@ class GradeController extends Controller
         }
 
         return response()->json(['status' => true]);
+    }
+
+    protected function syncIosBundles(Grade $grade, array $ids): void
+    {
+        foreach ($ids as $semesterId => $productId) {
+            $productId = trim((string) $productId);
+            if ($productId === '') {
+                IosBundleProduct::where('grade_id', $grade->id)
+                    ->where('semester_id', $semesterId)
+                    ->delete();
+                continue;
+            }
+
+            IosBundleProduct::updateOrCreate(
+                ['grade_id' => $grade->id, 'semester_id' => $semesterId],
+                ['ios_product_id' => $productId]
+            );
+        }
     }
 }

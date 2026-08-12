@@ -10,6 +10,7 @@ use App\Models\StudyType;
 use App\Traits\HasStatusToggle;
 use App\Http\Requests\SubjectRequest;
 use App\Models\Subject;
+use App\Rules\IosProductIdRule;
 use App\Traits\ImageTrait;
 
 class SubjectController extends Controller
@@ -60,7 +61,9 @@ class SubjectController extends Controller
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
 
-        return view('dashboard.admin.subjects.edit', compact('subject', 'grades', 'studyTypes', 'semesters'));
+        $iosProductLocked = IosProductIdRule::isLocked($subject->ios_product_id);
+
+        return view('dashboard.admin.subjects.edit', compact('subject', 'grades', 'studyTypes', 'semesters', 'iosProductLocked'));
     }
 
     public function update(SubjectRequest $request, Subject $subject)

@@ -7,6 +7,11 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class GradeResource extends JsonResource
 {
+    public function __construct($resource, protected ?int $semesterId = null)
+    {
+        parent::__construct($resource);
+    }
+
     /**
      * Transform the resource into an array.
      *
@@ -15,6 +20,10 @@ class GradeResource extends JsonResource
     public function toArray(Request $request): array
     {
         $lang = $request->header('lang') === 'ar' ? 'ar' : 'en';
+        $semesterId = $this->semesterId
+            ?? ($request->input('semester_id') ? (int) $request->input('semester_id') : null)
+            ?? (auth()->user()?->semester_id ? (int) auth()->user()->semester_id : null);
+
         return [
 
             'id' => $this->id,
@@ -29,6 +38,7 @@ class GradeResource extends JsonResource
             'discount_6_materials' => $this->discount_6_materials,
             'discount_7_materials' => $this->discount_7_materials,
             'discount_all_materials' => $this->discount_all_materials,
+            'ios_product_id' => $this->iosProductIdFor($semesterId),
 
         ];
     }

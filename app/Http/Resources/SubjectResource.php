@@ -18,11 +18,16 @@ class SubjectResource extends JsonResource
             ->where('type', 'lesson')
             ->sum('duration');
         $progressPercent = $user ? $this->progressPercentForUser($user->id) : 0.0;
+        $semesterId = $this->semester_id
+            ?? $request->input('semester_id')
+            ?? auth()->user()?->semester_id;
+
         return [
             'id'    => $this->id,
             'name'  => $lang === 'ar' ? $this->name_ar : $this->name_en,
             'image' => image_url($this->image),
             'price' => $this->price,
+            'ios_product_id' => $this->ios_product_id,
             'duration' => $this->duration,
             'total_lessons' => $this->courseMaterials->where('status', 1)->where('type','lesson')->count(),
             'total_duration' => DurationFormatter($totalDurationSeconds,$lang),
@@ -32,7 +37,10 @@ class SubjectResource extends JsonResource
             'teacher_name' => $this->relationLoaded('teachers')
                 ? optional($this->teachers->first())->name
                 : optional($this->teachers()->first())->name,
-            'grade' => new GradeResource($this->whenLoaded('grade')),
+            'grade' => $this->whenLoaded('grade', fn () => new GradeResource(
+                $this->grade,
+                $semesterId ? (int) $semesterId : null
+            )),
             'semester' => new SemesterResource($this->whenLoaded('semester')),
 
         ];

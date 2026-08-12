@@ -9,6 +9,16 @@ class PaymentMethodSeeder extends Seeder
 {
     public function run()
     {
+        PaymentMethod::firstOrCreate(
+            ['slug' => 'apple_iap'],
+            [
+                'name_ar' => 'شراء داخل التطبيق (آبل)',
+                'name_en' => 'Apple In-App Purchase',
+                'image' => null,
+                'status' => true,
+            ]
+        );
+
        //apple pay
         PaymentMethod::create([
             'name_ar' => 'دفع آبل',

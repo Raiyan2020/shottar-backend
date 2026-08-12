@@ -19,6 +19,7 @@ class PaymentMethod extends Model
 
     const ALL_METHODS = [
         'knet' => 1,
+        'apple_iap' => 'apple_iap',
         'apple-pay' => 6,
         'Google Pay' => 32,
         'Visa' => 2,

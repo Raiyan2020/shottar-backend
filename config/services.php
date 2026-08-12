@@ -53,4 +53,13 @@ return [
         'client_secret' => env('VIMEO_CLIENT_SECRET'),
         'access_token' => env('VIMEO_ACCESS_TOKEN'),
     ],
+
+    'apple' => [
+        'bundle_id' => env('APPLE_BUNDLE_ID', 'com.raiyansoft.shottar'),
+        'issuer_id' => env('APPLE_ISSUER_ID'),
+        'key_id' => env('APPLE_KEY_ID'),
+        'private_key' => env('APPLE_PRIVATE_KEY'),
+        'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
+        'shared_secret' => env('APPLE_SHARED_SECRET'),
+    ],
 ];

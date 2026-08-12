@@ -4,6 +4,7 @@
 !.env.example
 *.pem
 *.key
+*.p8
 *.crt
 *.p12
 *firebase-adminsdk*.json

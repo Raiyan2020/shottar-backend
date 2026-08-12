@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\MaterialViewController;
 use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\DailyChallengeController;
+use App\Http\Controllers\Api\AppleIapController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +82,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //order
     Route::post('order', [OrderController::class, 'store']);
+    Route::post('order/apple/verify', [AppleIapController::class, 'verify']);
     //coupon check
     Route::post('coupon/check', [OrderController::class, 'checkCoupon']);
 
@@ -109,3 +111,4 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 Route::get('callback/success', [OrderController::class, 'paymentSuccess'])->name('ordersSuccess');
 Route::get('callback/error', [OrderController::class, 'paymentError'])->name('ordersError');
+Route::post('apple/notifications', [AppleIapController::class, 'notifications']);

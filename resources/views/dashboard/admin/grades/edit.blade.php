@@ -187,6 +187,43 @@
                                     </div>
                                 </div>
 
+                                @isset($semesters)
+                                    @foreach($semesters as $semester)
+                                        @php
+                                            $current = optional($grade->iosBundleProducts->firstWhere('semester_id', $semester->id))->ios_product_id;
+                                            $isLocked = $current && in_array($current, $lockedIosProductIds ?? [], true);
+                                        @endphp
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label for="ios_product_id_{{ $semester->id }}">
+                                                    {{ __('general.ios_bundle_product_id') }} — {{ $semester->name_ar }}
+                                                </label>
+                                                <input type="text"
+                                                       name="ios_product_ids[{{ $semester->id }}]"
+                                                       id="ios_product_id_{{ $semester->id }}"
+                                                       value="{{ old('ios_product_ids.'.$semester->id, $current) }}"
+                                                       class="form-control @error('ios_product_ids.'.$semester->id) is-invalid @enderror"
+                                                       placeholder="com.raiyansoft.shottar.bundle.g{{ $grade->id }}.s{{ $semester->id }}"
+                                                       dir="ltr"
+                                                       maxlength="100"
+                                                       autocomplete="off"
+                                                       spellcheck="false"
+                                                       pattern="[A-Za-z0-9][A-Za-z0-9_-]*(\.[A-Za-z0-9][A-Za-z0-9_-]*)+"
+                                                       title="{{ __('general.ios_product_id_invalid') }}"
+                                                       @if($isLocked) readonly @endif>
+                                                @if($isLocked)
+                                                    <small class="text-warning d-block">{{ __('general.ios_product_id_locked_hint') }}</small>
+                                                @else
+                                                    <small class="text-muted d-block">{{ __('general.ios_bundle_product_id_hint') }}</small>
+                                                @endif
+                                                @error('ios_product_ids.'.$semester->id)
+                                                <span class="text-danger">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endisset
+
                                 <!-- Submit Button -->
                                 <div class="col-12">
                                     <div class="form-group">

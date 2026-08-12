@@ -359,6 +359,16 @@
         'A daily challenge already exists for this grade, semester and date.' => 'A daily challenge already exists for this grade, semester and date.',
         'Please select the correct answer.' => 'Please select the correct answer.',
         'You must provide exactly 4 options.' => 'You must provide exactly 4 options.',
+        'ios_product_id' => 'iOS Product ID',
+        'ios_product_id_hint' => 'Must match App Store Connect exactly (e.g. com.raiyansoft.shottar.subject.42). Letters, numbers, dots, hyphens and underscores only. Leave empty if not sold on iOS. Never change it after the first sale.',
+        'ios_bundle_product_id' => 'iOS bundle Product ID',
+        'ios_bundle_product_id_hint' => 'Full package for this grade × semester (e.g. com.raiyansoft.shottar.bundle.g3.s1). Must be unique and never change after the first sale.',
+        'ios_product_id_invalid' => 'Invalid App Store product ID. Use reverse-DNS format without spaces, e.g. com.raiyansoft.shottar.subject.42',
+        'ios_product_id_max' => 'Product ID cannot exceed 100 characters.',
+        'ios_product_id_taken' => 'This product ID is already used by another subject or bundle. StoreKit IDs must be unique.',
+        'ios_product_id_duplicate_in_form' => 'The same product ID cannot be used for more than one semester.',
+        'ios_product_id_locked' => 'This product ID cannot be changed or removed because Apple purchases already exist for it.',
+        'ios_product_id_locked_hint' => 'Locked after the first Apple purchase. Changing it would revoke access for students who already paid.',
 
 
 

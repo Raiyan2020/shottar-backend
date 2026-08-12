@@ -17,6 +17,7 @@ class Subject extends Model
         'study_type_id',
         'semester_id',
         'price',
+        'ios_product_id',
         'image',
         'duration',
         'status',

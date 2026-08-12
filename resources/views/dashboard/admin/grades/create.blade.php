@@ -226,6 +226,36 @@
 
 
 
+                                @isset($semesters)
+                                    @foreach($semesters as $semester)
+                                        <div class="col-md-6 col-12">
+                                            <div class="form-group">
+                                                <label class="col-form-label-sm" for="ios_product_id_{{ $semester->id }}">
+                                                    {{ __('general.ios_bundle_product_id') }} — {{ $semester->name_ar }}
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="ios_product_ids[{{ $semester->id }}]"
+                                                    id="ios_product_id_{{ $semester->id }}"
+                                                    value="{{ old('ios_product_ids.'.$semester->id) }}"
+                                                    class="form-control form-control-sm @error('ios_product_ids.'.$semester->id) is-invalid @enderror"
+                                                    placeholder="com.raiyansoft.shottar.bundle.gX.s{{ $semester->id }}"
+                                                    dir="ltr"
+                                                    maxlength="100"
+                                                    autocomplete="off"
+                                                    spellcheck="false"
+                                                    pattern="[A-Za-z0-9][A-Za-z0-9_-]*(\.[A-Za-z0-9][A-Za-z0-9_-]*)+"
+                                                    title="{{ __('general.ios_product_id_invalid') }}"
+                                                />
+                                                <small class="text-muted d-block">{{ __('general.ios_bundle_product_id_hint') }}</small>
+                                                @error('ios_product_ids.'.$semester->id)
+                                                <span class="col-form-label-sm text-danger">{{ $message }}</span>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                @endisset
+
                                 <!-- Submit Button -->
                                 <div class="col-12">
                                     <div class="form-group">

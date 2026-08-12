@@ -27,6 +27,24 @@ class Grade extends Model
 
     ];
 
+    public function iosBundleProducts()
+    {
+        return $this->hasMany(IosBundleProduct::class);
+    }
+
+    public function iosProductIdFor(?int $semesterId): ?string
+    {
+        if (! $semesterId) {
+            return null;
+        }
+
+        if ($this->relationLoaded('iosBundleProducts')) {
+            return optional($this->iosBundleProducts->firstWhere('semester_id', $semesterId))->ios_product_id;
+        }
+
+        return $this->iosBundleProducts()->where('semester_id', $semesterId)->value('ios_product_id');
+    }
+
     public function getDiscount($materialsCount)
     {
         return match ($materialsCount) {
