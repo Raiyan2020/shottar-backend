@@ -19,6 +19,15 @@ class AuthController extends Controller
     use Functions;
     public function login(LoginRequest $request)
     {
+        if (! is_login_phone_allowed($request->phone)) {
+            $lang = $request->header('lang') === 'ar';
+            $errMsg = $lang
+                ? 'تسجيل الدخول متاح حاليًا للرقم التجريبي فقط'
+                : 'Login is temporarily limited to the test phone number only';
+
+            return sendError($errMsg);
+        }
+
         $user = User::Where('phone', $request->phone)->first();
 
         if (!$user) {

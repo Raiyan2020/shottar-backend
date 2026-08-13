@@ -67,4 +67,9 @@ return [
         // Set OTP_FIXED_CODE=1234 for testing; leave empty for random codes in production.
         'fixed_code' => env('OTP_FIXED_CODE'),
     ],
+
+    'auth' => [
+        // e.g. +96555558718 — only this phone can login; empty = all users allowed.
+        'login_allowed_phone' => env('LOGIN_ALLOWED_PHONE'),
+    ],
 ];
