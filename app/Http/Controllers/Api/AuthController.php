@@ -25,11 +25,7 @@ class AuthController extends Controller
             $errMsg = $request->header('lang') == 'ar' ? "الرقم غير مسجل" : 'This phone number is not registered';
             return sendError($errMsg);
         }
-        $phone = $user->phone;
-        $activation_code = rand(1000, 9999);
-        if ($phone === '+96555558718') {
-            $activation_code = 1234;
-        }
+        $activation_code = generate_activation_code();
 
         $user->update([
             'device_type' => $request->device_type,
@@ -69,10 +65,7 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['password'] = $data['phone'];
         $data['status'] = '2';
-        $data['activation_code'] = rand(1000, 9999); // توليد كود تفعيل عشوائي
-        if ($data['phone'] === '+96555558718') {
-            $data['activation_code'] = '1234'; // توليد كود تفعيل عشوائي
-        }
+        $data['activation_code'] = generate_activation_code();
 
         $user = User::create($data);
 

@@ -35,6 +35,17 @@ function sendResponse($result, $message = null)
     return response()->json($response, $code);
 }
 
+function generate_activation_code(): int
+{
+    $fixed = config('services.otp.fixed_code');
+
+    if ($fixed !== null && $fixed !== '') {
+        return (int) $fixed;
+    }
+
+    return random_int(1000, 9999);
+}
+
 function getimg($filename)
 {
     return image_url($filename);

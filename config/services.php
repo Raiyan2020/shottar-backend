@@ -62,4 +62,9 @@ return [
         'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
         'shared_secret' => env('APPLE_SHARED_SECRET'),
     ],
+
+    'otp' => [
+        // Set OTP_FIXED_CODE=1234 for testing; leave empty for random codes in production.
+        'fixed_code' => env('OTP_FIXED_CODE'),
+    ],
 ];
