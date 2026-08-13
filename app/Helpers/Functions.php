@@ -131,29 +131,26 @@ trait Functions
             return $phone;
         }
 
-        // شيل كل شيء غير أرقام
-        $digits = preg_replace('/\D+/', '', $phone);
+        // زي مشروع Raod: أرقام فقط + @c.us (بدون قصّ صفر عشوائي)
+        $digits = preg_replace('/\D+/', '', $phone) ?: '';
 
-        // لو بدأ بـ 00 (مثل 00970...) احذفها
+        // 00965... → 965...
         if (str_starts_with($digits, '00')) {
             $digits = substr($digits, 2);
         }
 
-        if (str_starts_with($digits, '0')) {
-            $digits =  substr($digits, 1);
+        // رقم محلي مصري 01xxxxxxxxx → 201xxxxxxxxx (WhatsApp لازم كود الدولة)
+        if (preg_match('/^01[0125]\d{8}$/', $digits)) {
+            $digits = '20' . substr($digits, 1);
         }
 
-        // الآن صار E.164 بدون +
         return $digits . '@c.us';
     }
 
     public function sendVerificationCode(string $phone, int $code,$update_phone = false): \Illuminate\Http\Client\Response
     {
-        if ($update_phone){
-            $msg = 'Your Update Phone code is ' . $code . ' Welcome to Shottar 👩🏻‍🏫';
-        }else{
-        $msg = 'رمز التفعيل الخاص بك هو ' . $code . ' أهلاً بك في تطبيق شطار 👩🏻‍🏫';
-        }
+        $msg = $code . ' is your Shottar Application OTP';
+
         return $this->whatsapp($phone, $msg);
     }
 
