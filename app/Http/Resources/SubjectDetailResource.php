@@ -47,7 +47,8 @@ class SubjectDetailResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $lang === 'ar' ? $this->name_ar : $this->name_en,
-            'image' => image_url($this->image),
+            // صورة المادة الأساسية (العامة)، مش صورة نسخة الفصل/السنة
+            'image' => image_url(optional($this->coreSubject)->image ?? $this->image),
             'total_lessons' => $courseMaterials->where('type', 'lesson')->count(),
             'total_duration' => DurationFormatter(
                 $courseMaterials->where('type', 'lesson')->sum('duration'),
