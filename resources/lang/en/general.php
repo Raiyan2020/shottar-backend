@@ -369,6 +369,13 @@
         'ios_product_id_duplicate_in_form' => 'The same product ID cannot be used for more than one semester.',
         'ios_product_id_locked' => 'This product ID cannot be changed or removed because Apple purchases already exist for it.',
         'ios_product_id_locked_hint' => 'Locked after the first Apple purchase. Changing it would revoke access for students who already paid.',
+        'Core Subjects' => 'Core Subjects',
+        'Add Core Subject' => 'Add Core Subject',
+        'Edit Core Subject' => 'Edit Core Subject',
+        'Core subject created successfully' => 'Core subject created successfully',
+        'Core subject updated successfully' => 'Core subject updated successfully',
+        'Select Core Subject' => 'Select Core Subject',
+        'Core Subject' => 'Core Subject',
 
 
 

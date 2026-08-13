@@ -57,18 +57,15 @@ class SubjectDataTable extends DataTable
                     'url' => route($this->statusRoute, $model->id),
                 ]);
             })
-            ->editColumn('image', function ($subject) {
-                return self::imageHtml($subject->image);
+            ->editColumn('name_ar', function ($subject) {
+                $image = $subject->coreSubject?->image ?: $subject->image;
+                $html = self::imageHtml($image);
+                if ($html !== '') {
+                    return $html;
+                }
+
+                return e($subject->name_ar ?: '-');
             })
-//            ->editColumn('grade_id', function ($subject) {
-//                return $subject->grade ? $subject->grade->name_ar : '-';
-//            })
-//            ->editColumn('study_type_id', function ($subject) {
-//                return $subject->studyType ? $subject->studyType->name_ar : '-';
-//            })
-//            ->editColumn('semester_id', function ($subject) {
-//                return $subject->semester ? $subject->semester->name_ar : '-';
-//            })
             ->addColumn('details', function ($subject) {
                 $grade = $subject->grade ? $subject->grade->name_en : '-';
                 $semesters = $subject->semesters->isNotEmpty()
@@ -81,10 +78,17 @@ class SubjectDataTable extends DataTable
             ->addColumn('subscribers_count', function ($subject) {
                 return (int) ($subject->subscribers_count ?? 0);
             })
-            ->rawColumns(['action', 'status', 'image','details'])
+            ->rawColumns(['action', 'status', 'name_ar', 'details'])
 
             ->filterColumn('name_ar', function ($query, $keyword) {
-                $query->where('name_ar', 'like', "%{$keyword}%");
+                $query->where(function ($q) use ($keyword) {
+                    $q->where('name_ar', 'like', "%{$keyword}%")
+                        ->orWhere('name_en', 'like', "%{$keyword}%")
+                        ->orWhereHas('coreSubject', function ($cq) use ($keyword) {
+                            $cq->where('name_ar', 'like', "%{$keyword}%")
+                                ->orWhere('name_en', 'like', "%{$keyword}%");
+                        });
+                });
             })
             ->filterColumn('name_en', function ($query, $keyword) {
                 $query->where('name_en', 'like', "%{$keyword}%");
@@ -126,7 +130,7 @@ class SubjectDataTable extends DataTable
     public function query(Subject $model)
     {
         return $model->newQuery()
-            ->with(['grade', 'studyType', 'semester', 'semesters'])
+            ->with(['grade', 'studyType', 'semester', 'semesters', 'coreSubject'])
             ->select('subjects.*')
             ->selectSub(function ($query) {
                 $query->from('order_items')
@@ -152,16 +156,11 @@ class SubjectDataTable extends DataTable
     {
         return [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.name_ar')),
+            Column::make('name_ar')->title(__('dataTable.image'))->orderable(false),
             Column::make('name_en')->title(__('dataTable.name_en')),
             Column::computed('details')->title(__('general.Details'))->exportable(false)->printable(false),
-//            Column::make('grade_id')->title(__('general.Grade')),
-//            Column::make('study_type_id')->title(__('general.Study Type')),
-//            Column::make('semester_id')->title(__('general.Semester')),
             Column::make('price')->title(__('general.Price')),
             Column::make('subscribers_count')->title(__('general.subscribers_count'))->orderable(true)->searchable(false),
-//            Column::make('duration')->title(__('general.Duration')),
-            Column::make('image')->title(__('dataTable.image')),
             Column::make('status')->title(__('dataTable.status')),
             Column::computed('action')->title(__('dataTable.action'))->exportable(false)->printable(false),
         ];

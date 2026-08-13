@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\DataTables\SubjectDataTable;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SubjectRequest;
+use App\Models\CoreSubject;
 use App\Models\Grade;
 use App\Models\Semester;
 use App\Models\StudyType;
-use App\Traits\HasStatusToggle;
-use App\Http\Requests\SubjectRequest;
 use App\Models\Subject;
 use App\Rules\IosProductIdRule;
+use App\Traits\HasStatusToggle;
 use App\Traits\ImageTrait;
 
 class SubjectController extends Controller
@@ -27,26 +28,24 @@ class SubjectController extends Controller
         $grades = Grade::where('status', 1)->get();
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
+        $coreSubjects = CoreSubject::where('status', 1)->orderBy('name_ar')->get();
 
         return view('dashboard.admin.subjects.create', compact(
             'grades',
             'studyTypes',
-            'semesters'
+            'semesters',
+            'coreSubjects'
         ));
     }
 
     public function store(SubjectRequest $request)
     {
         $data = $request->validated();
-        unset($data['image']);
-
         $semesterIds = $data['semester_ids'] ?? [];
         unset($data['semester_ids']);
         $data['semester_id'] = $semesterIds[0] ?? null;
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $this->uploadImage('public', $request->file('image'));
-        }
+        $data = array_merge($data, $this->attributesFromCoreSubject((int) $data['core_subject_id']));
 
         $subject = Subject::create($data);
         $subject->semesters()->sync($semesterIds);
@@ -60,27 +59,29 @@ class SubjectController extends Controller
         $grades = Grade::where('status', 1)->get();
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
-
+        $coreSubjects = CoreSubject::where('status', 1)->orderBy('name_ar')->get();
         $iosProductLocked = IosProductIdRule::isLocked($subject->ios_product_id);
 
-        return view('dashboard.admin.subjects.edit', compact('subject', 'grades', 'studyTypes', 'semesters', 'iosProductLocked'));
+        return view('dashboard.admin.subjects.edit', compact(
+            'subject',
+            'grades',
+            'studyTypes',
+            'semesters',
+            'coreSubjects',
+            'iosProductLocked'
+        ));
     }
 
     public function update(SubjectRequest $request, Subject $subject)
     {
         $data = $request->validated();
-        unset($data['image']);
-
         $semesterIds = $data['semester_ids'] ?? [];
         unset($data['semester_ids']);
         if (! empty($semesterIds)) {
             $data['semester_id'] = $semesterIds[0];
         }
 
-        if ($request->hasFile('image')) {
-            $this->deleteImage($subject->getRawOriginal('image') ?? $subject->image);
-            $data['image'] = $this->uploadImage('public', $request->file('image'));
-        }
+        $data = array_merge($data, $this->attributesFromCoreSubject((int) $data['core_subject_id']));
 
         $subject->update($data);
         $subject->semesters()->sync($semesterIds);
@@ -101,5 +102,19 @@ class SubjectController extends Controller
     public function toggleStatus($id)
     {
         return $this->toggleStatu(Subject::class, $id);
+    }
+
+    /**
+     * نسخ الاسم والصورة من المادة الأساسية للحفاظ على توافق الـ API.
+     */
+    protected function attributesFromCoreSubject(int $coreSubjectId): array
+    {
+        $core = CoreSubject::findOrFail($coreSubjectId);
+
+        return [
+            'name_ar' => $core->name_ar,
+            'name_en' => $core->name_en ?: $core->name_ar,
+            'image' => $core->getRawOriginal('image') ?? $core->image,
+        ];
     }
 }

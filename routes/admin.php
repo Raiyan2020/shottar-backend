@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\ContactUsController;
+use App\Http\Controllers\Admin\CoreSubjectController;
 use App\Http\Controllers\Admin\CourseMaterialController;
 use App\Http\Controllers\Admin\DailyChallengeController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -56,6 +57,10 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
             //semesters
             Route::resource('semesters', SemesterController::class);
             Route::post('semesters/toggle-status/{id}', [SemesterController::class, 'toggleStatus'])->name('semesters.toggleStatus');
+
+            // core subjects (basic catalog)
+            Route::post('core-subjects/toggle-status/{id}', [CoreSubjectController::class, 'toggleStatus'])->name('core-subjects.toggleStatus');
+            Route::resource('core-subjects', CoreSubjectController::class)->except(['show']);
 
             //
             Route::resource('subjects', SubjectController::class);

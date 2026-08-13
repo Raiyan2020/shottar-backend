@@ -7,31 +7,20 @@ use App\Rules\IosProductIdRule;
 
 class SubjectRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
-        $isUpdate = in_array($this->method(), ['PUT', 'PATCH']);
         return [
-            'name_ar' => 'required|string|max:255',
-            'name_en' => 'required|string|max:255',
+            'core_subject_id' => 'required|exists:core_subjects,id',
             'grade_id' => 'required|exists:grades,id',
             'study_type_id' => 'nullable|exists:study_types,id',
             'semester_ids' => 'required|array|min:1',
             'semester_ids.*' => 'integer|exists:semesters,id',
             'price' => 'required|numeric|min:0',
-            'image' => ($isUpdate ? 'nullable' : 'required') . '|image|max:102400',
             'duration' => 'nullable|string|max:50',
             'status' => 'nullable|boolean',
             'ios_product_id' => $this->iosProductIdRules(),
@@ -41,6 +30,7 @@ class SubjectRequest extends FormRequest
     public function messages(): array
     {
         return [
+            'core_subject_id.required' => __('general.Select Core Subject'),
             'ios_product_id.regex' => __('general.ios_product_id_invalid'),
             'ios_product_id.max' => __('general.ios_product_id_max'),
         ];
@@ -49,6 +39,7 @@ class SubjectRequest extends FormRequest
     public function attributes(): array
     {
         return [
+            'core_subject_id' => __('general.Core Subject'),
             'ios_product_id' => __('general.ios_product_id'),
         ];
     }

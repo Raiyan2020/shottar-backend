@@ -11,6 +11,7 @@ class Subject extends Model
     use HasFactory;
 
     protected $fillable = [
+        'core_subject_id',
         'name_ar',
         'name_en',
         'grade_id',
@@ -31,6 +32,11 @@ class Subject extends Model
     public function setImageAttribute($value): void
     {
         $this->attributes['image'] = normalize_public_path($value);
+    }
+
+    public function coreSubject()
+    {
+        return $this->belongsTo(CoreSubject::class);
     }
 
     // العلاقات (عشان نقدر نجيب المرحلة والفصل ونوع الدراسة)
