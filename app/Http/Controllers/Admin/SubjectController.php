@@ -10,7 +10,6 @@ use App\Models\Grade;
 use App\Models\Semester;
 use App\Models\StudyType;
 use App\Models\Subject;
-use App\Rules\IosProductIdRule;
 use App\Traits\HasStatusToggle;
 use App\Traits\ImageTrait;
 
@@ -49,6 +48,7 @@ class SubjectController extends Controller
 
         $subject = Subject::create($data);
         $subject->semesters()->sync($semesterIds);
+        $this->ensureIosProductId($subject);
 
         return redirect()->route('admin.subjects.index')->with('success', 'Subject created successfully');
     }
@@ -60,7 +60,6 @@ class SubjectController extends Controller
         $studyTypes = StudyType::where('status', 1)->get();
         $semesters = Semester::where('status', 1)->get();
         $coreSubjects = CoreSubject::where('status', 1)->orderBy('name_ar')->get();
-        $iosProductLocked = IosProductIdRule::isLocked($subject->ios_product_id);
 
         return view('dashboard.admin.subjects.edit', compact(
             'subject',
@@ -68,7 +67,6 @@ class SubjectController extends Controller
             'studyTypes',
             'semesters',
             'coreSubjects',
-            'iosProductLocked'
         ));
     }
 
@@ -85,6 +83,7 @@ class SubjectController extends Controller
 
         $subject->update($data);
         $subject->semesters()->sync($semesterIds);
+        $this->ensureIosProductId($subject->fresh());
 
         return redirect()->route('admin.subjects.index')->with('success', 'Subject updated successfully');
     }
@@ -116,5 +115,21 @@ class SubjectController extends Controller
             'name_en' => $core->name_en ?: $core->name_ar,
             'image' => $core->getRawOriginal('image') ?? $core->image,
         ];
+    }
+
+    protected function iosProductIdForSubject(int $subjectId): string
+    {
+        return 'com.raiyansoft.shottar.subject.'.$subjectId;
+    }
+
+    protected function ensureIosProductId(Subject $subject): void
+    {
+        if ($subject->ios_product_id) {
+            return;
+        }
+
+        $subject->update([
+            'ios_product_id' => $this->iosProductIdForSubject($subject->id),
+        ]);
     }
 }

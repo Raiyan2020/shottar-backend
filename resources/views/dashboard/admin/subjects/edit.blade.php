@@ -139,28 +139,6 @@
                                     </div>
                                 </div>
 
-                                <div class="col-md-6 col-12">
-                                    <div class="form-group">
-                                        <label for="ios_product_id" class="col-form-label-sm">{{ __('general.ios_product_id') }}</label>
-                                        <input type="text" name="ios_product_id" id="ios_product_id"
-                                               value="{{ old('ios_product_id', $subject->ios_product_id) }}"
-                                               class="form-control form-control-sm @error('ios_product_id') is-invalid @enderror"
-                                               placeholder="com.raiyansoft.shottar.subject.{{ $subject->id }}"
-                                               dir="ltr" maxlength="100" autocomplete="off" spellcheck="false"
-                                               pattern="[A-Za-z0-9][A-Za-z0-9_-]*(\.[A-Za-z0-9][A-Za-z0-9_-]*)+"
-                                               title="{{ __('general.ios_product_id_invalid') }}"
-                                               @if(!empty($iosProductLocked)) readonly @endif>
-                                        @if(!empty($iosProductLocked))
-                                            <small class="text-warning d-block">{{ __('general.ios_product_id_locked_hint') }}</small>
-                                        @else
-                                            <small class="text-muted d-block">{{ __('general.ios_product_id_hint') }}</small>
-                                        @endif
-                                        @error('ios_product_id')
-                                        <span class="col-form-label-sm text-danger">{{ $message }}</span>
-                                        @enderror
-                                    </div>
-                                </div>
-
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary">{{ __('general.Update') }}</button>
                                     <a href="{{ route('admin.subjects.index') }}" class="btn btn-secondary">{{ __('general.cancel') }}</a>
