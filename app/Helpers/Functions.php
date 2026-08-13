@@ -63,7 +63,7 @@ trait Functions
             throw new \RuntimeException('WAWP credentials are not configured.');
         }
 
-        $chatId = $this->formatWawpChatId($phone , $dedupKey);
+        $chatId = $this->formatWawpChatId($phone);
 
         $url = config('services.wawp.base_url', 'https://api.wawp.net/v2/send/text');
         $response = Http::timeout(20)->post($url, [
