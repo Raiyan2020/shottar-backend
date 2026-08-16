@@ -40,28 +40,6 @@ function generate_activation_code(): int
     return random_int(1000, 9999);
 }
 
-function normalize_phone_digits(?string $phone): string
-{
-    $digits = preg_replace('/\D+/', '', (string) $phone);
-
-    if (str_starts_with($digits, '00')) {
-        $digits = substr($digits, 2);
-    }
-
-    return $digits;
-}
-
-function is_login_phone_allowed(string $phone): bool
-{
-    $allowed = config('services.auth.login_allowed_phone');
-
-    if ($allowed === null || $allowed === '') {
-        return true;
-    }
-
-    return normalize_phone_digits($phone) === normalize_phone_digits($allowed);
-}
-
 function getimg($filename)
 {
     return image_url($filename);

@@ -62,9 +62,4 @@ return [
         'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
         'shared_secret' => env('APPLE_SHARED_SECRET'),
     ],
-
-    'auth' => [
-        // e.g. +96555558718 — only this phone can login; empty = all users allowed.
-        'login_allowed_phone' => env('LOGIN_ALLOWED_PHONE'),
-    ],
 ];

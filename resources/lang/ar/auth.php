@@ -12,6 +12,5 @@ return [
     'Login Page - Smart Canteen Dashboard' => 'صفحة تسجيل الدخول - لوحة التحكم في الكانتين الذكي',
     'description_admin' => 'تسجيل دخول المسؤول - نظام الكانتين الذكي',
     'description_school' => 'تسجيل دخول المدرسة - نظام الكانتين الذكي',
-    'login_allowed_phone'
 ];
 
