@@ -7,7 +7,7 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Subject;
 use App\Models\User;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -147,19 +147,24 @@ class AppleIapService
         }
     }
 
-    public function subjectsForProduct(string $productId): Collection
+    public function subjectsForProduct(string $productId): EloquentCollection
     {
-        $subject = Subject::where('ios_product_id', $productId)->first();
-        if ($subject) {
-            return collect([$subject]);
+        $subjects = Subject::query()
+            ->with('grade')
+            ->where('ios_product_id', $productId)
+            ->get();
+
+        if ($subjects->isNotEmpty()) {
+            return $subjects;
         }
 
         $bundle = IosBundleProduct::where('ios_product_id', $productId)->first();
         if (! $bundle) {
-            return collect();
+            return new EloquentCollection;
         }
 
         return Subject::query()
+            ->with('grade')
             ->where('status', 1)
             ->where('grade_id', $bundle->grade_id)
             ->where(function ($q) use ($bundle) {
@@ -317,9 +322,12 @@ class AppleIapService
             ->first();
     }
 
-    protected function grantOrder(User $user, Collection $subjects, array $apple): Order
+    protected function grantOrder(User $user, EloquentCollection $subjects, array $apple): Order
     {
-        $subjects->loadMissing('grade');
+        $first = $subjects->first();
+        if ($first instanceof Subject) {
+            $first->loadMissing('grade');
+        }
 
         $paymentMethodId = PaymentMethod::where('slug', 'apple_iap')->value('id');
         $isBundle = (bool) ($apple['is_all_materials'] ?? false);
@@ -327,7 +335,7 @@ class AppleIapService
         $order = Order::create([
             'user_id' => $user->id,
             'total' => $isBundle
-                ? (optional($subjects->first()?->grade)->all_materials_price ?? $subjects->sum('price'))
+                ? (optional($first?->grade)->all_materials_price ?? $subjects->sum('price'))
                 : $subjects->sum('price'),
             'status' => 'paid',
             'payment_method_id' => $paymentMethodId,

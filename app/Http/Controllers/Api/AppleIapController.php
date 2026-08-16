@@ -26,13 +26,27 @@ class AppleIapController extends Controller
             ]);
         }
 
-        $result = $iap->verifyAndGrant(
-            $request->user(),
-            $request->input('product_id'),
-            $request->input('receipt'),
-            $request->input('transaction_id'),
-            $request->input('source', 'purchase')
-        );
+        try {
+            $result = $iap->verifyAndGrant(
+                $request->user(),
+                $request->input('product_id'),
+                $request->input('receipt'),
+                $request->input('transaction_id'),
+                $request->input('source', 'purchase')
+            );
+        } catch (\Throwable $e) {
+            Log::error('Apple IAP verify failed', [
+                'user_id' => $request->user()?->id,
+                'product_id' => $request->input('product_id'),
+                'transaction_id' => $request->input('transaction_id'),
+                'error' => $e->getMessage(),
+            ]);
+
+            return sendResponse([
+                'success' => false,
+                'message' => 'تعذر التحقق من عملية الشراء',
+            ]);
+        }
 
         return sendResponse($result);
     }

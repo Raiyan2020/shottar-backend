@@ -24,6 +24,19 @@ class Subject extends Model
         'status',
     ];
 
+    protected static function booted(): void
+    {
+        static::created(function (Subject $subject) {
+            if (filled($subject->ios_product_id)) {
+                return;
+            }
+
+            $subject->update([
+                'ios_product_id' => 'com.raiyansoft.shottar.subject.'.$subject->id,
+            ]);
+        });
+    }
+
     public function getImageAttribute($value): ?string
     {
         return normalize_public_path($value);
