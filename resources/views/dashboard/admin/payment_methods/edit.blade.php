@@ -80,8 +80,8 @@
                                             class="form-control form-control-sm @error('status') is-invalid @else {{ old('status') ? 'is-valid' : '' }} @enderror"
                                             required
                                         >
-                                            <option value="1" {{ old('status', $paymentMethod->status ?? '') == 'active' ? 'selected' : '' }}>{{ __('general.Active') }}</option>
-                                            <option value="0" {{ old('status', $paymentMethod->status ?? '') == 'inactive' ? 'selected' : '' }}>{{ __('general.Inactive') }}</option>
+                                            <option value="1" {{ (string) old('status', (int) ($paymentMethod->status ?? 1)) === '1' ? 'selected' : '' }}>{{ __('general.Active') }}</option>
+                                            <option value="0" {{ (string) old('status', (int) ($paymentMethod->status ?? 1)) === '0' ? 'selected' : '' }}>{{ __('general.Inactive') }}</option>
                                         </select>
                                         @error('status')
                                         <span class="col-form-label-sm text-danger">{{ $message }}</span>

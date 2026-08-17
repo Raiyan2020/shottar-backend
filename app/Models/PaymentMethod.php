@@ -62,6 +62,11 @@ class PaymentMethod extends Model
         return self::isDeletable($this->slug);
     }
 
+    public function canBeEdited(): bool
+    {
+        return self::isDeletable($this->slug);
+    }
+
     public static function usesMyFatoorah(?string $slug): bool
     {
         if ($slug === null || $slug === '') {

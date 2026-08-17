@@ -43,6 +43,9 @@ class PaymentMethodController extends Controller
     public function edit($id)
     {
         $paymentMethod = PaymentMethod::findOrFail($id);
+
+        abort_unless($paymentMethod->canBeEdited(), 403);
+
         return view('dashboard.admin.payment_methods.edit', compact('paymentMethod'));
     }
 
@@ -50,6 +53,8 @@ class PaymentMethodController extends Controller
     {
         $data = $request->validated();
         $paymentMethod = PaymentMethod::findOrFail($id);
+
+        abort_unless($paymentMethod->canBeEdited(), 403);
 
         $this->paymentMethodService->updatePaymentMethod($paymentMethod, $data, $request->image);
 
