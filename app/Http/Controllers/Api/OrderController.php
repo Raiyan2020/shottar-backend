@@ -82,6 +82,41 @@ class OrderController extends Controller
                 ]);
             }
 
+            $paymentMethod = PaymentMethod::find($order->payment_method_id);
+
+            if (! $paymentMethod || ! $paymentMethod->status) {
+                $order->delete();
+
+                return sendError(
+                    $request->header('lang') === 'ar'
+                        ? 'طريقة الدفع غير صالحة.'
+                        : 'Invalid payment method.'
+                );
+            }
+
+            if ($paymentMethod->slug === PaymentMethod::SLUG_APPLE_IAP) {
+                $order->delete();
+
+                return sendError(
+                    $request->header('lang') === 'ar'
+                        ? 'استخدم مسار Apple In-App Purchase للشراء على iOS.'
+                        : 'Use the Apple In-App Purchase flow on iOS.'
+                );
+            }
+
+            if (PaymentMethod::isOffline($paymentMethod->slug)) {
+                $lang = $request->header('lang') === 'ar';
+
+                return sendResponse([
+                    'order_id' => $order->id,
+                    'total' => round($total, 3),
+                    'payment_url' => null,
+                    'payment_status' => $order->status,
+                    'payment_method' => $paymentMethod->slug,
+                ], $lang
+                    ? 'تم إنشاء الطلب. يرجى إتمام الدفع نقدًا لتفعيل المواد.'
+                    : 'Order created. Please complete cash payment to activate your subjects.');
+            }
 
             try {
                 $paymentUrl = (new PaymentService($user, $order))->createInvoice();

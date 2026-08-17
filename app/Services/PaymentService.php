@@ -25,6 +25,14 @@ class PaymentService
             throw new \Exception('طريقة الدفع غير موجودة.');
         }
 
+        if (PaymentMethod::isOffline($paymentMethod->slug)) {
+            throw new \InvalidArgumentException('Offline payment methods do not use an external gateway.');
+        }
+
+        if ($paymentMethod->slug === PaymentMethod::SLUG_APPLE_IAP) {
+            throw new \InvalidArgumentException('Apple IAP is handled via the verify endpoint, not MyFatoorah.');
+        }
+
         $paymentMethodId = PaymentMethod::ALL_METHODS[$paymentMethod->slug] ?? 1;
 
         $phone = preg_replace('/[^0-9]/', '', $this->user->phone);
