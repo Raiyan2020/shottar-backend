@@ -35,9 +35,69 @@ function sendResponse($result, $message = null)
     return response()->json($response, $code);
 }
 
-function generate_activation_code(): int
+function generate_activation_code(?string $phone = null): int
 {
+    $fixed = $phone !== null ? otp_fixed_code_for_phone($phone) : null;
+
+    if ($fixed !== null) {
+        return $fixed;
+    }
+
     return random_int(1000, 9999);
+}
+
+function normalize_phone_digits(?string $phone): string
+{
+    $digits = preg_replace('/\D+/', '', (string) $phone);
+
+    if (str_starts_with($digits, '00')) {
+        $digits = substr($digits, 2);
+    }
+
+    if (preg_match('/^01[0125]\d{8}$/', $digits)) {
+        $digits = '20' . substr($digits, 1);
+    }
+
+    return $digits;
+}
+
+function otp_fixed_phones_map(): array
+{
+    $map = [];
+    $raw = (string) config('services.otp.fixed_phones', '');
+
+    foreach (explode(',', $raw) as $pair) {
+        $pair = trim($pair);
+
+        if ($pair === '' || ! str_contains($pair, ':')) {
+            continue;
+        }
+
+        [$phone, $code] = explode(':', $pair, 2);
+        $digits = normalize_phone_digits($phone);
+
+        if ($digits !== '' && preg_match('/^\d{4}$/', trim($code))) {
+            $map[$digits] = (int) trim($code);
+        }
+    }
+
+    return $map;
+}
+
+function otp_fixed_code_for_phone(?string $phone): ?int
+{
+    $digits = normalize_phone_digits($phone);
+
+    if ($digits === '') {
+        return null;
+    }
+
+    return otp_fixed_phones_map()[$digits] ?? null;
+}
+
+function uses_fixed_otp(?string $phone): bool
+{
+    return otp_fixed_code_for_phone($phone) !== null;
 }
 
 function getimg($filename)

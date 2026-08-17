@@ -74,12 +74,12 @@ class TeachersDataTable extends DataTable
             ->withCount('teachingSubjects')
             ->select('admins.*')
             ->selectSub(function ($query) {
-                $query->from('teacher_subjects')
-                    ->join('order_items', 'order_items.subject_id', '=', 'teacher_subjects.subject_id')
-                    ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                    ->whereColumn('teacher_subjects.teacher_id', 'admins.id')
-                    ->where('orders.status', 'paid')
-                    ->selectRaw('COUNT(DISTINCT orders.user_id)');
+                $query->from('teacher_subjects as ts')
+                    ->join('order_items as oi', 'oi.subject_id', '=', 'ts.subject_id')
+                    ->join('orders as o', 'o.id', '=', 'oi.order_id')
+                    ->whereColumn('ts.teacher_id', 'admins.id')
+                    ->where('o.status', 'paid')
+                    ->selectRaw('COUNT(DISTINCT o.user_id)');
             }, 'subscribers_count');
     }
 

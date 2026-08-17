@@ -28,8 +28,12 @@ class UsersController extends Controller
     //update
     public function update(Request $request, $id)
     {
+        $validated = $request->validate([
+            'status' => 'required|in:1,3',
+        ]);
+
         $user = User::findOrFail($id);
-        $user->update($request->all());
+        $user->update($validated);
         session()->flash('success', __('messages.updated successfully.'));
         return redirect()->route('admin.users.index');
     }

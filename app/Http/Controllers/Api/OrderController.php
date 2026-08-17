@@ -150,6 +150,10 @@ class OrderController extends Controller
             return sendError($lang === 'ar' ? 'القسيمة غير موجودة.' : 'Coupon not found.');
         }
 
+        if ($coupon->isNotYetActive()) {
+            return sendError($lang === 'ar' ? 'القسيمة غير مفعّلة بعد.' : 'Coupon is not active yet.');
+        }
+
         if ($coupon->isExpired()) {
             return sendError($lang === 'ar' ? 'القسيمة منتهية الصلاحية.' : 'Coupon has expired.');
         }

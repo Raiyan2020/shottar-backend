@@ -34,7 +34,7 @@ class UsersDataTable extends DataTable
             ->addColumn('created_at', function ($user) {
                 return $user->created_at->format('Y-m-d H:i');
             })
-            //status 1 == active 2 == pending 0 == inactive
+            // status 1 == active, 2 == pending activation, 3 == inactive
             ->addColumn('status', function ($user) {
                 return $user->status == 1 ? __('dataTable.active') : ($user->status == 2 ? __('dataTable.pending') : __('dataTable.inactive'));
             })

@@ -25,7 +25,7 @@ class AuthController extends Controller
             $errMsg = $request->header('lang') == 'ar' ? "الرقم غير مسجل" : 'This phone number is not registered';
             return sendError($errMsg);
         }
-        $activation_code = generate_activation_code();
+        $activation_code = generate_activation_code($user->phone);
 
         $user->update([
             'device_type' => $request->device_type,
@@ -33,24 +33,27 @@ class AuthController extends Controller
             'status' => '2', // assuming status 2 means active
             'activation_code' => $activation_code, // set activation code
         ]);
-        // إرسال كود التحقق إذا لزم الأمر
-        try {
-            $send = $this->sendVerificationCode($user->phone, $activation_code);
-            $payload = $send->json();
-            if (!$send->successful() || (is_array($payload) && ($payload['status'] ?? true) === false)) {
-                Log::error('Shottar login OTP WhatsApp send failed', [
+
+        if (! uses_fixed_otp($user->phone)) {
+            // إرسال كود التحقق إذا لزم الأمر
+            try {
+                $send = $this->sendVerificationCode($user->phone, $activation_code);
+                $payload = $send->json();
+                if (!$send->successful() || (is_array($payload) && ($payload['status'] ?? true) === false)) {
+                    Log::error('Shottar login OTP WhatsApp send failed', [
+                        'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
+                        'provider_status' => $send->status(),
+                        'provider_code' => is_array($payload) ? ($payload['code'] ?? null) : null,
+                    ]);
+                    return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
+                }
+            } catch (\Throwable $exception) {
+                Log::error('Shottar login OTP WhatsApp exception', [
                     'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
-                    'provider_status' => $send->status(),
-                    'provider_code' => is_array($payload) ? ($payload['code'] ?? null) : null,
+                    'exception' => $exception->getMessage(),
                 ]);
                 return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
             }
-        } catch (\Throwable $exception) {
-            Log::error('Shottar login OTP WhatsApp exception', [
-                'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
-                'exception' => $exception->getMessage(),
-            ]);
-            return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
         }
 
         $response = [
@@ -65,15 +68,16 @@ class AuthController extends Controller
         $data = $request->validated();
         $data['password'] = $data['phone'];
         $data['status'] = '2';
-        $data['activation_code'] = generate_activation_code();
+        $data['activation_code'] = generate_activation_code($data['phone']);
 
         $user = User::create($data);
 
         $success['user'] = new UserResource($user);
 //        $success['token'] = $user->createToken('MyAuthApp')->plainTextToken;
 
-        // إرسال كود التحقق إذا لزم الأمر
-         $this->sendVerificationCode($user->phone, $user->activation_code);
+        if (! uses_fixed_otp($user->phone)) {
+            $this->sendVerificationCode($user->phone, $user->activation_code);
+        }
 
         return sendResponse( new UserResource($user), __('User registered successfully'));
     }

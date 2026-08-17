@@ -7,7 +7,37 @@
     <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/components.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/colors.css') }}">
     <script src="https://unpkg.com/feather-icons"></script>
-
+    <style>
+        #statistics-card .row:first-child {
+            align-items: stretch;
+        }
+        #statistics-card .row:first-child > [class*="col-"] {
+            display: flex;
+        }
+        #statistics-card .stat-card {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            min-height: 210px;
+            margin-bottom: 1.5rem;
+        }
+        #statistics-card .stat-card .card-header {
+            min-height: 88px;
+            flex: 0 0 auto;
+        }
+        #statistics-card .stat-card .card-text {
+            margin-bottom: 0;
+            min-height: 2.5em;
+            line-height: 1.25;
+        }
+        #statistics-card .stat-chart {
+            height: 100px;
+            margin-top: auto;
+        }
+        #statistics-card .stat-chart .apexcharts-canvas {
+            height: 100px !important;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -18,7 +48,7 @@
             @endphp
 
             <div class="{{ $colClass }}">
-                <div class="card">
+                <div class="card stat-card">
                     <div class="card-header align-items-start pb-0">
                         <div>
                             <h2 class="font-weight-bolder">{{ $usersCount }}</h2>
@@ -30,12 +60,12 @@
                             </div>
                         </div>
                     </div>
-                    <div id="line-area-chart-5"></div>
+                    <div id="line-area-chart-5" class="stat-chart"></div>
                 </div>
             </div>
 
             <div class="{{ $colClass }}">
-                <div class="card">
+                <div class="card stat-card">
                     <div class="card-header align-items-start pb-0">
                         <div>
                             <h2 class="font-weight-bolder">{{ $subjectsCount }}</h2>
@@ -47,12 +77,12 @@
                             </div>
                         </div>
                     </div>
-                    <div id="line-area-chart-6"></div>
+                    <div id="line-area-chart-6" class="stat-chart"></div>
                 </div>
             </div>
 
             <div class="{{ $colClass }}">
-                <div class="card">
+                <div class="card stat-card">
                     <div class="card-header align-items-start pb-0">
                         <div>
                             <h2 class="font-weight-bolder">{{ $courseMaterialsCount }}</h2>
@@ -64,13 +94,13 @@
                             </div>
                         </div>
                     </div>
-                    <div id="line-area-chart-7"></div>
+                    <div id="line-area-chart-7" class="stat-chart"></div>
                 </div>
             </div>
 
             @if(auth('admin')->user()->hasRole('admin'))
                 <div class="{{ $colClass }}">
-                    <div class="card">
+                    <div class="card stat-card">
                         <div class="card-header align-items-start pb-0">
                             <div>
                                 <h2 class="font-weight-bolder">{{ $totalAmount }}</h2>
@@ -82,7 +112,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div id="line-area-chart-3"></div>
+                        <div id="line-area-chart-3" class="stat-chart"></div>
                     </div>
                 </div>
             @endif

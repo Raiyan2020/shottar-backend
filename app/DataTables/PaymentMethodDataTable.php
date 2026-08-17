@@ -2,9 +2,7 @@
 
 namespace App\DataTables;
 
-use App\Models\City;
 use App\Models\PaymentMethod;
-use App\Models\School;
 use Illuminate\Support\Facades\App;
 use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\EloquentDataTable;
@@ -18,18 +16,15 @@ class PaymentMethodDataTable extends DataTable
     {
         return (new EloquentDataTable($query))
             ->addColumn('action', function ($payment) {
-                if ($payment->id !=5){
-                    return view('components.datatable.actions', [
-                        'id' => $payment->id,
-                        'routeEdit' => 'admin.payment-methods.edit',
-                        'routeDelete' => 'admin.payment-methods.destroy',
-                        'name' => App::getLocale() === 'ar' ? $payment->name_ar : $payment->name_en,
-                    ]);
-                }else{
-                    return '<span class="badge badge-danger">Not Allowed</span>';
+                if (! $payment->canBeDeleted()) {
+                    return '';
                 }
 
-
+                return view('components.datatable.actions', [
+                    'id' => $payment->id,
+                    'routeDelete' => 'admin.payment-methods.destroy',
+                    'name' => App::getLocale() === 'ar' ? $payment->name_ar : $payment->name_en,
+                ]);
             })
             ->editColumn('status', function ($model) {
                 return view('components.datatable.status-toggle', [

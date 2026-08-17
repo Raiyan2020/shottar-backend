@@ -58,6 +58,10 @@ class PaymentMethodController extends Controller
 
     public function destroy(PaymentMethod $paymentMethod)
     {
+        if (! $paymentMethod->canBeDeleted()) {
+            return response()->json(['message' => 'Cannot delete system payment method.'], 403);
+        }
+
         $this->paymentMethodService->deletePaymentMethod($paymentMethod);
 
         return response()->json('success');

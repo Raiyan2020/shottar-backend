@@ -27,14 +27,35 @@ class Coupon extends Model
         'status'    => 'boolean',
     ];
 
+    public function setStartsAtAttribute($value): void
+    {
+        $this->attributes['starts_at'] = $value
+            ? \Illuminate\Support\Carbon::parse($value)->startOfDay()->format('Y-m-d H:i:s')
+            : null;
+    }
+
+    public function setExpiresAtAttribute($value): void
+    {
+        $this->attributes['expires_at'] = $value
+            ? \Illuminate\Support\Carbon::parse($value)->endOfDay()->format('Y-m-d H:i:s')
+            : null;
+    }
+
     public function isExpired(): bool
     {
-        $now = now();
-
-        if ($this->expires_at && $this->expires_at->lt($now)) {
-            return true;
+        if (!$this->expires_at) {
+            return false;
         }
 
-        return false;
+        return now()->startOfDay()->gt($this->expires_at->copy()->startOfDay());
+    }
+
+    public function isNotYetActive(): bool
+    {
+        if (!$this->starts_at) {
+            return false;
+        }
+
+        return now()->startOfDay()->lt($this->starts_at->copy()->startOfDay());
     }
 }

@@ -62,4 +62,12 @@ return [
         'private_key_path' => env('APPLE_PRIVATE_KEY_PATH'),
         'shared_secret' => env('APPLE_SHARED_SECRET'),
     ],
+
+    /*
+    | Fixed OTP for testing: comma-separated phone:code pairs.
+    | Example: 201091626965:1234,+96555558718:1234
+    */
+    'otp' => [
+        'fixed_phones' => env('OTP_FIXED_PHONES', '201091626965:1234'),
+    ],
 ];

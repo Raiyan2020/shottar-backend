@@ -29,7 +29,7 @@
                                             required
                                         >
                                             <option value="1" {{ old('status', $user->status ?? '') == 1 ? 'selected' : '' }}>{{ __('general.Active') }}</option>
-                                            <option value="0" {{ old('status', $user->status ?? '') == 3 ? 'selected' : '' }}>{{ __('general.Inactive') }}</option>
+                                            <option value="3" {{ old('status', $user->status ?? '') == 3 ? 'selected' : '' }}>{{ __('general.Inactive') }}</option>
                                         </select>
                                         @error('status')
                                         <span class="col-form-label-sm text-danger">{{ $message }}</span>

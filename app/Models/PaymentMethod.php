@@ -18,6 +18,15 @@ class PaymentMethod extends Model
         self::SLUG_CASH,
     ];
 
+    /** @var list<string> Seeded / system payment methods — not deletable from admin. */
+    public const SYSTEM_SLUGS = [
+        self::SLUG_CASH,
+        self::SLUG_APPLE_IAP,
+        'apple-pay',
+        'knet',
+        'visa',
+    ];
+
     protected $fillable = [
         'name_ar',
         'name_en',
@@ -41,6 +50,16 @@ class PaymentMethod extends Model
     public static function isOffline(?string $slug): bool
     {
         return in_array($slug, self::OFFLINE_SLUGS, true);
+    }
+
+    public static function isDeletable(?string $slug): bool
+    {
+        return $slug !== null && $slug !== '' && ! in_array($slug, self::SYSTEM_SLUGS, true);
+    }
+
+    public function canBeDeleted(): bool
+    {
+        return self::isDeletable($this->slug);
     }
 
     public static function usesMyFatoorah(?string $slug): bool

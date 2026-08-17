@@ -30,4 +30,16 @@ class PaymentMethodTest extends TestCase
     {
         $this->assertArrayNotHasKey(PaymentMethod::SLUG_CASH, PaymentMethod::ALL_METHODS);
     }
+
+    public function test_system_payment_methods_are_not_deletable(): void
+    {
+        $this->assertFalse(PaymentMethod::isDeletable('cash'));
+        $this->assertFalse(PaymentMethod::isDeletable('apple_iap'));
+        $this->assertFalse(PaymentMethod::isDeletable('knet'));
+    }
+
+    public function test_custom_payment_methods_are_deletable(): void
+    {
+        $this->assertTrue(PaymentMethod::isDeletable('terms'));
+    }
 }
