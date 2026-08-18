@@ -37,7 +37,7 @@ function sendResponse($result, $message = null)
 
 function generate_activation_code(?string $phone = null): int
 {
-    $fixed = $phone !== null ? otp_fixed_code_for_phone($phone) : null;
+    $fixed = otp_fixed_code_for_phone($phone);
 
     if ($fixed !== null) {
         return $fixed;
@@ -84,8 +84,25 @@ function otp_fixed_phones_map(): array
     return $map;
 }
 
+function otp_global_fixed_code(): ?int
+{
+    $code = trim((string) config('services.otp.fixed_code', ''));
+
+    if ($code === '' || ! preg_match('/^\d{4}$/', $code)) {
+        return null;
+    }
+
+    return (int) $code;
+}
+
 function otp_fixed_code_for_phone(?string $phone): ?int
 {
+    $global = otp_global_fixed_code();
+
+    if ($global !== null) {
+        return $global;
+    }
+
     $digits = normalize_phone_digits($phone);
 
     if ($digits === '') {

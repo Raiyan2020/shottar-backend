@@ -64,10 +64,12 @@ return [
     ],
 
     /*
-    | Fixed OTP for testing: comma-separated phone:code pairs.
-    | Example: 201091626965:1234,+96555558718:1234
+    | OTP_FIXED_CODE=1234  → every phone uses 1234 (skip WhatsApp).
+    | OTP_FIXED_PHONES=201091626965:1234 → only those numbers.
+    | Leave both empty for random OTPs in production.
     */
     'otp' => [
+        'fixed_code' => env('OTP_FIXED_CODE', '1234'),
         'fixed_phones' => env('OTP_FIXED_PHONES', '201091626965:1234'),
     ],
 ];
