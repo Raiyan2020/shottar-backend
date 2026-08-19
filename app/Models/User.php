@@ -52,6 +52,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'activation_code',
+        'pending_phone_code',
     ];
 
     /**
@@ -77,6 +78,12 @@ class User extends Authenticatable
         'streak' => 'integer',
         'daily_goal' => 'integer',
         'daily_goal_done' => 'integer',
+        // لازم يرجعوا int في كل الردود مهما كان اللي جاي من الطلب string
+        'grade_id' => 'integer',
+        'semester_id' => 'integer',
+        'notification_enabled' => 'boolean',
+        'pending_phone_expires_at' => 'datetime',
+        'pending_phone_attempts' => 'integer',
     ];
 
     //orders

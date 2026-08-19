@@ -23,8 +23,10 @@ class StoreOrderRequest extends FormRequest
     {
         return [
             'payment_method_id' => 'nullable|exists:payment_methods,id',
-            'total' => 'required|numeric|min:0',
-            'is_all_materials' => 'required|boolean',
+            // §11 — السيرفر بيحسب المبلغ بنفسه، فالحقل ده بقى اختياري
+            // (لو مبعوت بيتقارن بحساب السيرفر بس).
+            'total' => 'nullable|numeric|min:0',
+            'is_all_materials' => 'nullable|boolean',
             'items' => 'required|array',
             'items.*' => 'required|exists:subjects,id',
         ];

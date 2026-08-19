@@ -289,5 +289,17 @@ return [
     'subscribers_count' => 'عدد المشتركين',
     'subjects_count' => 'عدد المواد',
 
+    // §9 — إعدادات الشروط وسياسة الخصوصية
+    'Line breaks are preserved exactly as typed.' => 'الأسطر بتتحفظ زي ما هي بالظبط — اكتب كل بند في سطر.',
+    'Characters' => 'عدد الحروف',
+    'Rating' => 'التقييم',
+    'Tag' => 'الشارة',
+    'No tag' => 'بدون شارة',
+    'Recommended' => 'موصى به',
+    'Most requested' => 'الأكثر طلبًا',
+    'New' => 'جديد',
+    'Please enter a full link starting with https://' => 'من فضلك اكتب لينك كامل يبدأ بـ https://',
+    'This link does not belong to :platform' => 'اللينك ده مش لينك :platform',
+    'Enter the account link, not the platform home page.' => 'اكتب لينك الحساب نفسه، مش الصفحة الرئيسية للمنصة.',
 ];
 

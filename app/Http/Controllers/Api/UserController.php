@@ -26,19 +26,46 @@ class UserController extends Controller
         return  sendResponse( new UserResource($user));
     }
 
+    /**
+     * §1 / §2 / §3 / §7
+     *
+     * - بيحفظ `grade_id` و `semester_id` فعلًا (اختياريين).
+     * - **مش بيغيّر رقم الجوال**: الرقم بيتغيّر بس عبر /profile/phone/request-change
+     *   ثم /profile/phone/confirm-change بتحقّق OTP.
+     * - بيرجّع الـ user من الداتابيز بعد الحفظ عشان `grade`/`semester` يرجعوا
+     *   int مضبوطة، مش القيمة الخام اللي جاية من الطلب.
+     * - بيقبل JSON و multipart/form-data.
+     */
     public function update(UpdateUserRequest $request)
     {
         $user = Auth::user();
-        $data = $request->validated();
+        $data = $request->profileData();
+
         if ($request->hasFile('image')) {
             $data['image'] = $this->uploadImage('admin', $request->file('image'));
-        } else {
-            unset($data['image']);
         }
 
-        $user->update($data);
+        if (! empty($data)) {
+            $user->update($data);
+        }
 
-        return sendResponse(new UserResource($user), 'Profile updated successfully.');
+        // refresh ضروري: بعد update الموديل بيكون شايل القيم الخام (string)
+        // اللي جاية من الطلب، فـ grade/semester كانوا بيرجعوا string.
+        $user->refresh();
+
+        $lang = $request->header('lang') === 'en' ? 'en' : 'ar';
+        $message = $lang === 'ar' ? 'تم تحديث الملف الشخصي بنجاح.' : 'Profile updated successfully.';
+
+        // تنويه للتطبيق إن الرقم اللي بعته اتجاهل ولازم يمشي على مسار التحقّق.
+        // شكل `data` بيفضل هو هو (كائن الـ user) عشان مفيش breaking change —
+        // التنويه بيتحط في `message` بس.
+        if ($request->attemptedPhoneChange()) {
+            $message = $lang === 'ar'
+                ? 'تم تحديث الملف الشخصي. رقم الجوال لم يتغيّر — استخدم /profile/phone/request-change ثم /profile/phone/confirm-change لتغييره.'
+                : 'Profile updated. The phone number was not changed — use /profile/phone/request-change then /profile/phone/confirm-change.';
+        }
+
+        return sendResponse(new UserResource($user), $message);
     }
 
     //changePassword

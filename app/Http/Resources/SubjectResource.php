@@ -34,7 +34,14 @@ class SubjectResource extends JsonResource
             'total_duration' => DurationFormatter($totalDurationSeconds,$lang),
             'hours' => floor($totalDurationSeconds / 3600),
             'minutes' => floor(($totalDurationSeconds % 3600) / 60),
+            // §12: نسبة التقدّم — بترجع دايمًا (0.0 لو مفيش مشاهدات) عشان
+            // التطبيق يقدر يرتّب بالتقدّم ويخفي الزرار لو كلها صفر.
             'progress_percent' => $progressPercent,
+            // §5: التقييم والشارة والتصنيف على كل مادة
+            'rating' => $this->rating !== null ? round((float) $this->rating, 1) : null,
+            'tag' => $this->tag,
+            'tag_label' => $this->tagLabel($lang),
+            'category' => $this->categoryPayload($lang),
             'teacher_name' => $this->relationLoaded('teachers')
                 ? optional($this->teachers->first())->name
                 : optional($this->teachers()->first())->name,
@@ -44,6 +51,26 @@ class SubjectResource extends JsonResource
             )),
             'semester' => new SemesterResource($this->whenLoaded('semester')),
 
+        ];
+    }
+
+    /**
+     * §5 — التصنيف هو "المادة الأساسية" (core subject) اللي بتجمع نسخ المادة
+     * على كل الصفوف والفصول، وهي التجميعة الموجودة فعلًا في الداتابيز.
+     */
+    protected function categoryPayload(string $lang): ?array
+    {
+        $core = $this->relationLoaded('coreSubject')
+            ? $this->coreSubject
+            : ($this->core_subject_id ? $this->coreSubject : null);
+
+        if (! $core) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $core->id,
+            'name' => $core->localizedName($lang),
         ];
     }
 }

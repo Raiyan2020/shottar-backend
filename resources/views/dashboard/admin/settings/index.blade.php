@@ -19,17 +19,30 @@
                                 @csrf
                                 <div class="row">
                                     @foreach (\App\Models\Setting::where('is_object',1)->get() as $key => $x)
-                                        <div class="{{ (str_contains($x->key_id, 'image') || $x->key_id == 'blog_video' || str_contains($x->key_id, 'desc')) ? 'col-md-12' : 'col-md-6' }} col-12">
+                                        @php
+                                            // الشروط وسياسة الخصوصية نص طويل بأسطر — لازم textarea
+                                            $isLongText = \Illuminate\Support\Str::contains($x->key_id, ['terms', 'privacy', 'policy', 'desc']);
+                                        @endphp
+                                        <div class="{{ ($isLongText || str_contains($x->key_id, 'image') || $x->key_id == 'blog_video') ? 'col-md-12' : 'col-md-6' }} col-12">
                                             <div class="form-group">
                                                 <label class="col-form-label-sm" for="setting{{$x->id}}">{{App::getLocale() == 'en' ? $x->title_en : $x->title_ar }}</label>
-                                                @if(str_contains($x->key_id, 'desc'))
+                                                @if($isLongText)
+                                                    {{-- §9: النص بيتحفظ بأسطره الأصلية. كان input type=text
+                                                         فالمتصفح كان بيبعت النص في سطر واحد وكل الـ \n بتتلخبط. --}}
                                                     <textarea
                                                         name="{{ $x->key_id }}"
-                                                        data-length="1000"
-                                                        class="form-control char-textarea form-control-sm"
+                                                        class="form-control form-control-sm"
                                                         id="setting{{$x->id}}"
-                                                        rows="3"
+                                                        rows="{{ str_contains($x->key_id, 'desc') ? 3 : 20 }}"
+                                                        dir="auto"
+                                                        style="white-space: pre-wrap; font-family: inherit;"
                                                         placeholder="set....">{{ $x->value }}</textarea>
+                                                    @if(!str_contains($x->key_id, 'desc'))
+                                                        <small class="text-muted d-block mt-1">
+                                                            {{ __('general.Line breaks are preserved exactly as typed.') }}
+                                                            ({{ __('general.Characters') }}: {{ mb_strlen((string) $x->value) }})
+                                                        </small>
+                                                    @endif
 
                                                 @elseif(str_contains($x->key_id, 'image'))
                                                     <div class="custom-file">

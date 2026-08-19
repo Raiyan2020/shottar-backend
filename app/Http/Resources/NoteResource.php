@@ -19,9 +19,14 @@ class NoteResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $name,
-            'file' => url($this->file),
+            // كان url() وده بيبني لينك غلط لو المسار مخزّن نسبي — stored_file_url
+            // هي نفس الدالة المستخدمة في ExamResource.
+            'file' => stored_file_url($this->file),
             'type' => 'note',
-            'is_free' => $this->is_free ? true : false,
+            // §6: المسار الموصى بيه للتنزيل — بيرجّع application/pdf و
+            // Content-Length صح، و404 JSON لو الملف مش موجود.
+            'download_url' => route('api.material-file', ['type' => 'note', 'id' => $this->id]),
+            'is_free' => (bool) $this->is_free,
         ];
     }
 }

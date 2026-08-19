@@ -18,11 +18,48 @@ class Subject extends Model
         'study_type_id',
         'semester_id',
         'price',
+        'rating',
+        'tag',
         'ios_product_id',
         'image',
         'duration',
         'status',
     ];
+
+    /** الشارات المسموحة على كارت المادة (§5) */
+    public const TAG_RECOMMENDED = 'recommended';
+    public const TAG_MOST_REQUESTED = 'most_requested';
+    public const TAG_NEW = 'new';
+
+    public const TAGS = [
+        self::TAG_RECOMMENDED,
+        self::TAG_MOST_REQUESTED,
+        self::TAG_NEW,
+    ];
+
+    // ملاحظة: price متعمّد يفضل string (زي ما الـ API بيرجعه دلوقتي) عشان
+    // ميحصلش breaking change في التطبيق. rating حقل جديد فمفيش قيد عليه.
+    protected $casts = [
+        'rating' => 'float',
+    ];
+
+    /** نص الشارة بلغة الطلب (null لو المادة مش متعلّم عليها شارة) */
+    public function tagLabel(?string $lang = null): ?string
+    {
+        if (! $this->tag) {
+            return null;
+        }
+
+        $lang = $lang === 'en' ? 'en' : 'ar';
+
+        $labels = [
+            self::TAG_RECOMMENDED => ['ar' => 'موصى به', 'en' => 'Recommended'],
+            self::TAG_MOST_REQUESTED => ['ar' => 'الأكثر طلبًا', 'en' => 'Most requested'],
+            self::TAG_NEW => ['ar' => 'جديد', 'en' => 'New'],
+        ];
+
+        return $labels[$this->tag][$lang] ?? null;
+    }
 
     protected static function booted(): void
     {
@@ -105,8 +142,8 @@ class Subject extends Model
     {
         // اجلب الدروس (ممكن تضيف ->where('status', 1) لو لازم)
         $lessons = $this->relationLoaded('courseMaterials')
-            ? $this->courseMaterials->where('type', 'lesson')
-            : $this->lessons()->get(['id']); // يكفينا IDs
+            ? $this->courseMaterials->where('type', 'lesson')->where('status', 1)
+            : $this->courseMaterials()->where('type', 'lesson')->where('status', 1)->get(['id']);
 
         $totalLessons = $lessons->count();
         if ($totalLessons === 0) {

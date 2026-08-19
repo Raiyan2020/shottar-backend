@@ -382,4 +382,16 @@
 
 
 
-    ];
+        // §9 — terms & privacy settings
+    'Line breaks are preserved exactly as typed.' => 'Line breaks are preserved exactly as typed — put each clause on its own line.',
+    'Characters' => 'Characters',
+    'Rating' => 'Rating',
+    'Tag' => 'Tag',
+    'No tag' => 'No tag',
+    'Recommended' => 'Recommended',
+    'Most requested' => 'Most requested',
+    'New' => 'New',
+    'Please enter a full link starting with https://' => 'Please enter a full link starting with https://',
+    'This link does not belong to :platform' => 'This link does not belong to :platform',
+    'Enter the account link, not the platform home page.' => 'Enter the account link, not the platform home page.',
+];

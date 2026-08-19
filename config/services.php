@@ -71,5 +71,19 @@ return [
     'otp' => [
         'fixed_code' => env('OTP_FIXED_CODE', '1234'),
         'fixed_phones' => env('OTP_FIXED_PHONES', '201091626965:1234'),
+
+        // §2: مدة صلاحية كود تغيير رقم الجوال (بالدقايق) وعدد المحاولات المسموحة
+        'phone_change_ttl' => (int) env('OTP_PHONE_CHANGE_TTL', 10),
+        'phone_change_max_attempts' => (int) env('OTP_PHONE_CHANGE_MAX_ATTEMPTS', 5),
+    ],
+
+    'orders' => [
+        // §11: لما تبقى true الـ API بيرفض أي `total` جاي من التطبيق مخالف
+        // لحساب السيرفر. سيبها false لحد ما التطبيق ينزل بنسخة بتعتمد على
+        // `data.total` الراجع من السيرفر — وقتها فعّلها.
+        'strict_total' => (bool) env('ORDER_STRICT_TOTAL', false),
+
+        // فرق مسموح للتقريب (الدينار الكويتي 3 خانات)
+        'total_tolerance' => (float) env('ORDER_TOTAL_TOLERANCE', 0.001),
     ],
 ];

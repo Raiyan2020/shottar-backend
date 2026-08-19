@@ -27,10 +27,22 @@ class UserResource extends JsonResource
             'country_code' => $this->country_code,
             'phone_not_code' => $this->phone_not_code,
             'language' => $this->language ??'ar',
-            'notification_enabled' => $this->notification_enabled == 1 ? true : false,
-            //grade
-            'grade' => $this->grade_id,
-            'semester' => $this->semester_id,
+            'notification_enabled' => (bool) $this->notification_enabled,
+            // §2: فيه طلب تغيير رقم مستني تأكيد OTP؟
+            'pending_phone_change' => $this->pending_phone
+                ? [
+                    'phone' => $this->pending_phone,
+                    'country_code' => $this->pending_country_code,
+                    'expires_at' => optional($this->pending_phone_expires_at)->toIso8601String(),
+                ]
+                : null,
+            // §3: لازم دايمًا int أو null في كل الـ endpoints اللي بترجع user
+            // (كانت بترجع string من /update-profile لأن الموديل مكان بياخد
+            //  القيمة الخام من الطلب من غير refresh).
+            'grade' => $this->grade_id !== null ? (int) $this->grade_id : null,
+            'semester' => $this->semester_id !== null ? (int) $this->semester_id : null,
+            'grade_id' => $this->grade_id !== null ? (int) $this->grade_id : null,
+            'semester_id' => $this->semester_id !== null ? (int) $this->semester_id : null,
             'points' => (int) ($this->points ?? 0),
             'streak' => (int) ($this->streak ?? 0),
             'daily_goal' => (int) ($this->daily_goal ?? 0),
