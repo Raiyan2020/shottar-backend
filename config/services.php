@@ -69,7 +69,7 @@ return [
     | Leave both empty for random OTPs in production.
     */
     'otp' => [
-        'fixed_code' => env('OTP_FIXED_CODE', '1234'),
-        'fixed_phones' => env('OTP_FIXED_PHONES', '201091626965:1234'),
+        'fixed_code' => env('OTP_FIXED_CODE', ''),
+        'fixed_phones' => env('OTP_FIXED_PHONES', ''),
     ],
 ];
