@@ -389,7 +389,7 @@ if (! function_exists('panelPrefix')) {
 }
 
 if (!function_exists('vimeo_video_details')) {
-    function vimeo_video_details(string $url = null): ?array
+    function vimeo_video_details(?string $url = null): ?array
     {
         if (empty($url)) {
             return null;

@@ -16,6 +16,8 @@ class ExamResource extends JsonResource
             'title' => $lang === 'ar' ? $this->name_ar : $this->name_en,
             'file' => stored_file_url($this->file),
             'type' => 'exam',
+            // §6: المسار الموصى بيه للتنزيل (نفس ملاحظة NoteResource).
+            'download_url' => route('api.material-file', ['type' => 'exam', 'id' => $this->id]),
             'is_free' => (bool) $this->is_free,
         ];
     }

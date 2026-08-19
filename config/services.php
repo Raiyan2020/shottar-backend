@@ -64,12 +64,25 @@ return [
     ],
 
     /*
-    | OTP_FIXED_CODE=1234  → every phone uses 1234 (skip WhatsApp).
-    | OTP_FIXED_PHONES=201091626965:1234 → only those numbers.
+    | OTP_FIXED_CODE=1234
+    |   → every phone uses 1234 (skip WhatsApp sending).
+    |
+    | OTP_FIXED_PHONES=201091626965:1234
+    |   → only those numbers use 1234.
+    |
     | Leave both empty for random OTPs in production.
     */
     'otp' => [
         'fixed_code' => env('OTP_FIXED_CODE', ''),
         'fixed_phones' => env('OTP_FIXED_PHONES', ''),
+
+        // مدة صلاحية كود تغيير رقم الجوال (بالدقايق) وعدد المحاولات المسموحة
+        'phone_change_ttl' => (int) env('OTP_PHONE_CHANGE_TTL', 10),
+        'phone_change_max_attempts' => (int) env('OTP_PHONE_CHANGE_MAX_ATTEMPTS', 5),
+    ],
+
+    'orders' => [
+        'strict_total' => (bool) env('ORDER_STRICT_TOTAL', false),
+        'total_tolerance' => (float) env('ORDER_TOTAL_TOLERANCE', 0.001),
     ],
 ];

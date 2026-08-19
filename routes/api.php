@@ -16,6 +16,8 @@ use App\Http\Controllers\Api\PaymentMethodController;
 use App\Http\Controllers\Api\ChallengeController;
 use App\Http\Controllers\Api\DailyChallengeController;
 use App\Http\Controllers\Api\AppleIapController;
+use App\Http\Controllers\Api\MaterialFileController;
+use App\Http\Controllers\Api\ProfilePhoneController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +54,18 @@ Route::middleware('auth:sanctum')->group(function () {
 //    //profile
     Route::get('show-profile/{user_id?}', [UserController::class, 'show']);
     Route::post('update-profile', [UserController::class, 'update']);
+
+    // §2 — تغيير رقم الجوال بتحقّق OTP (الرقم هو هوية الدخول فمينفعش يتغيّر
+    // من /update-profile من غير تحقّق).
+    Route::post('profile/phone/request-change', [ProfilePhoneController::class, 'requestChange']);
+    Route::post('profile/phone/confirm-change', [ProfilePhoneController::class, 'confirmChange']);
+
+    // §6 — تنزيل مذكرة/اختبار PDF بهيدرز وأكواد حالة صحيحة
+    Route::get('material-file/{type}/{id}', [MaterialFileController::class, 'show'])
+        ->whereIn('type', ['note', 'exam'])
+        ->whereNumber('id')
+        ->name('api.material-file');
+
     //update-user-settings
     Route::post('update-user-settings', [UserController::class, 'updateUserSettings']);
 

@@ -20,6 +20,9 @@ class SubjectRequest extends FormRequest
             'semester_ids' => 'required|array|min:1',
             'semester_ids.*' => 'integer|exists:semesters,id',
             'price' => 'required|numeric|min:0',
+            // §5 — التقييم والشارة على كارت المادة
+            'rating' => 'nullable|numeric|min:0|max:5',
+            'tag' => 'nullable|string|in:' . implode(',', \App\Models\Subject::TAGS),
             'duration' => 'nullable|string|max:50',
             'status' => 'nullable|boolean',
         ];

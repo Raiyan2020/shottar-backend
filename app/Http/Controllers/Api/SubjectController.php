@@ -57,12 +57,9 @@ class SubjectController extends Controller
                     });
             });
 
-        if ($search) {
-            $subjectQuery->where(function ($q) use ($search) {
-                $q->where('name_ar', 'like', "%$search%")
-                    ->orWhere('name_en', 'like', "%$search%");
-            });
-        }
+        // §4: البحث بيدوّر على اسم المادة، اسم المادة الأساسية، واسم المدرّس.
+        // بيتنفّذ على مستوى الداتابيز عشان يفضل شغّال بعد ما يتعمل pagination.
+        $this->applySearch($subjectQuery, $search);
 
         $allSubjects = $subjectQuery->get();
 
@@ -101,6 +98,34 @@ class SubjectController extends Controller
 
     }
 
+    /**
+     * §4 — بحث على مستوى الداتابيز: اسم المادة (عربي/إنجليزي) + اسم المادة
+     * الأساسية + اسم المدرّس.
+     */
+    protected function applySearch($query, ?string $search)
+    {
+        $search = trim((string) $search);
+
+        if ($search === '') {
+            return $query;
+        }
+
+        // الـ escape ضروري عشان % و _ ميتعاملوش كـ wildcards
+        $term = '%' . addcslashes($search, '%_\\') . '%';
+
+        return $query->where(function ($q) use ($term) {
+            $q->where('name_ar', 'like', $term)
+                ->orWhere('name_en', 'like', $term)
+                ->orWhereHas('coreSubject', function ($cq) use ($term) {
+                    $cq->where('name_ar', 'like', $term)
+                        ->orWhere('name_en', 'like', $term);
+                })
+                ->orWhereHas('teachers', function ($tq) use ($term) {
+                    $tq->where('admins.name', 'like', $term);
+                });
+        });
+    }
+
     public function purchasedSubjects(Request $request)
     {
         $user = auth()->user();
@@ -126,15 +151,18 @@ class SubjectController extends Controller
         $semesterIds = $purchasedSubjects->pluck('semester_id')->unique();
 
         // جلب جميع المواد التي تنتمي لنفس الصفوف والفصول
-        $allSubjects = Subject::with(['courseMaterials','grade.iosBundleProducts','semester','teachers','coreSubject'])
+        $purchasedQuery = Subject::with(['courseMaterials','grade.iosBundleProducts','semester','teachers','coreSubject'])
             ->whereIn('grade_id', $gradeIds)
             ->where(function ($q) use ($semesterIds) {
                 $q->whereIn('semester_id', $semesterIds)
                     ->orWhereHas('semesters', function ($sq) use ($semesterIds) {
                         $sq->whereIn('semesters.id', $semesterIds);
                     });
-            })
-            ->get();
+            });
+
+        $this->applySearch($purchasedQuery, $request->input('search'));
+
+        $allSubjects = $purchasedQuery->get();
 
         $filteredSubjects = $allSubjects->whereIn('id', $purchasedSubjects->pluck('id'));
 

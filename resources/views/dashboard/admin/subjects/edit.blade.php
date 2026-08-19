@@ -139,6 +139,35 @@
                                     </div>
                                 </div>
 
+                                <div class="col-md-6 col-12">
+                                    <div class="form-group">
+                                        <label for="rating" class="col-form-label-sm">{{ __('general.Rating') }} (0 - 5)</label>
+                                        <input type="number" step="0.1" min="0" max="5" name="rating" id="rating"
+                                               value="{{ old('rating', $subject->rating) }}"
+                                               class="form-control form-control-sm @error('rating') is-invalid @enderror">
+                                        @error('rating')
+                                        <span class="col-form-label-sm text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 col-12">
+                                    <div class="form-group">
+                                        <label for="tag" class="col-form-label-sm">{{ __('general.Tag') }}</label>
+                                        <select name="tag" id="tag"
+                                                class="form-control form-control-sm @error('tag') is-invalid @enderror">
+                                            @php $selectedTag = old('tag', $subject->tag); @endphp
+                                            <option value="" @selected($selectedTag === null || $selectedTag === '')>{{ __('general.No tag') }}</option>
+                                            <option value="recommended" @selected($selectedTag === 'recommended')>{{ __('general.Recommended') }}</option>
+                                            <option value="most_requested" @selected($selectedTag === 'most_requested')>{{ __('general.Most requested') }}</option>
+                                            <option value="new" @selected($selectedTag === 'new')>{{ __('general.New') }}</option>
+                                        </select>
+                                        @error('tag')
+                                        <span class="col-form-label-sm text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary">{{ __('general.Update') }}</button>
                                     <a href="{{ route('admin.subjects.index') }}" class="btn btn-secondary">{{ __('general.cancel') }}</a>
