@@ -301,5 +301,6 @@ return [
     'Please enter a full link starting with https://' => 'من فضلك اكتب لينك كامل يبدأ بـ https://',
     'This link does not belong to :platform' => 'اللينك ده مش لينك :platform',
     'Enter the account link, not the platform home page.' => 'اكتب لينك الحساب نفسه، مش الصفحة الرئيسية للمنصة.',
+    'Upload library failed to load. Check your internet connection and refresh the page.' => 'تعذّر تحميل مكتبة الرفع. تأكد من الاتصال بالإنترنت وأعد تحميل الصفحة.',
 ];
 

@@ -4,7 +4,13 @@
     <title>Direct Vimeo Upload</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <script src="https://cdn.jsdelivr.net/npm/tus-js-client/dist/tus.min.js"></script>
+    <script src="{{ asset('dashboard/cdn/tus.min.js') }}"></script>
+    <script>
+        // احتياطي لو الملف المحلي مش موجود
+        if (typeof tus === 'undefined') {
+            document.write('<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"><\/script>');
+        }
+    </script>
 
 </head>
 <body>

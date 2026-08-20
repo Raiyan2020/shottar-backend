@@ -179,9 +179,42 @@
 @endsection
 
 @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/tus-js-client/dist/tus.min.js"></script>
+    {{-- مستضافة محليًا: الاعتماد على cdn.jsdelivr.net كان بيفشل على شبكات بعض
+         المدرّسين وبيطلع "tus is not defined". الـ CDN بقى احتياطي بس. --}}
+    <script src="{{ asset('dashboard/cdn/tus.min.js') }}"></script>
     <script>
         (function () {
+            const TUS_SOURCES = [
+                @json(asset('dashboard/cdn/tus.min.js')),
+                'https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js',
+            ];
+
+            function loadScript(src) {
+                return new Promise((resolve, reject) => {
+                    const el = document.createElement('script');
+                    el.src = src;
+                    el.onload = resolve;
+                    el.onerror = () => reject(new Error(src));
+                    document.head.appendChild(el);
+                });
+            }
+
+            // بيتأكد إن المكتبة موجودة، ولو مش موجودة يجرّب المصادر بالترتيب.
+            async function ensureTus() {
+                if (typeof tus !== 'undefined') return true;
+
+                for (const src of TUS_SOURCES) {
+                    try {
+                        await loadScript(src);
+                        if (typeof tus !== 'undefined') return true;
+                    } catch (e) {
+                        console.warn('tus load failed:', src);
+                    }
+                }
+
+                return false;
+            }
+
             const fileInput   = document.getElementById('vimeo_file');
             const uploadBtn   = document.getElementById('vimeo_upload_btn');
             const cancelBtn   = document.getElementById('vimeo_cancel_btn');
@@ -218,6 +251,15 @@
                 // if (!allowedTypes.includes(file.type)) { alert('Unsupported video type'); return; }
 
                 setBusy(true); setProgress(0); setStatus(@json(__('general.Initializing...')));
+
+                // لازم تتأكد إن المكتبة محمّلة **قبل** ما نطلب رابط الرفع، لأن
+                // الطلب ده بيعمل فيديو فاضي على Vimeo. قبل كده كان بيفشل بعد
+                // إنشاء الفيديو فكل محاولة بتسيب فيديو فاضي في الحساب.
+                if (! await ensureTus()) {
+                    setStatus(@json(__('general.Upload library failed to load. Check your internet connection and refresh the page.')));
+                    setBusy(false);
+                    return;
+                }
 
                 try {
                     // ملاحظة: نستخدم API بدون CSRF لتجنب 419

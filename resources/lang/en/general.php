@@ -394,4 +394,5 @@
     'Please enter a full link starting with https://' => 'Please enter a full link starting with https://',
     'This link does not belong to :platform' => 'This link does not belong to :platform',
     'Enter the account link, not the platform home page.' => 'Enter the account link, not the platform home page.',
+    'Upload library failed to load. Check your internet connection and refresh the page.' => 'Upload library failed to load. Check your internet connection and refresh the page.',
 ];
