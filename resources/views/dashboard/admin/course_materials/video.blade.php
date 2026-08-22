@@ -53,9 +53,18 @@
             uploadUrl,               // ← المهم
             // لا تضع endpoint هنا
             chunkSize: 2 * 1024 * 1024, // 2MB
-            retryDelays: [0, 1000, 3000, 5000],
+            // Vimeo بيرجّع 412 لما الـ Upload-Offset مش متطابق. الافتراضي في tus
+            // إن أي 4xx خطأ نهائي، فالرفع كان بيموت في النص. الإعادة بتعمل HEAD
+            // وتقرأ الـ offset الحقيقي وتكمّل من عنده.
+            retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 30000],
+            onShouldRetry(error) {
+                const status = error?.originalResponse?.getStatus?.() ?? 0;
+                return status === 0
+                    || status === 409 || status === 412 || status === 423
+                    || status === 429 || status >= 500;
+            },
             metadata: { filename: file.name, filetype: file.type },
-            removeFingerprintOnSuccess: true,
+            storeFingerprintForResuming: false,
             onError(error) {
                 console.error(error);
                 alert('Upload failed: ' + (error?.message || error));

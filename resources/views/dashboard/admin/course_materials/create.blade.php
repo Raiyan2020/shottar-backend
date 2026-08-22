@@ -227,6 +227,12 @@
             const nameEn      = document.getElementById('name_en');
 
             let upload = null;
+            image.png            // آخر رفع لسه ما خلصش: بنحتفظ بيه علشان لو الرفع وقع نكمّل على نفس
+            // الفيديو بدل ما ننشئ فيديو جديد على Vimeo ونبدأ من الصفر.
+            let pending = null; // { key, uploadUrl, videoUri }
+
+            // بصمة الملف علشان نعرف إن اللي اتختار هو نفس الملف اللي وقع قبل كده.
+            function fileKey(f){ return [f.name, f.size, f.lastModified].join('|'); }
 
             function setBusy(b){
                 uploadBtn.disabled = b;
@@ -237,6 +243,7 @@
                 progTxt.textContent = pct + '%';
             }
             function setStatus(msg){ statusTxt.textContent = msg || ''; }
+            function toMb(bytes){ return (bytes / (1024 * 1024)).toFixed(1); }
 
             uploadBtn.addEventListener('click', async () => {
                 const file = fileInput ? fileInput.files?.[0] : null;
@@ -262,53 +269,73 @@
                 }
 
                 try {
-                    // ملاحظة: نستخدم API بدون CSRF لتجنب 419
-                    // const initRes = await fetch('/vimeo-upload-url', {
-                    //     method: 'POST',
-                    //     headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-                    //     body: JSON.stringify({ size: file.size, name: niceName })
-                    // });
+                    let uploadUrl, videoUri;
 
-                    // === إذا حاب تستخدم web.php بدلاً من api.php ===
-                    const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
-                    const initRes = await fetch('/vimeo-upload-url', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': csrf
-                      },
-                      body: JSON.stringify({ size: file.size, name: niceName })
-                    });
+                    // نفس الملف اللي وقع قبل كده؟ نكمّل عليه بدل ما نعمل فيديو جديد.
+                    if (pending && pending.key === fileKey(file)) {
+                        uploadUrl = pending.uploadUrl;
+                        videoUri  = pending.videoUri;
+                        setStatus(@json(__('general.Resuming upload...')));
+                    } else {
+                        // === إذا حاب تستخدم web.php بدلاً من api.php ===
+                        const csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+                        const initRes = await fetch('/vimeo-upload-url', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': csrf
+                          },
+                          body: JSON.stringify({ size: file.size, name: niceName })
+                        });
 
-                    const data = await initRes.json();
-                    if (!initRes.ok || !data.upload_link || !data.video_uri) {
-                        console.error(data);
-                        throw new Error('Failed to get Vimeo upload link');
+                        const data = await initRes.json();
+                        if (!initRes.ok || !data.upload_link || !data.video_uri) {
+                            console.error(data);
+                            throw new Error('Failed to get Vimeo upload link');
+                        }
+
+                        uploadUrl = data.upload_link; // PATCH endpoint (TUS)
+                        videoUri  = data.video_uri;   // /videos/{id}
+                        pending   = { key: fileKey(file), uploadUrl, videoUri };
                     }
-
-                    const uploadUrl = data.upload_link; // PATCH endpoint (TUS)
-                    const videoUri  = data.video_uri;   // /videos/{id}
 
                     upload = new tus.Upload(file, {
                         uploadUrl,
                         chunkSize: 2 * 1024 * 1024, // 2MB
-                        retryDelays: [0, 1000, 3000, 5000],
+                        // Vimeo أحيانًا بيرجّع 412 (Upload-Offset مش متطابق) في وسط
+                        // الرفع. لازم نديله وقت كفاية علشان يعيد المزامنة ويكمّل.
+                        retryDelays: [0, 1000, 3000, 5000, 10000, 15000, 30000],
+                        // tus بيعتبر أي 4xx (ما عدا 409/423) خطأ نهائي، فكان الرفع
+                        // بيموت على 412. الإعادة آمنة: قبل كل محاولة بيعمل HEAD
+                        // ويقرأ الـ offset الحقيقي من Vimeo ويكمّل من عنده.
+                        onShouldRetry(error) {
+                            const status = error?.originalResponse?.getStatus?.() ?? 0;
+                            // 0 = مفيش رد (قطع شبكة)، 412/409 = offset مش متطابق،
+                            // 423 = الملف متقفل، 429 = زحمة، 5xx = مشكلة عند Vimeo.
+                            return status === 0
+                                || status === 409 || status === 412 || status === 423
+                                || status === 429 || status >= 500;
+                        },
                         metadata: { filename: file.name, filetype: file.type },
-                        removeFingerprintOnSuccess: true,
+                        // الرابط بييجي من السيرفر في كل مرة، فمفيش داعي نخزّن بصمة
+                        // في localStorage — الاستكمال بيتم من pending فوق.
+                        storeFingerprintForResuming: false,
                         onError(error) {
                             console.error(error);
-                            setStatus('Upload failed: ' + (error?.message || error));
+                            setStatus(@json(__('general.Upload failed. Press Upload again to resume from where it stopped.'))
+                                + ' (' + (error?.message || error) + ')');
                             setBusy(false);
                         },
                         onProgress(bytesUploaded, bytesTotal) {
                             const pct = Math.min(100, Math.max(0, ((bytesUploaded / bytesTotal) * 100))).toFixed(0);
                             setProgress(pct);
-                            setStatus(@json(__('general.Uploaded')) + ` ${bytesUploaded} / ${bytesTotal} bytes`);
+                            setStatus(@json(__('general.Uploaded')) + ` ${toMb(bytesUploaded)} / ${toMb(bytesTotal)} MB`);
                         },
                         async onSuccess() {
                             setProgress(100);
-                                setStatus(@json(__('general.Upload finished!')));
+                            setStatus(@json(__('general.Upload finished!')));
+                            pending = null;
 
                             // عبّي الحقول المخفية — هي اللي راح نحفظها مع باقي بيانات الدرس
                             vimeoUriInp.value = videoUri;
@@ -334,6 +361,8 @@
                 if (upload) {
                     try { upload.abort(); } catch(e){}
                     upload = null;
+                    // إلغاء مقصود، فمش هنكمّل على نفس الفيديو تاني.
+                    pending = null;
                     setStatus(@json(__('general.Upload canceled')));
                     setBusy(false);
                     setProgress(0);

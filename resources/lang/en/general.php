@@ -395,4 +395,6 @@
     'This link does not belong to :platform' => 'This link does not belong to :platform',
     'Enter the account link, not the platform home page.' => 'Enter the account link, not the platform home page.',
     'Upload library failed to load. Check your internet connection and refresh the page.' => 'Upload library failed to load. Check your internet connection and refresh the page.',
+    'Resuming upload...' => 'Resuming upload...',
+    'Upload failed. Press Upload again to resume from where it stopped.' => 'Upload failed. Press Upload again to resume from where it stopped.',
 ];
