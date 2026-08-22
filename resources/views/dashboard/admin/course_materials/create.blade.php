@@ -225,9 +225,13 @@
             const videoUrlInp = document.getElementById('video_url');
             const nameAr      = document.getElementById('name_ar');
             const nameEn      = document.getElementById('name_en');
+            const formEl      = document.querySelector('form.form');
+
+            // عناصر الرفع موجودة في صفحة الدرس بس، مش في صفحة الملاحظة.
+            if (!uploadBtn) return;
 
             let upload = null;
-            image.png            // آخر رفع لسه ما خلصش: بنحتفظ بيه علشان لو الرفع وقع نكمّل على نفس
+            // آخر رفع لسه ما خلصش: بنحتفظ بيه علشان لو الرفع وقع نكمّل على نفس
             // الفيديو بدل ما ننشئ فيديو جديد على Vimeo ونبدأ من الصفر.
             let pending = null; // { key, uploadUrl, videoUri }
 
@@ -341,8 +345,10 @@
                             vimeoUriInp.value = videoUri;
                             videoUrlInp.value = 'https://vimeo.com' + videoUri;
 
-                            // خيار: تقديم حفظ تلقائي بعد الرفع
-                            document.querySelector('form.form')?.submit();
+                            // خيار: تقديم حفظ تلقائي بعد الرفع.
+                            // form.submit() مش بيشغّل الـ submit listener اللي تحت،
+                            // فالحفظ التلقائي ده مش هيتمنع.
+                            formEl?.submit();
 
                             // setBusy(false);
                         }
@@ -366,6 +372,16 @@
                     setStatus(@json(__('general.Upload canceled')));
                     setBusy(false);
                     setProgress(0);
+                }
+            });
+
+            // الدرس من غير vimeo_uri بيتحفظ بحالة pending ومن غير URL، ومفيش
+            // طريقة تضيفله الفيديو بعد كده غير إنك تمسحه وتعمله من الأول.
+            // فبنمنع الحفظ لحد ما الرفع يخلص.
+            formEl?.addEventListener('submit', (e) => {
+                if (!vimeoUriInp.value) {
+                    e.preventDefault();
+                    alert(@json(__('general.Please upload the video first, then press Save.')));
                 }
             });
         })();

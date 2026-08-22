@@ -303,6 +303,7 @@ return [
     'Enter the account link, not the platform home page.' => 'اكتب لينك الحساب نفسه، مش الصفحة الرئيسية للمنصة.',
     'Upload library failed to load. Check your internet connection and refresh the page.' => 'تعذّر تحميل مكتبة الرفع. تأكد من الاتصال بالإنترنت وأعد تحميل الصفحة.',
     'Resuming upload...' => 'جاري استكمال الرفع...',
+    'Please upload the video first, then press Save.' => 'من فضلك ارفع الفيديو الأول، وبعدين اضغط حفظ.',
     'Upload failed. Press Upload again to resume from where it stopped.' => 'فشل الرفع. اضغط "رفع الفيديو" مرة أخرى لاستكمال الرفع من حيث توقف.',
     'Upload canceled' => 'تم إلغاء الرفع',
     'Upload finished!' => 'تم رفع الفيديو!',
