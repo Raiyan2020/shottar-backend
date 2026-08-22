@@ -165,19 +165,39 @@ class AuthController extends Controller
         $user->status = '2';
         $user->resend_code_count = $user->resend_code_count + 1;
         try {
-            if ($user->save()) {
-                $message = 'your activation code is ' . $user->activation_code;
-//                $send = $this->whatsapp($user->phone, $message_whatsapp);
-                $userdata = [
-                    'resend_code_count' => $user->resend_code_count,
-                ];
-                return sendResponse($userdata);
-            } else {
+            if (! $user->save()) {
                 return sendError(['message' => 'update_error']);
             }
         } catch (\PDOException $ex) {
             return sendError(['message' => 'pdo_exception']);
         }
+
+        // نفس مسار الإرسال بتاع اللوجين بالظبط: sendVerificationCode علشان نص
+        // الرسالة يبقى موحّد، والإرسال بيتخطى لو فيه كود OTP ثابت مضبوط.
+        if (! uses_fixed_otp($user->phone)) {
+            try {
+                $send = $this->sendVerificationCode($user->phone, (int) $user->activation_code);
+                $payload = $send->json();
+                if (! $send->successful() || (is_array($payload) && ($payload['status'] ?? true) === false)) {
+                    Log::error('Shottar resend OTP WhatsApp send failed', [
+                        'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
+                        'provider_status' => $send->status(),
+                        'provider_code' => is_array($payload) ? ($payload['code'] ?? null) : null,
+                    ]);
+                    return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
+                }
+            } catch (\Throwable $exception) {
+                Log::error('Shottar resend OTP WhatsApp exception', [
+                    'phone_suffix' => substr(preg_replace('/\D+/', '', $user->phone), -4),
+                    'exception' => $exception->getMessage(),
+                ]);
+                return sendError('تعذر إرسال رمز التفعيل عبر واتساب، يرجى المحاولة مرة أخرى');
+            }
+        }
+
+        return sendResponse([
+            'resend_code_count' => $user->resend_code_count,
+        ]);
     }
 
 
