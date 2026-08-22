@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdatePaymentMethodRequest extends FormRequest
 {
@@ -21,12 +22,18 @@ class UpdatePaymentMethodRequest extends FormRequest
      */
     public function rules()
     {
-        $paymentMethodId = $this->route('id'); // أو 'paymentMethod' حسب اسم الباراميتر في الراوت
-
+        // اسم الباراميتر في الراوت هو {payment_method} مش {id}. كان الكود بيقرأ
+        // route('id') وبيرجع null، فقاعدة unique كانت بتقارن السجل بنفسه وترمي
+        // "The slug must be unique." وقت أي تعديل — حتى لو مغيرتش الـ slug أصلاً.
         return [
             'name_ar' => 'nullable|string|max:255',
             'name_en' => 'required|string|max:255',
-            'slug' => 'required|string|max:255|unique:payment_methods,slug,' . $paymentMethodId,
+            'slug' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('payment_methods', 'slug')->ignore($this->route('payment_method')),
+            ],
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:102400',
             'status' => 'nullable|boolean',
         ];
