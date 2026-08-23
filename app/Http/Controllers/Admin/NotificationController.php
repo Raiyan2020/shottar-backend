@@ -9,6 +9,7 @@ use App\Models\Notification;
 use App\Models\User;
 use App\Services\FirebaseNotificationService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 
 class NotificationController extends Controller
 {
@@ -46,12 +47,7 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            $this->notificationService->sendNotification(
-                $tokens,
-                $data['title'],
-                $data['body'],
-                ['type' => 'all']
-            );
+            $pushed = $this->pushOrWarn($tokens, $data, 'all');
 
             Notification::create([
                 'user_id' => null,
@@ -60,7 +56,7 @@ class NotificationController extends Controller
                 'type' => 'all',
             ]);
 
-            return back()->with('success', __('messages.notification_sent'));
+            return $this->sendResult($pushed, __('messages.notification_sent'));
         }
 
         if ($sendType === 'unpaid') {
@@ -73,14 +69,7 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            if ($tokens !== []) {
-                $this->notificationService->sendNotification(
-                    $tokens,
-                    $data['title'],
-                    $data['body'],
-                    ['type' => 'unpaid']
-                );
-            }
+            $pushed = $this->pushOrWarn($tokens, $data, 'unpaid');
 
             // One broadcast row for unpaid audience (API filters by type).
             Notification::create([
@@ -90,10 +79,7 @@ class NotificationController extends Controller
                 'type' => 'unpaid',
             ]);
 
-            return back()->with(
-                'success',
-                __('messages.notification_sent') . ' (' . $unpaidUsers->count() . ')'
-            );
+            return $this->sendResult($pushed, __('messages.notification_sent') . ' (' . $unpaidUsers->count() . ')');
         }
 
         if ($sendType === 'one') {
@@ -107,14 +93,7 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            if ($tokens !== []) {
-                $this->notificationService->sendNotification(
-                    $tokens,
-                    $data['title'],
-                    $data['body'],
-                    ['type' => 'user']
-                );
-            }
+            $pushed = $this->pushOrWarn($tokens, $data, 'user');
 
             Notification::create([
                 'user_id' => $user?->id,
@@ -123,7 +102,7 @@ class NotificationController extends Controller
                 'type' => 'user',
             ]);
 
-            return back()->with('success', __('messages.notification_sent'));
+            return $this->sendResult($pushed, __('messages.notification_sent'));
         }
 
         if ($sendType === 'group') {
@@ -138,14 +117,7 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            if ($tokens !== []) {
-                $this->notificationService->sendNotification(
-                    $tokens,
-                    $data['title'],
-                    $data['body'],
-                    ['type' => 'user']
-                );
-            }
+            $pushed = $this->pushOrWarn($tokens, $data, 'user');
 
             foreach ($userIds as $id) {
                 Notification::create([
@@ -156,10 +128,45 @@ class NotificationController extends Controller
                 ]);
             }
 
-            return back()->with('success', __('messages.notification_sent'));
+            return $this->sendResult($pushed, __('messages.notification_sent'));
         }
 
         return back()->withErrors('Invalid Send Type!');
+    }
+
+    /**
+     * بيبعت الإشعار ومبيوقعش الصفحة لو Firebase فشل.
+     *
+     * قبل كده أي فشل (زي ملف الـ service account الناقص) كان بيطلع صفحة 500
+     * للأدمن، والإشعار مكنش بيتسجل أصلاً. دلوقتي بيتسجل في التطبيق على أي حال
+     * والأدمن بيشوف رسالة واضحة.
+     */
+    protected function pushOrWarn(array $tokens, array $data, string $type): bool
+    {
+        if ($tokens === []) {
+            return true; // مفيش أجهزة مسجلة — مش اعتباره فشل
+        }
+
+        try {
+            $this->notificationService->sendNotification($tokens, $data['title'], $data['body'], ['type' => $type]);
+
+            return true;
+        } catch (\Throwable $e) {
+            Log::error('Push notification failed', [
+                'type' => $type,
+                'tokens' => count($tokens),
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    protected function sendResult(bool $pushed, string $successMessage)
+    {
+        return $pushed
+            ? back()->with('success', $successMessage)
+            : back()->with('error', __('general.Notification saved, but push delivery failed. Check the Firebase credentials on the server.'));
     }
 
     /**

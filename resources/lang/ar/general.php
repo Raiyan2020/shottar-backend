@@ -304,6 +304,7 @@ return [
     'Upload library failed to load. Check your internet connection and refresh the page.' => 'تعذّر تحميل مكتبة الرفع. تأكد من الاتصال بالإنترنت وأعد تحميل الصفحة.',
     'Resuming upload...' => 'جاري استكمال الرفع...',
     'Nothing was saved' => 'لم يتم حفظ أي تعديل',
+    'Notification saved, but push delivery failed. Check the Firebase credentials on the server.' => 'تم حفظ الإشعار، لكن الإرسال للأجهزة فشل. راجع إعدادات Firebase على السيرفر.',
     'OK' => 'حسناً',
     'Please upload the video first, then press Save.' => 'من فضلك ارفع الفيديو الأول، وبعدين اضغط حفظ.',
     'Upload failed. Press Upload again to resume from where it stopped.' => 'فشل الرفع. اضغط "رفع الفيديو" مرة أخرى لاستكمال الرفع من حيث توقف.',

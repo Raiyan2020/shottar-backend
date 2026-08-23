@@ -397,6 +397,7 @@
     'Upload library failed to load. Check your internet connection and refresh the page.' => 'Upload library failed to load. Check your internet connection and refresh the page.',
     'Resuming upload...' => 'Resuming upload...',
     'Nothing was saved' => 'Nothing was saved',
+    'Notification saved, but push delivery failed. Check the Firebase credentials on the server.' => 'Notification saved, but push delivery failed. Check the Firebase credentials on the server.',
     'OK' => 'OK',
     'Please upload the video first, then press Save.' => 'Please upload the video first, then press Save.',
     'Upload failed. Press Upload again to resume from where it stopped.' => 'Upload failed. Press Upload again to resume from where it stopped.',
