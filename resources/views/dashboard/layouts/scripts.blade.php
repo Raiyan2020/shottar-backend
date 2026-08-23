@@ -117,5 +117,24 @@
         </script>
     @endif
 
+    {{-- أخطاء الـ validation كانت بتترمي في السيشن ومحدش بيعرضها، فالصفحة كانت
+         بتعمل reload من غير ما تحفظ ومن غير أي رسالة. دي بتغطي كل صفحات الداشبورد. --}}
+    @if($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: @json(__('general.Nothing was saved')),
+                html: @json(collect($errors->all())->map(fn ($e) => e($e))->implode('<br>')),
+                confirmButtonText: @json(__('general.OK')),
+                background: '#ffffff',
+                color: '#3e2f1c',
+                customClass: {
+                    popup: 'swal2-gold-shadow',
+                    icon: 'swal2-gold-icon'
+                }
+            });
+        </script>
+    @endif
+
 
 

@@ -22,6 +22,8 @@
                                         @php
                                             // الشروط وسياسة الخصوصية نص طويل بأسطر — لازم textarea
                                             $isLongText = \Illuminate\Support\Str::contains($x->key_id, ['terms', 'privacy', 'policy', 'desc']);
+                                            // لو الحفظ فشل، بنرجّع اللي الأدمن كتبه بدل ما يضيع ويكتبه تاني.
+                                            $current = old($x->key_id, $x->value);
                                         @endphp
                                         <div class="{{ ($isLongText || str_contains($x->key_id, 'image') || $x->key_id == 'blog_video') ? 'col-md-12' : 'col-md-6' }} col-12">
                                             <div class="form-group">
@@ -36,11 +38,11 @@
                                                         rows="{{ str_contains($x->key_id, 'desc') ? 3 : 20 }}"
                                                         dir="auto"
                                                         style="white-space: pre-wrap; font-family: inherit;"
-                                                        placeholder="set....">{{ $x->value }}</textarea>
+                                                        placeholder="set....">{{ $current }}</textarea>
                                                     @if(!str_contains($x->key_id, 'desc'))
                                                         <small class="text-muted d-block mt-1">
                                                             {{ __('general.Line breaks are preserved exactly as typed.') }}
-                                                            ({{ __('general.Characters') }}: {{ mb_strlen((string) $x->value) }})
+                                                            ({{ __('general.Characters') }}: {{ mb_strlen((string) $current) }})
                                                         </small>
                                                     @endif
 
@@ -58,13 +60,13 @@
                                                 @elseif($x->key_id == 'forced_update_android' || $x->key_id == 'forced_update_ios' || $x->key_id == 'force_close' )
 
                                                         <select   name="{{$x->key_id}}" class="form-control form-control-sm" >
-                                                            <option @if($x->value  == '1') selected="selected" @endif value="1">{{__('Yes')}}</option>
-                                                            <option @if($x->value == '0') selected="selected" @endif value="0">{{__('No')}}</option>
+                                                            <option @if($current == '1') selected="selected" @endif value="1">{{__('Yes')}}</option>
+                                                            <option @if($current == '0') selected="selected" @endif value="0">{{__('No')}}</option>
                                                         </select>
                                                 @else
                                                     <input
                                                         name="{{ $x->key_id }}"
-                                                        value="@if(isset($x->value)){{$x->value}}@endif"
+                                                        value="{{ $current }}"
                                                         type="text"
                                                         id="setting{{$x->id}}"
                                                         class="form-control form-control-sm"
