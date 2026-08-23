@@ -71,6 +71,10 @@
                                                         placeholder="john"
                                                     />
                                                 @endif
+
+                                                @error($x->key_id)
+                                                <span class="col-form-label-sm text-danger d-block">{{ $message }}</span>
+                                                @enderror
                                             </div>
                                         </div>
                                     @endforeach
