@@ -32,7 +32,7 @@ class CourseMaterialDataTable extends DataTable
                     $action['routeEdit'] = panelPrefix().'.subjects.materials.edit';
                 }
                 if ($material->type == 'note' && $material->file) {
-                    $action['routeView'] = asset($material->file);
+                    $action['routeView'] = stored_file_url($material->file);
                     $action['viewTarget'] = '_blank';
                 }
 
