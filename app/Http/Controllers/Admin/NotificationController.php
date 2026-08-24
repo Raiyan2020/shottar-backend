@@ -173,11 +173,21 @@ class NotificationController extends Controller
         }
     }
 
+    /**
+     * بيرجّع على صفحة القائمة مش back().
+     *
+     * back() كان بيعيد بناء صفحة الإنشاء، واللي بتحمّل **كل** المستخدمين
+     * وبترسم dropdownين بعدد المستخدمين كله + عدّ غير المشتركين. فبعد ما
+     * الإرسال نفسه بقى في الخلفية، ده كان لسه بيخلّي الضغط على "إرسال"
+     * ياخد وقت طويل — والسبب مكانش الإرسال أصلاً.
+     */
     protected function sendResult(bool $pushed, string $successMessage)
     {
+        $target = redirect()->route('admin.notifications.index');
+
         return $pushed
-            ? back()->with('success', $successMessage)
-            : back()->with('error', __('general.Notification saved, but push delivery failed. Check the Firebase credentials on the server.'));
+            ? $target->with('success', $successMessage)
+            : $target->with('error', __('general.Notification saved, but push delivery failed. Check the Firebase credentials on the server.'));
     }
 
     /**
@@ -186,8 +196,11 @@ class NotificationController extends Controller
     protected function unpaidUsersQuery(): Builder
     {
         return User::query()
-            ->whereDoesntHave('orders', function (Builder $query) {
-                $query->where('status', 'paid');
+            ->whereNotExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('orders')
+                    ->whereColumn('orders.user_id', 'users.id')
+                    ->where('orders.status', 'paid');
             });
     }
 }
