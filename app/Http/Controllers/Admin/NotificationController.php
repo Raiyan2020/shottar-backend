@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\DataTables\NotificationsDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NotificationRequest;
+use App\Jobs\SendPushNotificationJob;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\FirebaseNotificationService;
@@ -148,11 +149,21 @@ class NotificationController extends Controller
         }
 
         try {
-            $this->notificationService->sendNotification($tokens, $data['title'], $data['body'], ['type' => $type]);
+            // الإرسال بقى في الخلفية: كان بيتم جوه الريكوست وبطلب HTTP لكل جهاز
+            // على حدة، فالصفحة كانت بتعلّق دقايق مع عدد مستخدمين كبير.
+            // ⚠️ ده بيشتغل في الخلفية فعلًا بس لو QUEUE_CONNECTION != sync
+            //    وفيه worker شغّال على queue اسمها notifications.
+            SendPushNotificationJob::dispatchInChunks(
+                $tokens,
+                $data['title'],
+                $data['body'],
+                ['type' => $type],
+                $type
+            );
 
             return true;
         } catch (\Throwable $e) {
-            Log::error('Push notification failed', [
+            Log::error('Push notification dispatch failed', [
                 'type' => $type,
                 'tokens' => count($tokens),
                 'error' => $e->getMessage(),

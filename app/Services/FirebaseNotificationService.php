@@ -16,16 +16,34 @@ class FirebaseNotificationService
         $this->firebaseServerKey = env('FCM_SERVER_KEY');
     }
 
-    public function sendNotification(array $deviceTokens, string $title, string $body, array $data = [])
+    /**
+     * إرسال إشعار لمجموعة توكنات.
+     *
+     * كان بيبعت **طلب HTTP متزامن لكل جهاز على حدة** في لوب، يعني 1000 مستخدم
+     * = 1000 رحلة متسلسلة لـ FCM جوه الريكوست (دقايق). دلوقتي بيبعت على دفعات
+     * متوازية بـ Http::pool، وبيرجّع ملخّص، وبينضّف التوكنات الميتة.
+     *
+     * @return array{sent:int,failed:int,invalid:int,total:int}
+     */
+    public function sendNotification(array $deviceTokens, string $title, string $body, array $data = []): array
     {
         $deviceTokens = array_values(array_unique(array_filter($deviceTokens)));
 
+        $summary = ['sent' => 0, 'failed' => 0, 'invalid' => 0, 'total' => count($deviceTokens)];
+
         if ($deviceTokens === []) {
-            return false;
+            return $summary;
         }
 
         $url = 'https://fcm.googleapis.com/v1/projects/shottar-d93f6/messages:send';
         $accessToken = $this->firebaseService->getAccessToken();
+
+        if (! $accessToken) {
+            Log::error('FCM: تعذر الحصول على access token — مفيش إشعارات اتبعتت');
+            $summary['failed'] = $summary['total'];
+
+            return $summary;
+        }
 
         // FCM data payload values must be strings.
         // Do NOT repeat title/body here — that causes Flutter to show the same alert twice
@@ -42,47 +60,91 @@ class FirebaseNotificationService
             $dataPayload['type'] = 'general';
         }
 
-        foreach ($deviceTokens as $token) {
-            $payload = [
-                'message' => [
-                    'token' => $token,
-                    'notification' => [
-                        'title' => $title,
-                        'body' => $body,
-                    ],
-                    'android' => [
-                        'priority' => 'high',
-                        'notification' => [
-                            'sound' => 'default',
-                            'channel_id' => 'default',
-                        ],
-                    ],
-                    'apns' => [
-                        'payload' => [
-                            'aps' => [
-                                'sound' => 'default',
+        $deadTokens = [];
+
+        // عدد الطلبات المتوازية في الدفعة الواحدة
+        $concurrency = max(1, (int) config('services.fcm.concurrency', 25));
+
+        foreach (array_chunk($deviceTokens, $concurrency) as $chunk) {
+            $responses = Http::pool(function ($pool) use ($chunk, $url, $accessToken, $title, $body, $dataPayload) {
+                foreach ($chunk as $token) {
+                    $pool->as((string) $token)
+                        ->withHeaders([
+                            'Authorization' => 'Bearer ' . $accessToken,
+                            'Content-Type' => 'application/json',
+                        ])
+                        ->timeout(15)
+                        ->post($url, [
+                            'message' => [
+                                'token' => $token,
+                                'notification' => [
+                                    'title' => $title,
+                                    'body' => $body,
+                                ],
+                                'android' => [
+                                    'priority' => 'high',
+                                    'notification' => [
+                                        'sound' => 'default',
+                                        'channel_id' => 'default',
+                                    ],
+                                ],
+                                'apns' => [
+                                    'payload' => [
+                                        'aps' => [
+                                            'sound' => 'default',
+                                        ],
+                                    ],
+                                ],
+                                'data' => $dataPayload,
                             ],
-                        ],
-                    ],
-                    'data' => $dataPayload,
-                ],
-            ];
+                        ]);
+                }
+            });
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
-                'Content-Type' => 'application/json',
-            ])->post($url, $payload);
+            foreach ($responses as $token => $response) {
+                // الاستثناءات (timeout/DNS) بترجع كـ exception مش response
+                if ($response instanceof \Throwable) {
+                    $summary['failed']++;
+                    Log::warning('FCM send exception', [
+                        'token' => substr((string) $token, 0, 12) . '...',
+                        'error' => $response->getMessage(),
+                    ]);
 
-            if ($response->failed()) {
+                    continue;
+                }
+
+                if ($response->successful()) {
+                    $summary['sent']++;
+
+                    continue;
+                }
+
+                $summary['failed']++;
+                $errorStatus = (string) data_get($response->json(), 'error.status');
+
+                // التوكن ده مات (المستخدم شال التطبيق / التوكن اتغير) — نشيله
+                // عشان ميستهلكش طلب في كل إرسال جاي.
+                if (in_array($errorStatus, ['UNREGISTERED', 'NOT_FOUND'], true)) {
+                    $deadTokens[] = (string) $token;
+                    $summary['invalid']++;
+
+                    continue;
+                }
+
                 Log::warning('FCM send failed', [
                     'token' => substr((string) $token, 0, 12) . '...',
                     'status' => $response->status(),
-                    'body' => $response->json(),
+                    'error' => $errorStatus,
                 ]);
             }
         }
 
-        return true;
+        if ($deadTokens !== []) {
+            \App\Models\User::whereIn('device_token', $deadTokens)->update(['device_token' => null]);
+            Log::info('FCM: تم تنظيف توكنات ميتة', ['count' => count($deadTokens)]);
+        }
+
+        return $summary;
     }
 
     public function sendFCMTopic($data, $target = 'general')

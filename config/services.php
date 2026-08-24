@@ -81,6 +81,12 @@ return [
         'phone_change_max_attempts' => (int) env('OTP_PHONE_CHANGE_MAX_ATTEMPTS', 5),
     ],
 
+    'fcm' => [
+        // عدد طلبات FCM المتوازية في الدفعة الواحدة. زوّدها لو الإرسال لسه بطيء،
+        // ووطّيها لو ظهرت أخطاء rate limit من Google.
+        'concurrency' => (int) env('FCM_CONCURRENCY', 25),
+    ],
+
     'orders' => [
         'strict_total' => (bool) env('ORDER_STRICT_TOTAL', false),
         'total_tolerance' => (float) env('ORDER_TOTAL_TOLERANCE', 0.001),
