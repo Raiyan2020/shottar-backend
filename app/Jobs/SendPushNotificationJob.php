@@ -83,8 +83,13 @@ class SendPushNotificationJob implements ShouldQueue
 
         $chunks = array_chunk($tokens, self::CHUNK_SIZE);
 
+        // بيروح على queue الافتراضية عشان الـ workers الموجودة على السيرفر
+        // تشوفه من غير أي إعداد إضافي. لو عملت worker مخصّص للإشعارات، ظبّط
+        // FCM_QUEUE في .env وشغّل الـ worker بـ --queue=<الاسم>.
+        $queue = (string) config('services.fcm.queue', 'default');
+
         foreach ($chunks as $chunk) {
-            self::dispatch($chunk, $title, $body, $data, $audience)->onQueue('notifications');
+            self::dispatch($chunk, $title, $body, $data, $audience)->onQueue($queue);
         }
 
         return count($chunks);

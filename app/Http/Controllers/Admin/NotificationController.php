@@ -152,7 +152,7 @@ class NotificationController extends Controller
             // الإرسال بقى في الخلفية: كان بيتم جوه الريكوست وبطلب HTTP لكل جهاز
             // على حدة، فالصفحة كانت بتعلّق دقايق مع عدد مستخدمين كبير.
             // ⚠️ ده بيشتغل في الخلفية فعلًا بس لو QUEUE_CONNECTION != sync
-            //    وفيه worker شغّال على queue اسمها notifications.
+            //    وفيه worker شغّال على الـ queue المحددة في services.fcm.queue.
             SendPushNotificationJob::dispatchInChunks(
                 $tokens,
                 $data['title'],

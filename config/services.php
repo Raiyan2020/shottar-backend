@@ -85,6 +85,10 @@ return [
         // عدد طلبات FCM المتوازية في الدفعة الواحدة. زوّدها لو الإرسال لسه بطيء،
         // ووطّيها لو ظهرت أخطاء rate limit من Google.
         'concurrency' => (int) env('FCM_CONCURRENCY', 25),
+
+        // اسم الـ queue اللي جوبات الإشعارات بتروح عليها. سيبها 'default'
+        // إلا لو فيه worker مخصّص شغّال بـ --queue=notifications.
+        'queue' => env('FCM_QUEUE', 'default'),
     ],
 
     'orders' => [
