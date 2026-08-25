@@ -35,8 +35,8 @@ class FirebaseService
             ?: env('GOOGLE_APPLICATION_CREDENTIALS');
 
         if (is_string($configured) && $configured !== '') {
-            // Absolute path or project-relative path.
-            if (str_starts_with($configured, '/')) {
+            // Absolute path (unix /... or windows C:\...) or project-relative path.
+            if (str_starts_with($configured, '/') || preg_match('#^[A-Za-z]:[\\/]#', $configured)) {
                 return $configured;
             }
 
