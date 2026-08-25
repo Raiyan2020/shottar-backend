@@ -27,12 +27,21 @@ class AuthController extends Controller
         }
         $activation_code = generate_activation_code($user->phone);
 
-        $user->update([
-            'device_type' => $request->device_type,
-            'device_token' => $request->device_token,
+        $updates = [
             'status' => '2', // assuming status 2 means active
             'activation_code' => $activation_code, // set activation code
-        ]);
+        ];
+
+        if ($request->filled('device_type')) {
+            $updates['device_type'] = $request->device_type;
+        }
+
+        $user->update($updates);
+
+        // التطبيق ساعات بيعمل لوجين من غير ما يبعت device_token. لو كتبنا null
+        // مكانه بنمسح توكن الجهاز المسجّل ونوقف الإشعارات عن المستخدم من غير
+        // سبب — فبنحدّثه بس لما التطبيق يبعت قيمة فعلية.
+        $user->setDeviceToken($request->input('device_token'), $request->input('device_type'));
 
         if (! uses_fixed_otp($user->phone)) {
             // إرسال كود التحقق إذا لزم الأمر
@@ -200,6 +209,35 @@ class AuthController extends Controller
         ]);
     }
 
+
+    /**
+     * تحديث توكن الجهاز من غير ما المستخدم يعمل لوجين من الأول.
+     *
+     * توكن FCM بيتغيّر لوحده (تحديث التطبيق، إعادة تثبيت، مسح البيانات،
+     * أو rotation من Firebase). من غير المسار ده المستخدم كان بيفضل ساكت
+     * لحد ما يسجّل خروج ودخول تاني.
+     */
+    public function updateDeviceToken(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'device_token' => 'required|string|max:500',
+            'device_type' => 'nullable|string|in:ios,android',
+        ]);
+
+        if ($validator->fails()) {
+            return sendError($validator->errors());
+        }
+
+        $user = auth()->user();
+
+        if (! $user) {
+            return sendError('unauthenticated');
+        }
+
+        $user->setDeviceToken($request->input('device_token'), $request->input('device_type'));
+
+        return sendResponse(['device_token_saved' => true]);
+    }
 
     public function logout(Request $request)
     {

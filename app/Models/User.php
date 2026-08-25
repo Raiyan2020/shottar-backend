@@ -87,6 +87,31 @@ class User extends Authenticatable
     ];
 
     //orders
+    /**
+     * بيسجّل توكن جهاز للمستخدم ده.
+     *
+     * لو نفس التوكن كان مربوط بمستخدم تاني (حد سجّل خروج وحد تاني دخل على نفس
+     * الموبايل)، بنفكّه من القديم — غير كده إشعارات المستخدم القديم تفضل
+     * توصل للجهاز ده.
+     */
+    public function setDeviceToken(?string $token, ?string $type = null): void
+    {
+        $token = trim((string) $token);
+
+        if ($token === '') {
+            return;
+        }
+
+        static::where('device_token', $token)
+            ->where('id', '!=', $this->id)
+            ->update(['device_token' => null]);
+
+        $this->forceFill(array_filter([
+            'device_token' => $token,
+            'device_type' => $type,
+        ]))->save();
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
