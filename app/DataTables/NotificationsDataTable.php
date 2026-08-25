@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Notification;
+use App\Models\User;
 use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Column;
@@ -21,6 +22,20 @@ class NotificationsDataTable extends DataTable
             //user
             ->editColumn('user', function ($notification) {
                 return $notification->user ? $notification->user->name : '-';
+            })
+            // `user` مش عمود في جدول notifications — هو علاقة. من غير الحتّة دي
+            // البحث كان بيولّد LOWER(`notifications`.`user`) ويقع بـ
+            // "Unknown column 'notifications.user'". دلوقتي بيدوّر على اسم المستخدم.
+            ->filterColumn('user', function ($query, $keyword) {
+                $query->whereHas('user', function ($q) use ($keyword) {
+                    $q->where('name', 'like', '%' . $keyword . '%');
+                });
+            })
+            ->orderColumn('user', function ($query, $order) {
+                $query->orderBy(
+                    User::query()->select('name')->whereColumn('users.id', 'notifications.user_id'),
+                    $order
+                );
             })
             //created_at
             ->editColumn('created_at', function ($notification) {
