@@ -114,17 +114,20 @@ class Subject extends Model
 
     public function lessonSections()
     {
-        return $this->hasMany(LessonSection::class);
+        // نفس الكلام: ترتيب الوحدات بيتظبط بالسحب (sections.reorder).
+        return $this->hasMany(LessonSection::class)->orderBy('order_by')->orderBy('id');
     }
 
     public function courseMaterials()
     {
-        return $this->hasMany(CourseMaterial::class);
+        // المدرّس بيرتب الدروس بالسحب في الداشبورد (materials.reorder)، فلازم كل
+        // استعلام يرجّعهم بنفس الترتيب ده مش بترتيب الإدخال.
+        return $this->hasMany(CourseMaterial::class)->orderBy('order_by')->orderBy('id');
     }
 
     public function exams()
     {
-        return $this->hasMany(Exam::class)->orderBy('order_by');
+        return $this->hasMany(Exam::class)->orderBy('order_by')->orderBy('id');
     }
 
     public function orders()

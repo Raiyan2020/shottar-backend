@@ -19,6 +19,9 @@ class ExamResource extends JsonResource
             // §6: المسار الموصى بيه للتنزيل (نفس ملاحظة NoteResource).
             'download_url' => route('api.material-file', ['type' => 'exam', 'id' => $this->id]),
             'is_free' => (bool) $this->is_free,
+            // الوحدة اللي المرفق تابع لها — null يعني على مستوى المادة كلها.
+            'lesson_section_id' => $this->lesson_section_id,
+            'lesson_section_name' => optional($this->section)->{"name_$lang"},
         ];
     }
 }

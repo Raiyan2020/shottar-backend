@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ExamRequest extends FormRequest
 {
@@ -17,6 +18,13 @@ class ExamRequest extends FormRequest
 
         return [
             'subject_id' => ['required', 'exists:subjects,id'],
+            // اختياري: لو فاضي يبقى المرفق على مستوى المادة كلها.
+            'lesson_section_id' => [
+                'nullable',
+                Rule::exists('lesson_sections', 'id')->where(
+                    fn ($q) => $q->where('subject_id', $this->route('subject')?->id ?? $this->route('subject'))
+                ),
+            ],
             'name_ar' => ['required', 'string', 'max:255'],
             'name_en' => ['required', 'string', 'max:255'],
             'file' => [$isUpdate ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:102400'],

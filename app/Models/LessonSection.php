@@ -29,7 +29,9 @@ class LessonSection extends Model
     }
     public function courseMaterials()
     {
-        return $this->hasMany(CourseMaterial::class, 'lesson_section_id');
+        return $this->hasMany(CourseMaterial::class, 'lesson_section_id')
+            ->orderBy('order_by')
+            ->orderBy('id');
     }
 
     public function challengeUserSessions()

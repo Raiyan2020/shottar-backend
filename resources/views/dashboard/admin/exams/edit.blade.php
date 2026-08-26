@@ -21,6 +21,25 @@
                             <input type="hidden" name="subject_id" value="{{ $subject->id }}">
 
                             <div class="row">
+                                <!-- الوحدة: اختياري — لو مختارتش، المرفق بيبقى على مستوى المادة كلها -->
+                                <div class="col-md-12 col-12">
+                                    <div class="form-group">
+                                        <label for="lesson_section_id" class="col-form-label-sm">{{ __('general.unit') }}</label>
+                                        <select name="lesson_section_id" id="lesson_section_id"
+                                                class="form-control form-control-sm @error('lesson_section_id') is-invalid @enderror">
+                                            <option value="">{{ __('general.Whole subject (no unit)') }}</option>
+                                            @foreach($sections as $section)
+                                                <option value="{{ $section->id }}" {{ (string) old('lesson_section_id', $exam->lesson_section_id) === (string) $section->id ? 'selected' : '' }}>
+                                                    {{ app()->getLocale() === 'en' ? $section->name_en : $section->name_ar }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        @error('lesson_section_id')
+                                        <span class="col-form-label-sm text-danger">{{ $message }}</span>
+                                        @enderror
+                                    </div>
+                                </div>
+
                                 <div class="col-md-6 col-12">
                                     <div class="form-group">
                                         <label for="name_ar" class="col-form-label-sm">{{ __('general.Name in Arabic') }}</label>

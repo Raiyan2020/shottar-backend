@@ -247,7 +247,9 @@
 
         'Add Lesson Section' => 'Add Lesson Section',
         'Update Lesson Section' => 'Update Lesson Section',
-        'lesson_sections' => 'Lesson Sections',
+        'lesson_sections' => 'Unit',
+        'unit' => 'Unit',
+        'Whole subject (no unit)' => 'Whole subject (no unit)',
 
         'back'=>'back',
         'lessons' => 'lessons',

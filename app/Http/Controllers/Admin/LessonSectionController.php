@@ -30,10 +30,12 @@ class LessonSectionController extends Controller
     public function store(LessonSectionRequest $request, Subject $subject)
     {
 
-        $maxOrder = $subject->lessonSections()->max('order_by');
+        // كان بيحسب order_by في $data وبعدين بيعمل create($request->validated())
+        // فالقيمة المحسوبة كانت بتتضيع وكل وحدة جديدة تتولد بـ order_by = 0.
+        $maxOrder = (int) $subject->lessonSections()->max('order_by');
         $data = $request->validated();
-        $data['order_by'] = $maxOrder ? $maxOrder + 1 : 1;
-        $subject->lessonSections()->create($request->validated());
+        $data['order_by'] = $maxOrder + 1;
+        $subject->lessonSections()->create($data);
 
         return redirect()->route(panelPrefix().'.subjects.sections.index', $subject->id)
             ->with('success', __('Section created successfully'));

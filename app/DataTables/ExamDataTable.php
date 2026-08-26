@@ -32,6 +32,17 @@ class ExamDataTable extends DataTable
 
                 return view('components.datatable.actions', $action);
             })
+            ->addColumn('unit', function (Exam $exam) {
+                return optional($exam->section)->{'name_'.app()->getLocale()}
+                    ?? optional($exam->section)->name_ar
+                    ?? '-';
+            })
+            ->filterColumn('unit', function ($query, $keyword) {
+                $query->whereHas('section', function ($q) use ($keyword) {
+                    $q->where('name_ar', 'like', '%'.$keyword.'%')
+                        ->orWhere('name_en', 'like', '%'.$keyword.'%');
+                });
+            })
             ->editColumn('status', function (Exam $exam) {
                 return view('components.datatable.status-toggle', [
                     'id' => $exam->id,
@@ -65,6 +76,7 @@ class ExamDataTable extends DataTable
         $subject = request()->route('subject');
 
         return $model->newQuery()
+            ->with('section')          // عشان عمود الوحدة ميعملش N+1
             ->where('subject_id', $subject->id)
             ->orderBy('order_by')
             ->orderByDesc('id');
@@ -86,6 +98,7 @@ class ExamDataTable extends DataTable
             Column::make('id')->title(__('dataTable.id')),
             Column::make('name_ar')->title(__('dataTable.name_ar')),
             Column::make('name_en')->title(__('dataTable.name_en')),
+            Column::make('unit')->title(__('general.unit'))->orderable(false),
             Column::make('file')->title(__('general.PDF'))->orderable(false)->searchable(false),
             Column::make('is_free')->title(__('general.is_free')),
             Column::make('status')->title(__('dataTable.status')),

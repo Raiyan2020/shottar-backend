@@ -241,7 +241,9 @@ return [
 
     'Add Lesson Section' => 'إضافة قسم دراسي',
     'Update Lesson Section' => 'تحديث قسم دراسي',
-    'lesson_sections' => 'الأقسام الدراسية',
+    'lesson_sections' => 'الوحدة',
+    'unit' => 'الوحدة',
+    'Whole subject (no unit)' => 'المادة كلها (بدون وحدة)',
     'back' => 'عودة',
 
     // Daily Challenges

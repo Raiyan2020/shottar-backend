@@ -25,7 +25,9 @@ class ExamController extends Controller
 
     public function create(Subject $subject)
     {
-        return view('dashboard.admin.exams.create', compact('subject'));
+        $sections = $subject->lessonSections()->get();
+
+        return view('dashboard.admin.exams.create', compact('subject', 'sections'));
     }
 
     public function store(ExamRequest $request, Subject $subject)
@@ -54,7 +56,9 @@ class ExamController extends Controller
     {
         abort_unless($exam->subject_id === $subject->id, 404);
 
-        return view('dashboard.admin.exams.edit', compact('subject', 'exam'));
+        $sections = $subject->lessonSections()->get();
+
+        return view('dashboard.admin.exams.edit', compact('subject', 'exam', 'sections'));
     }
 
     public function update(ExamRequest $request, Subject $subject, Exam $exam)
