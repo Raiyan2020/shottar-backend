@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\DataTables\NotificationsDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\NotificationRequest;
-use App\Jobs\SendPushNotificationJob;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\FirebaseNotificationService;
@@ -145,23 +144,29 @@ class NotificationController extends Controller
     protected function pushOrWarn(array $tokens, array $data, string $type): bool
     {
         if ($tokens === []) {
-            return true; // مفيش أجهزة مسجلة — مش اعتباره فشل
+            Log::warning('Push notification skipped: audience has no device tokens', [
+                'type' => $type,
+            ]);
+
+            return false;
         }
 
         try {
-            // الإرسال بقى في الخلفية: كان بيتم جوه الريكوست وبطلب HTTP لكل جهاز
-            // على حدة، فالصفحة كانت بتعلّق دقايق مع عدد مستخدمين كبير.
-            // ⚠️ ده بيشتغل في الخلفية فعلًا بس لو QUEUE_CONNECTION != sync
-            //    وفيه worker شغّال على الـ queue المحددة في services.fcm.queue.
-            SendPushNotificationJob::dispatchInChunks(
+            // استخدم نفس مسار الإرسال المباشر الذي يستعمله أمر
+            // notifications:diagnose، حتى لا تعرض لوحة الإدارة نجاحًا بينما
+            // الجوب ما زال عالقًا في queue بدون worker.
+            $summary = $this->notificationService->sendNotification(
                 $tokens,
                 $data['title'],
                 $data['body'],
-                ['type' => $type],
-                $type
+                ['type' => $type]
             );
 
-            return true;
+            Log::info('Admin push notification result', [
+                'type' => $type,
+            ] + $summary);
+
+            return $summary['sent'] > 0 && $summary['failed'] === 0;
         } catch (\Throwable $e) {
             Log::error('Push notification dispatch failed', [
                 'type' => $type,
