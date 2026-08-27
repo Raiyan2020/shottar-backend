@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\FirebaseNotificationService;
 use App\Services\FirebaseService;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Http;
 
 /**
  * تشخيص إرسال الإشعارات من على السيرفر.
@@ -119,50 +119,29 @@ class NotificationsDiagnoseCommand extends Command
         return $this->sendTest($token);
     }
 
-    /** إرسال مباشر لـ FCM عشان نشوف رد جوجل الخام. */
+    /** إرسال باستخدام نفس الخدمة التي تستعملها لوحة الإدارة. */
     protected function sendTest(string $token): bool
     {
         $this->line('');
         $this->components->info('إرسال إشعار تجريبي...');
 
-        $response = Http::withToken(app(FirebaseService::class)->getAccessToken())
-            ->timeout(20)
-            ->post('https://fcm.googleapis.com/v1/projects/shottar-d93f6/messages:send', [
-                'message' => [
-                    'token' => $token,
-                    'notification' => [
-                        'title' => 'اختبار شطار',
-                        'body' => 'لو وصلتك الرسالة دي يبقى الإشعارات شغالة ✅',
-                    ],
-                    'android' => ['priority' => 'high', 'notification' => ['sound' => 'default', 'channel_id' => 'default']],
-                    'apns' => ['payload' => ['aps' => ['sound' => 'default']]],
-                    'data' => ['type' => 'test'],
-                ],
-            ]);
+        $summary = app(FirebaseNotificationService::class)->sendNotification(
+            [$token],
+            'اختبار شطار',
+            'لو وصلتك الرسالة دي يبقى الإشعارات شغالة ✅',
+            ['type' => 'test'],
+        );
 
-        if ($response->successful()) {
-            $this->components->twoColumnDetail('نتيجة FCM', '<fg=green>اتبعت — '.data_get($response->json(), 'name').'</>');
+        if ($summary['sent'] === 1) {
+            $this->components->twoColumnDetail('نتيجة FCM', '<fg=green>اتبعت بنجاح من نفس مسار لوحة الإدارة</>');
             $this->line('   <fg=green>جوجل استلم الإشعار. لو مظهرش على الموبايل، المشكلة في التطبيق نفسه</>');
             $this->line('   <fg=green>(صلاحية الإشعارات، أو التطبيق مقفول، أو معالجة الإشعار في Flutter).</>');
 
             return true;
         }
 
-        $errorStatus = (string) data_get($response->json(), 'error.status');
-
-        $this->components->twoColumnDetail('نتيجة FCM', '<fg=red>فشل ('.$response->status().') '.$errorStatus.'</>');
-        $this->line('   '.substr((string) data_get($response->json(), 'error.message'), 0, 200));
-
-        $hint = match ($errorStatus) {
-            'UNREGISTERED', 'NOT_FOUND' => 'التوكن ميت — المستخدم شال التطبيق أو التوكن اتغير. لازم يعمل لوجين تاني.',
-            'INVALID_ARGUMENT' => 'التوكن شكله غلط أو مش تابع لنفس مشروع Firebase بتاع التطبيق.',
-            'SENDER_ID_MISMATCH' => 'التوكن من مشروع Firebase تاني — راجع google-services.json في تطبيق Flutter.',
-            'PERMISSION_DENIED' => 'مفتاح الـ service account مالوش صلاحية الإرسال على المشروع ده.',
-            'UNAVAILABLE' => 'خدمة FCM مش متاحة دلوقتي — جرّب تاني بعد شوية.',
-            default => 'شوف رسالة الخطأ فوق.',
-        };
-
-        $this->line('   <fg=yellow>'.$hint.'</>');
+        $this->components->twoColumnDetail('نتيجة FCM', '<fg=red>فشل</>');
+        $this->line('   <fg=yellow>راجع آخر سطور storage/logs/laravel.log لمعرفة رد Firebase.</>');
 
         return false;
     }
