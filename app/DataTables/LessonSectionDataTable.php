@@ -94,7 +94,9 @@ class LessonSectionDataTable extends DataTable
                 ]);
             })
             ->addColumn('subject', function ($section) {
-                return $section->subject?->name_ar ?? '-';
+                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+
+                return $section->subject?->{$nameColumn} ?? '-';
             })
             ->rawColumns(['action', 'status']);
     }

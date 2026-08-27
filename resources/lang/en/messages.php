@@ -1,5 +1,6 @@
 <?php
 return [
+    'login_success' => 'Logged in successfully.',
     'An error occurred while creating the admin. Please try again.' => 'An error occurred while creating the admin. Please try again.',
     'created successfully.' => 'created successfully.',
     'The Admin is not exist' => 'The Admin is not exist',
@@ -33,5 +34,7 @@ return [
     'An error occurred while creating the process. Please try again.' => 'An error occurred while creating the process. Please try again.',
     'The our process is not exist' => 'The our process is not exist',
     'updated successfully' => 'updated successfully',
+    'An error occurred while creating the teacher.' => 'An error occurred while creating the teacher.',
+    'notification_sent' => 'Notification sent successfully.',
 
 ];

@@ -26,15 +26,28 @@
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <!-- Language Switcher -->
-{{--            <li class="nav-item language-switcher">--}}
-{{--                @php--}}
-{{--                    $current = \Illuminate\Support\Facades\App::getLocale();--}}
-{{--                    $other = $current === 'ar' ? 'en' : 'ar';--}}
-{{--                @endphp--}}
-{{--                <a class="nav-link active" hreflang="{{ $other }}" href="{{ LaravelLocalization::getLocalizedURL($other, null, [], true) }}">--}}
-{{--                    {{ strtoupper($other) }}--}}
-{{--                </a>--}}
-{{--            </li>--}}
+            <li class="nav-item">
+                <div class="language-switcher" role="group" aria-label="{{ __('general.Language') }}">
+                    <form method="POST" action="{{ route('dashboard.language.switch', 'ar') }}">
+                        @csrf
+                        <button type="submit"
+                                class="nav-link language-option {{ app()->isLocale('ar') ? 'active' : '' }}"
+                                aria-pressed="{{ app()->isLocale('ar') ? 'true' : 'false' }}">
+                            <span class="fi fi-kw" aria-hidden="true"></span>
+                            <span>العربية</span>
+                        </button>
+                    </form>
+                    <form method="POST" action="{{ route('dashboard.language.switch', 'en') }}">
+                        @csrf
+                        <button type="submit"
+                                class="nav-link language-option {{ app()->isLocale('en') ? 'active' : '' }}"
+                                aria-pressed="{{ app()->isLocale('en') ? 'true' : 'false' }}">
+                            <span class="fi fi-us" aria-hidden="true"></span>
+                            <span>English</span>
+                        </button>
+                    </form>
+                </div>
+            </li>
             <!-- /Language Switcher -->
 
             <!-- User -->
@@ -64,7 +77,7 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0">{{ $user->name }}</h6>
-                                    <small class="text-muted">{{__('general.Admin')}}</small>
+                                    <small class="text-muted">{{ $user->hasRole('teacher') ? __('general.Teacher') : __('general.Admin') }}</small>
                                 </div>
                             </div>
                         </a>

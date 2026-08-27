@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="{{ app()->getLocale() }}" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
 <head>
-    <title>Direct Vimeo Upload</title>
+    <title>{{ __('Direct Vimeo Upload') }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <script src="{{ asset('dashboard/cdn/tus.min.js') }}"></script>
@@ -15,23 +15,33 @@
 </head>
 <body>
 
-<h2>Upload Video Directly to Vimeo</h2>
+<h2>{{ __('Upload Video Directly to Vimeo') }}</h2>
 
 <input type="file" id="videoFile" accept="video/*">
-<input type="text" id="videoTitle" placeholder="Video title">
-<button id="uploadBtn">Upload Video</button>
-<div id="progress">Progress: 0%</div>
+<input type="text" id="videoTitle" placeholder="{{ __('Video title') }}">
+<button id="uploadBtn">{{ __('Upload Video') }}</button>
+<div id="progress">{{ __('Progress') }}: 0%</div>
 
 <script>
     const fileInput   = document.querySelector('#videoFile');
     const uploadButton= document.querySelector('#uploadBtn');
     const videoTitle  = document.querySelector('#videoTitle');
     const progressDiv = document.querySelector('#progress');
+    const translations = @json([
+        'selectFile' => __('general.Please select a video file'),
+        'enterTitle' => __('Please enter a video title'),
+        'linkFailed' => __('Failed to get Vimeo upload link'),
+        'uploadFailed' => __('Upload failed'),
+        'progress' => __('Progress'),
+        'saving' => __('Upload finished! Saving...'),
+        'saved' => __('Video uploaded and saved successfully!'),
+        'completed' => __('Upload and save completed!'),
+    ]);
 
     uploadButton.addEventListener('click', async () => {
         const file = fileInput.files[0];
-        if (!file) return alert('Please select a video file');
-        if (!videoTitle.value) return alert('Please enter a video title');
+        if (!file) return alert(translations.selectFile);
+        if (!videoTitle.value) return alert(translations.enterTitle);
 
         const csrf = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -46,7 +56,7 @@
 
         // تأكد أننا نستلم الرابط الصحيح من Vimeo: upload_link (أحيانًا يسمّى upload_url عندك)
         const uploadUrl = data.upload_link || data.upload_url;
-        if (!uploadUrl || !data.video_uri) return alert('Failed to get Vimeo upload link');
+        if (!uploadUrl || !data.video_uri) return alert(translations.linkFailed);
 
         // 2) استخدم uploadUrl وليس endpoint
         const upload = new tus.Upload(file, {
@@ -67,14 +77,14 @@
             storeFingerprintForResuming: false,
             onError(error) {
                 console.error(error);
-                alert('Upload failed: ' + (error?.message || error));
+                alert(translations.uploadFailed + ': ' + (error?.message || error));
             },
             onProgress(bytesUploaded, bytesTotal) {
                 const pct = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
-                progressDiv.textContent = `Progress: ${pct}%`;
+                progressDiv.textContent = `${translations.progress}: ${pct}%`;
             },
             async onSuccess() {
-                progressDiv.textContent = 'Upload finished! Saving...';
+                progressDiv.textContent = translations.saving;
 
                 const csrf = document.querySelector('meta[name="csrf-token"]').content;
                 const save = await fetch('/vimeo-save', {
@@ -85,8 +95,8 @@
 
                 const result = await save.json();
                 console.log(result);
-                alert('Video uploaded and saved successfully!');
-                progressDiv.textContent = 'Upload and save completed!';
+                alert(translations.saved);
+                progressDiv.textContent = translations.completed;
             }
         });
 

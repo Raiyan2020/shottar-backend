@@ -6,6 +6,7 @@ use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\Tags\Url;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\LanguageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,9 +103,13 @@ Route::middleware(['auth:admin', 'role:teacher'])
 
 
     });
+
+Route::post('dashboard/language/{locale}', [LanguageController::class, 'switch'])
+    ->middleware('auth:admin')
+    ->whereIn('locale', ['ar', 'en'])
+    ->name('dashboard.language.switch');
 Route::post('/vimeo-upload-url', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'getUploadUrl']);
 Route::get('/vimeo-info', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'getVideoInfo']);
 
 //Route::post('/vimeo-save', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'saveVideo']);
-
 

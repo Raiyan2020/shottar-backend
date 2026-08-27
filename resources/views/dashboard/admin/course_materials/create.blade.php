@@ -73,7 +73,7 @@
                                             <select name="lesson_section_id" id="lesson_section_id" class="form-control form-control-sm" disabled>
                                                 @foreach($sections as $section)
                                                     <option value="{{ $section->id }}" {{ request('section') == $section->id ? 'selected' : '' }}>
-                                                        {{ $section->name_ar }}
+                                                        {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
                                                     </option>
                                                 @endforeach
                                             </select>
@@ -82,7 +82,7 @@
                                             <select name="lesson_section_id" id="lesson_section_id" class="form-control form-control-sm @error('lesson_section_id') is-invalid @enderror" required>
                                                 @foreach($sections as $section)
                                                     <option value="{{ $section->id }}" {{ old('lesson_section_id') == $section->id ? 'selected' : '' }}>
-                                                        {{ $section->name_ar }}
+                                                        {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
                                                     </option>
                                                 @endforeach
                                             </select>

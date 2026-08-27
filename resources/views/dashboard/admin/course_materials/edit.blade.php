@@ -60,7 +60,7 @@
                                                 @foreach($sections as $section)
                                                     <option value="{{ $section->id }}"
                                                         {{ (old('lesson_section_id', $material->lesson_section_id) == $section->id) ? 'selected' : '' }}>
-                                                        {{ $section->name_ar }}
+                                                        {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
                                                     </option>
                                                 @endforeach
                                             </select>

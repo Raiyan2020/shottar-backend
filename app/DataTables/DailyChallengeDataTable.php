@@ -23,13 +23,16 @@ class DailyChallengeDataTable extends DataTable
                 ]);
             })
             ->addColumn('grade', function ($challenge) {
-                return optional($challenge->grade)->name_ar ?? '-';
+                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+                return optional($challenge->grade)->{$nameColumn} ?? '-';
             })
             ->addColumn('semester', function ($challenge) {
-                return optional($challenge->semester)->name_ar ?? '-';
+                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+                return optional($challenge->semester)->{$nameColumn} ?? '-';
             })
             ->addColumn('subject', function ($challenge) {
-                return optional($challenge->subject)->name_ar ?? '-';
+                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+                return optional($challenge->subject)->{$nameColumn} ?? '-';
             })
             ->editColumn('challenge_date', function ($challenge) {
                 return optional($challenge->challenge_date)->format('Y-m-d');

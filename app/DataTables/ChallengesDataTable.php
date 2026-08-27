@@ -28,7 +28,9 @@ class ChallengesDataTable extends DataTable
                 ]);
             })
             ->editColumn('subject_id', function ($challenge) {
-                return optional($challenge->subject)->name_en ?? __('No Subject');
+                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+
+                return optional($challenge->subject)->{$nameColumn} ?? __('No Subject');
             })
             ->rawColumns(['action', 'status']);
     }

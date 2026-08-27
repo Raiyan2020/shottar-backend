@@ -1,5 +1,6 @@
 <?php
 return [
+    'Oops' => 'عذرًا',
     'Works' => 'الأعمال',
     'Home' => 'الرئيسية',
     'About Us' => 'من نحن',
@@ -87,4 +88,3 @@ return [
     'rest of the work'=> 'بقية الأعمال',
     'Details' => 'التفاصيل',
 ];
-

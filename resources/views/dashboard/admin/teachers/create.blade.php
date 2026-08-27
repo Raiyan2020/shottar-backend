@@ -89,16 +89,17 @@
                                     <select id="subject_ids" name="subject_ids[]" class="form-control" multiple data-placeholder="{{ __('general.Select Subjects') }}">
                                         @foreach($subjects as $s)
                                             @php
+                                                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
                                                 $semesterNames = $s->semesters->isNotEmpty()
                                                     ? $s->semesters
                                                     : collect($s->semester ? [$s->semester] : []);
                                                 $semesterLabel = $semesterNames
-                                                    ->map(fn ($sem) => trim(str_ireplace('Semester', '', $sem->name_en)))
+                                                    ->map(fn ($sem) => $sem->{$nameColumn} ?? $sem->name_en ?? $sem->name_ar)
                                                     ->filter()
                                                     ->implode(', ');
                                             @endphp
                                             <option value="{{ $s->id }}" {{ in_array($s->id, old('subject_ids', [])) ? 'selected' : '' }}>
-                                                {{ $s->name_en }}({{ $s->grade?->name_en ?? '-' }})@if($semesterLabel)({{ $semesterLabel }})@endif
+                                                {{ $s->{$nameColumn} ?? $s->name_en ?? $s->name_ar }} ({{ $s->grade?->{$nameColumn} ?? '-' }})@if($semesterLabel) ({{ $semesterLabel }})@endif
                                             </option>
                                         @endforeach
                                     </select>

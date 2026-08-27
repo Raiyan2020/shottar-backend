@@ -47,7 +47,7 @@
                                             type="text"
                                             id="name_en"
                                             class="form-control form-control-sm @error('name_en') is-invalid @else {{ old('name_en') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Name in English"
+                                            placeholder="{{ __('general.Name in English') }}"
                                             required
                                         />
                                         @error('name_en')

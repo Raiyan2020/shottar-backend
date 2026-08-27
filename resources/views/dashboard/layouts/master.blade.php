@@ -1,7 +1,7 @@
 <!doctype html>
 
     <html
-      lang="ar"
+      lang="{{ app()->getLocale() }}"
       class="light-style layout-navbar-fixed layout-menu-fixed layout-compact"
       @if (App::getLocale() == 'ar')
       dir="rtl"
@@ -144,6 +144,5 @@
    @include('dashboard.layouts.scripts')
   </body>
 </html>
-
 
 

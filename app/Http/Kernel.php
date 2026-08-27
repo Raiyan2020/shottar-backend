@@ -44,6 +44,7 @@ class Kernel extends HttpKernel
             \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRoutes::class,
 //            \Mcamara\LaravelLocalization\Middleware\LaravelLocalizationRedirectFilter::class,
             \Mcamara\LaravelLocalization\Middleware\LocaleSessionRedirect::class,
+            \App\Http\Middleware\SetLanguage::class,
 
         ],
 

@@ -28,7 +28,7 @@
                                             type="text"
                                             id="name_ar"
                                             class="form-control form-control-sm @error('name_ar') is-invalid @else {{ old('name_ar') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Name in Arabic"
+                                            placeholder="{{ __('general.Name in Arabic') }}"
                                             required
                                         />
                                         @error('name_ar')
@@ -47,7 +47,7 @@
                                             type="text"
                                             id="name_en"
                                             class="form-control form-control-sm @error('name_en') is-invalid @else {{ old('name_en') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Name in English"
+                                            placeholder="{{ __('general.Name in English') }}"
                                             required
                                         />
                                         @error('name_en')
@@ -231,7 +231,7 @@
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label class="col-form-label-sm" for="ios_product_id_{{ $semester->id }}">
-                                                    {{ __('general.ios_bundle_product_id') }} — {{ $semester->name_ar }}
+                                                    {{ __('general.ios_bundle_product_id') }} — {{ app()->isLocale('ar') ? $semester->name_ar : $semester->name_en }}
                                                 </label>
                                                 <input
                                                     type="text"

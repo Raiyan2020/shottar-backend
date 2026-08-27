@@ -8,6 +8,8 @@ return [
     'created_at' => 'Added At',
     'action' => 'Actions',
     'title' => 'Title',
+    'title_ar' => 'Title in Arabic',
+    'title_en' => 'Title in English',
     'is_default' => 'Main Blog',
     'by' => 'By',
     'type' => 'Type',
@@ -107,4 +109,5 @@ return [
     'package' => 'Package',
     'subjects' => 'Subjects',
     'failed' => 'Failed',
+    'no_filter_group' => 'No filter group',
 ];

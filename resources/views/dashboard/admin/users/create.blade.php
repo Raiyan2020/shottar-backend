@@ -28,7 +28,7 @@
                                             type="text"
                                             id="name_ar"
                                             class="form-control form-control-sm @error('name_ar') is-invalid @else {{ old('name_ar') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="اسم المدرسة"
+                                            placeholder="{{ __('general.Name in Arabic') }}"
                                             required
                                         />
                                         @error('name_ar')
@@ -47,7 +47,7 @@
                                             type="text"
                                             id="name_en"
                                             class="form-control form-control-sm @error('name_en') is-invalid @else {{ old('name_en') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="School Name"
+                                            placeholder="{{ __('general.Name') }}"
                                             required
                                         />
                                         @error('name_en')
@@ -64,7 +64,7 @@
                                             name="description_ar"
                                             id="description_ar"
                                             class="form-control form-control-sm @error('description_ar') is-invalid @else {{ old('description_ar') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="وصف المدرسة"
+                                            placeholder="{{ __('general.Description in Arabic') }}"
                                             required
                                         >{{ old('description_ar') }}</textarea>
                                         @error('description_ar')
@@ -81,7 +81,7 @@
                                             name="description_en"
                                             id="description_en"
                                             class="form-control form-control-sm @error('description_en') is-invalid @else {{ old('description_en') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="School Description"
+                                            placeholder="{{ __('dataTable.description') }}"
                                             required
                                         >{{ old('description_en') }}</textarea>
                                         @error('description_en')
@@ -96,7 +96,7 @@
 {{--                                            <option value="">{{ __('general.choose') }}</option>--}}
 
                                         @foreach($cities as $city)
-                                                <option value="{{ $city->id }}" {{ old('city_id') == $city->id ? 'selected' : '' }}>{{ $city->name_ar }}</option>
+                                                <option value="{{ $city->id }}" {{ old('city_id') == $city->id ? 'selected' : '' }}>{{ app()->isLocale('ar') ? $city->name_ar : $city->name_en }}</option>
                                             @endforeach
                                         </select>
                                         @error('city_id')
@@ -145,7 +145,7 @@
                                             type="text"
                                             id="location"
                                             class="form-control form-control-sm @error('location') is-invalid @else {{ old('location') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Location"
+                                            placeholder="{{ __('general.Location') }}"
                                             required
                                         />
                                         @error('location')
@@ -165,7 +165,7 @@
                                             type="text"
                                             id="phone1"
                                             class="form-control form-control-sm @error('phone1') is-invalid @else {{ old('phone1') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Phone 1"
+                                            placeholder="{{ __('general.Phone 1') }}"
                                             required
                                         />
                                         @error('phone1')
@@ -184,7 +184,7 @@
                                             type="text"
                                             id="phone2"
                                             class="form-control form-control-sm @error('phone2') is-invalid @else {{ old('phone2') ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Phone 2"
+                                            placeholder="{{ __('general.Phone 2') }}"
                                         />
                                         @error('phone2')
                                         <span class="col-form-label-sm text-danger">{{ $message }}</span>

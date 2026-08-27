@@ -34,7 +34,7 @@ class ExamDataTable extends DataTable
             })
             ->addColumn('unit', function (Exam $exam) {
                 return optional($exam->section)->{'name_'.app()->getLocale()}
-                    ?? optional($exam->section)->name_ar
+                    ?? optional($exam->section)->{app()->isLocale('ar') ? 'name_ar' : 'name_en'}
                     ?? '-';
             })
             ->filterColumn('unit', function ($query, $keyword) {

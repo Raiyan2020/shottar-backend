@@ -42,15 +42,15 @@
                                 <!-- Send Type -->
                                 <div class="col-md-6 col-12">
                                     <div class="form-group">
-                                        <label class="col-form-label-sm">إرسال إلى</label>
+                                        <label class="col-form-label-sm">{{ __('Send to') }}</label>
                                         <select id="send_type" name="send_type" class="form-control form-control-sm" required>
-                                            <option value="all">جميع المستخدمين</option>
-                                            <option value="unpaid">غير المشتركين (لم يدفعوا) @isset($unpaidCount) — {{ $unpaidCount }}@endisset</option>
-                                            <option value="one">مستخدم واحد</option>
-                                            <option value="group">مجموعة مستخدمين</option>
+                                            <option value="all">{{ __('All users') }}</option>
+                                            <option value="unpaid">{{ __('Unsubscribed users') }} @isset($unpaidCount) — {{ $unpaidCount }}@endisset</option>
+                                            <option value="one">{{ __('One user') }}</option>
+                                            <option value="group">{{ __('User group') }}</option>
                                         </select>
                                         <small class="text-muted d-block mt-1 unpaid-hint d-none">
-                                            سيتم الإرسال فقط للمستخدمين الذين ليس لديهم أي طلب/اشتراك بحالة مدفوع.
+                                            {{ __('Unpaid users hint') }}
                                         </small>
                                     </div>
                                 </div>
@@ -58,7 +58,7 @@
                                 <!-- Select One User -->
                                 <div class="col-md-6 col-12 send_one_box d-none">
                                     <div class="form-group">
-                                        <label class="col-form-label-sm">اختر المستخدم</label>
+                                        <label class="col-form-label-sm">{{ __('Select user') }}</label>
                                         <select name="user_id" class="form-control form-control-sm select2_single_user">
                                             @foreach($users as $user)
                                                 <option value="{{ $user->id }}">{{ $user->name }} - {{ $user->phone }}</option>
@@ -70,7 +70,7 @@
                                 <!-- Select Multiple Users -->
                                 <div class="col-md-6 col-12 send_group_box d-none">
                                     <div class="form-group">
-                                        <label class="col-form-label-sm">اختر المستخدمين</label>
+                                        <label class="col-form-label-sm">{{ __('Select users') }}</label>
                                         <select name="users[]" multiple class="form-control form-control-sm select2_multi_users">
                                             @foreach($users as $user)
                                                 <option value="{{ $user->id }}">{{ $user->name }} - {{ $user->phone }}</option>

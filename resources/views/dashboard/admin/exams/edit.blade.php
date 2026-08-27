@@ -12,7 +12,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h4 class="card-title mb-0">{{ __('general.Update Exam') }} — {{ $subject->name_ar }}</h4>
+                        <h4 class="card-title mb-0">{{ __('general.Update Exam') }} — {{ app()->isLocale('ar') ? $subject->name_ar : $subject->name_en }}</h4>
                     </div>
                     <div class="card-body">
                         <form class="form" action="{{ route('admin.subjects.exams.update', [$subject->id, $exam->id]) }}" method="post" enctype="multipart/form-data">

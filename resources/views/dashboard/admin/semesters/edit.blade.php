@@ -30,7 +30,7 @@
                                             type="text"
                                             id="name_ar"
                                             class="form-control form-control-sm @error('name_ar') is-invalid @else {{ old('name_ar', $semester->name_ar) ? 'is-valid' : '' }} @enderror"
-                                            placeholder="اسم الفصل"
+                                            placeholder="{{ __('general.Name in Arabic') }}"
                                             required
                                         />
                                         @error('name_ar') <span class="col-form-label-sm text-danger">{{ $message }}</span> @enderror
@@ -47,7 +47,7 @@
                                             type="text"
                                             id="name_en"
                                             class="form-control form-control-sm @error('name_en') is-invalid @else {{ old('name_en', $semester->name_en) ? 'is-valid' : '' }} @enderror"
-                                            placeholder="Semester Name"
+                                            placeholder="{{ __('general.Name in English') }}"
                                             required
                                         />
                                         @error('name_en') <span class="col-form-label-sm text-danger">{{ $message }}</span> @enderror

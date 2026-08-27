@@ -66,8 +66,8 @@ class ChallengeQuestionDataTable extends DataTable
     {
         return [
             ['data' => 'id', 'title' => '#'],
-            ['data' => 'title_ar', 'title' => 'title AR'],
-            ['data' => 'title_en', 'title' => 'title EN'],
+            ['data' => 'title_ar', 'title' => __('dataTable.title_ar')],
+            ['data' => 'title_en', 'title' => __('dataTable.title_en')],
         ];
     }
 }

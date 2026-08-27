@@ -19,7 +19,7 @@
                 <option value="">{{ __('general.Select Grade') }}</option>
                 @foreach($grades as $grade)
                     <option value="{{ $grade->id }}" {{ old('grade_id', $dailyChallenge?->grade_id) == $grade->id ? 'selected' : '' }}>
-                        {{ $grade->name_ar }}
+                        {{ app()->isLocale('ar') ? $grade->name_ar : $grade->name_en }}
                     </option>
                 @endforeach
             </select>
@@ -35,7 +35,7 @@
                 <option value="">{{ __('general.Select Semester') }}</option>
                 @foreach($semesters as $semester)
                     <option value="{{ $semester->id }}" {{ old('semester_id', $dailyChallenge?->semester_id) == $semester->id ? 'selected' : '' }}>
-                        {{ $semester->name_ar }}
+                        {{ app()->isLocale('ar') ? $semester->name_ar : $semester->name_en }}
                     </option>
                 @endforeach
             </select>
@@ -51,7 +51,7 @@
                 <option value="">{{ __('general.Select Subject') }}</option>
                 @foreach($subjects as $subject)
                     <option value="{{ $subject->id }}" {{ old('subject_id', $dailyChallenge?->subject_id) == $subject->id ? 'selected' : '' }}>
-                        {{ $subject->name_ar }}
+                        {{ app()->isLocale('ar') ? $subject->name_ar : $subject->name_en }}
                     </option>
                 @endforeach
             </select>

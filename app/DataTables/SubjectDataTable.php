@@ -71,13 +71,14 @@ class SubjectDataTable extends DataTable
                 return e($subject->name_ar ?: '-');
             })
             ->addColumn('details', function ($subject) {
-                $grade = $subject->grade ? $subject->grade->name_en : '-';
+                $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
+                $grade = $subject->grade ? ($subject->grade->{$nameColumn} ?? '-') : '-';
                 $semesters = $subject->semesters->isNotEmpty()
-                    ? $subject->semesters->pluck('name_en')->implode(', ')
-                    : ($subject->semester?->name_en ?? '-');
+                    ? $subject->semesters->pluck($nameColumn)->filter()->implode(', ')
+                    : ($subject->semester?->{$nameColumn} ?? '-');
 
-                return "<strong>Grade:</strong> {$grade}<br>"
-                    ."<strong>Semester:</strong> {$semesters}";
+                return '<strong>'.__('general.Grade').":</strong> {$grade}<br>"
+                    .'<strong>'.__('general.Semester').":</strong> {$semesters}";
             })
             ->addColumn('subscribers_count', function ($subject) {
                 return (int) ($subject->subscribers_count ?? 0);

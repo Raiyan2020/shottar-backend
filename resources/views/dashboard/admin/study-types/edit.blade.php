@@ -32,7 +32,7 @@
                                             type="text"
                                             id="name_ar"
                                             class="form-control form-control-sm @error('name_ar') is-invalid @else {{ old('name_ar', $studyType->name_ar) ? 'is-valid' : '' }} @enderror"
-                                            placeholder="اسم المدرسة"
+                                            placeholder="{{ __('general.Name in Arabic') }}"
                                             required
                                         />
                                         @error('name_ar') <span class="col-form-label-sm text-danger">{{ $message }}</span> @enderror
@@ -49,7 +49,7 @@
                                             type="text"
                                             id="name_en"
                                             class="form-control form-control-sm @error('name_en') is-invalid @else {{ old('name_en', $studyType->name_en) ? 'is-valid' : '' }} @enderror"
-                                            placeholder="School Name"
+                                            placeholder="{{ __('general.Name in English') }}"
                                             required
                                         />
                                         @error('name_en') <span class="col-form-label-sm text-danger">{{ $message }}</span> @enderror
@@ -106,4 +106,3 @@
 @section('js')
 
 @endsection
-

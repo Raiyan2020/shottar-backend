@@ -78,7 +78,7 @@ return[
     'Sent successfully'=>'Sent successfully',
     'Thank you for contacting us!'=>'Thank you for contacting us!',
 
-    'Innovating Digital Solutions. All Rights Reserved','Innovating Digital Solutions. All Rights Reserved',
+    'Innovating Digital Solutions. All Rights Reserved' => 'Innovating Digital Solutions. All Rights Reserved',
     'Join our community'=>'Join our community',
     'Links'=>'Links',
     'Newsletter'=>'Newsletter',

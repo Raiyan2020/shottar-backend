@@ -196,7 +196,7 @@
                                         <div class="col-md-6 col-12">
                                             <div class="form-group">
                                                 <label for="ios_product_id_{{ $semester->id }}">
-                                                    {{ __('general.ios_bundle_product_id') }} — {{ $semester->name_ar }}
+                                                    {{ __('general.ios_bundle_product_id') }} — {{ app()->isLocale('ar') ? $semester->name_ar : $semester->name_en }}
                                                 </label>
                                                 <input type="text"
                                                        name="ios_product_ids[{{ $semester->id }}]"

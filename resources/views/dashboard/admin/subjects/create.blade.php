@@ -94,7 +94,7 @@
                                             <option value="">{{ __('general.Select Grade') }}</option>
                                             @foreach($grades as $grade)
                                                 <option value="{{ $grade->id }}" {{ old('grade_id') == $grade->id ? 'selected' : '' }}>
-                                                    {{ $grade->name_ar }}
+                                                    {{ app()->isLocale('ar') ? $grade->name_ar : $grade->name_en }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -115,7 +115,7 @@
                                                        id="semester_{{ $semester->id }}"
                                                        value="{{ $semester->id }}"
                                                        {{ in_array($semester->id, $selectedSemesters) ? 'checked' : '' }}>
-                                                <label class="form-check-label" for="semester_{{ $semester->id }}">{{ $semester->name_ar }}</label>
+                                                <label class="form-check-label" for="semester_{{ $semester->id }}">{{ app()->isLocale('ar') ? $semester->name_ar : $semester->name_en }}</label>
                                             </div>
                                         @endforeach
                                         @error('semester_ids')

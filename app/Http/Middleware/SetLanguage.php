@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 
 class SetLanguage
@@ -10,15 +11,17 @@ class SetLanguage
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)
     {
-        // تحقق من وجود لغة محددة في الجلسة
-        if (session()->has('locale')) {
-            App::setLocale(session('locale'));
+        $locale = session('dashboard_locale')
+            ?? $request->cookie('dashboard_locale')
+            ?? App::getLocale();
+
+        if (in_array($locale, ['ar', 'en'], true)) {
+            App::setLocale($locale);
         }
 
         return $next($request);

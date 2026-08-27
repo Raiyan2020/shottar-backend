@@ -404,4 +404,13 @@
     'OK' => 'OK',
     'Please upload the video first, then press Save.' => 'Please upload the video first, then press Save.',
     'Upload failed. Press Upload again to resume from where it stopped.' => 'Upload failed. Press Upload again to resume from where it stopped.',
+    'Language' => 'Language',
+    'Teacher' => 'Teacher',
+    'regions' => 'Regions',
+    'grade' => 'Grade',
+    'city' => 'City',
+    'Schools' => 'Schools',
+    'Send Notification' => 'Send Notification',
+    'Enter challenge duration in minutes' => 'Enter challenge duration in minutes',
+    'choose' => 'Choose',
 ];

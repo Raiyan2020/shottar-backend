@@ -18,12 +18,12 @@
     <!-- Icons -->
     <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/vendor/fonts/fontawesome.css') }}" />
     <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/vendor/fonts/tabler-icons.css') }}" />
-{{--    <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/vendor/fonts/flag-icons.css') }}" />--}}
+    <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/vendor/fonts/flag-icons.css') }}" />
 
     <!-- Core CSS -->
 
-    <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/vendor/css/rtl/core.css') }}" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/vendor/css/rtl/theme-default.css') }}" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="{{ URL::asset(app()->isLocale('ar') ? 'dashboard/assets/vendor/css/rtl/core.css' : 'dashboard/assets/vendor/css/core.css') }}" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="{{ URL::asset(app()->isLocale('ar') ? 'dashboard/assets/vendor/css/rtl/theme-default.css' : 'dashboard/assets/vendor/css/theme-default.css') }}" class="template-customizer-theme-css" />
 
     <link rel="stylesheet" href="{{ URL::asset('dashboard/assets/css/demo.css') }}" />
 
@@ -120,36 +120,61 @@
 
         .language-switcher {
             display: flex;
-            gap: 10px; /* Adjust the gap between language options */
+            gap: 6px;
             align-items: center;
-            margin-right: 20px; /* Adjust this value as needed for the desired spacing */
+            margin-inline-end: 18px;
+            padding: 4px;
+            border: 1px solid #ebe5df;
+            border-radius: 10px;
+            background: #fff;
         }
 
-        [dir="rtl"] .language-switcher {
-            margin-left: 20px; /* Spacing in RTL (Arabic) */
+        .language-switcher form {
+            margin: 0;
         }
 
-
-        .language-switcher .nav-link {
-            padding: 5px 10px;
+        .language-switcher .language-option {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 10px;
+            border: 0;
             color: #88878d !important;
-            text-decoration: none;
-            font-weight: 500;
-            transition: color 0.2s, background-color 0.2s;
-            border-radius: 5px;
-        }
-
-        .language-switcher .nav-link:hover {
-            color: #7367f0 !important; /* Adjust hover color */
-            background-color: #f0f0f0; /* Adjust hover background */
-        }
-
-        .language-switcher .nav-link.active {
-            font-weight: bold;
-            background-color: #7367f0 ; /* Adjust active background color */
-            color: white !important; /* Adjust active text color */
+            background: transparent;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color .2s, background-color .2s, box-shadow .2s;
             border-radius: 7px;
-            box-shadow: 0 0 10px 1px rgba(115, 103, 240, 0.7);
+            white-space: nowrap;
+        }
+
+        .language-switcher .language-option:hover {
+            color: #9A7257 !important;
+            background-color: #f6f1eb;
+        }
+
+        .language-switcher .language-option.active {
+            color: #fff !important;
+            background: #9A7257;
+            box-shadow: 0 3px 8px rgba(154, 114, 87, .25);
+        }
+
+        .language-switcher .fi {
+            width: 21px;
+            height: 15px;
+            border-radius: 2px;
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, .08);
+        }
+
+        @media (max-width: 575.98px) {
+            .language-switcher {
+                margin-inline-end: 8px;
+            }
+
+            .language-switcher .language-option span:last-child {
+                display: none;
+            }
         }
 
         .datatable_img {

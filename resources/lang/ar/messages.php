@@ -1,5 +1,7 @@
 <?php
 return [
+    'login_success' => 'تم تسجيل الدخول بنجاح.',
+    'Get Free Consultation' => 'احصل على استشارة مجانية',
     'An error occurred while creating the admin. Please try again.' => 'حدث خطأ أثناء إنشاء المسؤول. يرجى المحاولة مرة أخرى.',
     'created successfully.' => 'تم الإنشاء بنجاح.',
     'The Admin is not exist' => 'المسؤول غير موجود.',
@@ -32,5 +34,6 @@ return [
     'An error occurred while creating the process. Please try again.' => 'حدث خطأ أثناء إنشاء نهح جديد. يرجى المحاولة مرة أخرى.',
     'The our process is not exist' => 'النهج غير موجود.',
     'updated successfully' => 'تم التحديث بنجاح.',
+    'An error occurred while creating the teacher.' => 'حدث خطأ أثناء إضافة المدرس.',
+    'notification_sent' => 'تم إرسال الإشعار بنجاح.',
 ];
-

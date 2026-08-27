@@ -37,8 +37,8 @@
                             <tbody>
                             @foreach($session->answers as $answer)
                                 <tr>
-                                    <td>{{ $answer->question->title_ar ?? '-' }}</td>
-                                    <td>{{ $answer->answers->title_ar ?? '-' }}</td>
+                                    <td>{{ app()->isLocale('ar') ? ($answer->question->title_ar ?? '-') : ($answer->question->title_en ?? $answer->question->title_ar ?? '-') }}</td>
+                                    <td>{{ app()->isLocale('ar') ? ($answer->answers->title_ar ?? '-') : ($answer->answers->title_en ?? $answer->answers->title_ar ?? '-') }}</td>
                                     <td>
                                         @if($answer->is_correct)
                                             <span class="text-success">{{ __('general.Correct') }}</span>
