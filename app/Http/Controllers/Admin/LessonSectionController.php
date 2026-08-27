@@ -5,11 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\DataTables\LessonSectionDataTable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LessonSectionRequest;
-use App\Models\Grade;
 use App\Models\LessonSection;
 use App\Models\Subject;
-use Illuminate\Http\Request;
 use App\Traits\HasStatusToggle;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LessonSectionController extends Controller
 {
@@ -17,8 +17,10 @@ class LessonSectionController extends Controller
 
     public function index(LessonSectionDataTable $dataTable, Subject $subject)
     {
+        $this->authorizeTeacherSubject($subject);
+
         return $dataTable->with('subject', $subject)->render('dashboard.admin.lesson_sections.index', [
-            'subject' => $subject
+            'subject' => $subject,
         ]);
     }
 
@@ -49,6 +51,7 @@ class LessonSectionController extends Controller
     public function update(LessonSectionRequest $request, Subject $subject, LessonSection $section)
     {
         $section->update($request->validated());
+
         return redirect()->route(panelPrefix().'.subjects.sections.index', $subject->id)
             ->with('success', __('Section updated successfully'));
     }
@@ -56,6 +59,7 @@ class LessonSectionController extends Controller
     public function destroy(Subject $subject, LessonSection $section)
     {
         $section->delete();
+
         return response()->json(['status' => true]);
     }
 
@@ -64,14 +68,44 @@ class LessonSectionController extends Controller
         return $this->toggleStatu(LessonSection::class, $sectionId);
     }
 
-    public function sort(Request $request, $subjectId)
+    public function sort(Request $request, Subject $subject)
     {
-        foreach ($request->order as $item) {
-            LessonSection::where('id', $item['id'])
-                ->where('subject_id', $subjectId) // 🔒 تأكد أنه لن يعدل إلا على أقسام هذه المادة
-                ->update(['order_by' => $item['order_by']]);
-        }
+        $this->authorizeTeacherSubject($subject);
+
+        $data = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*.id' => ['required', 'integer', 'distinct'],
+        ]);
+
+        $sectionIds = collect($data['order'])->pluck('id');
+        $ownedSectionsCount = LessonSection::query()
+            ->where('subject_id', $subject->id)
+            ->whereIn('id', $sectionIds)
+            ->count();
+
+        abort_unless($ownedSectionsCount === $sectionIds->count(), 422, __('Invalid section order.'));
+
+        DB::transaction(function () use ($data, $subject) {
+            foreach ($data['order'] as $index => $item) {
+                LessonSection::query()
+                    ->where('subject_id', $subject->id)
+                    ->whereKey($item['id'])
+                    ->update(['order_by' => $index + 1]);
+            }
+        });
 
         return response()->json(['status' => 'success']);
+    }
+
+    private function authorizeTeacherSubject(Subject $subject): void
+    {
+        $user = auth('admin')->user();
+
+        if ($user?->hasRole('teacher')) {
+            abort_unless(
+                $subject->teachers()->whereKey($user->id)->exists(),
+                403
+            );
+        }
     }
 }

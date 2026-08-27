@@ -111,11 +111,13 @@ class LessonSectionDataTable extends DataTable
             ->setTableId('datatable')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0, 'desc')
             ->addTableClass('table table-hover')
             ->parameters([
-                'lengthMenu' => [[10, 20, 25, 50, 100], [10, 20, 25, 50, 100]],
-                'pageLength' => 20,
+                // Keep the order returned by the query (order_by). DataTables'
+                // default ID sorting used to undo the drag-and-drop order.
+                'order' => [],
+                // Reordering must include the complete list, not only one page.
+                'paging' => false,
             ]);
     }
 

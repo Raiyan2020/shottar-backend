@@ -33,7 +33,7 @@
                 Sortable.create(tableBody, {
                     animation: 150,
                     handle: null, // كامل الصف قابل للسحب
-                    onEnd: function () {
+                    onEnd: async function () {
                         let order = [];
                         document.querySelectorAll('#datatable tbody tr').forEach((row, index) => {
                             order.push({
@@ -42,21 +42,23 @@
                             });
                         });
 
-                        fetch('{{ route($prefix.'.sections.reorder', $subject->id) }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({ order })
-                        }).then(res => res.json())
-                            .then(res => {
-                                if (res.status === 'success') {
-                                    console.log('تم تحديث الترتيب بنجاح');
-                                } else {
-                                    console.error('فشل في التحديث');
-                                }
+                        try {
+                            const response = await fetch('{{ route($prefix.'.sections.reorder', $subject->id) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json',
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({ order })
                             });
+
+                            if (!response.ok) throw new Error('Unable to save section order');
+                        } catch (error) {
+                            // Restore the persisted order if saving failed.
+                            window.LaravelDataTables['datatable'].ajax.reload(null, false);
+                            console.error(error);
+                        }
                     }
                 });
             }
