@@ -96,8 +96,7 @@ class ExamDataTable extends DataTable
     {
         return [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.name_ar')),
-            Column::make('name_en')->title(__('dataTable.name_en')),
+            localeNameColumn(),
             Column::make('unit')->title(__('general.unit'))->orderable(false),
             Column::make('file')->title(__('general.PDF'))->orderable(false)->searchable(false),
             Column::make('is_free')->title(__('general.is_free')),

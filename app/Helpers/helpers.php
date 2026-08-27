@@ -387,6 +387,28 @@ if (! function_exists('panelPrefix')) {
 
     }
 }
+if (! function_exists('localeNameColumn')) {
+    /**
+     * عمود الاسم مربوط بلغة الداشبورد الحالية:
+     * لوحة عربية -> يظهر عمود "الاسم بالعربية" فقط،
+     * لوحة إنجليزية -> يظهر عمود "الاسم بالإنجليزية" فقط.
+     * عرض العمود ثابت 250px في كل الحالات.
+     */
+    function localeNameColumn(): \Yajra\DataTables\Html\Column
+    {
+        if (app()->isLocale('ar')) {
+            return \Yajra\DataTables\Html\Column::make('name_ar')
+                ->title(__('dataTable.name_ar'))
+                ->addClass('dt-col-250')
+                ->width(250);
+        }
+
+        return \Yajra\DataTables\Html\Column::make('name_en')
+            ->title(__('dataTable.name_en'))
+            ->addClass('dt-col-250')
+            ->width(250);
+    }
+}
 
 if (!function_exists('vimeo_video_details')) {
     function vimeo_video_details(?string $url = null): ?array

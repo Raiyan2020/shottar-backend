@@ -43,6 +43,23 @@ class AuthController extends Controller
         // سبب — فبنحدّثه بس لما التطبيق يبعت قيمة فعلية.
         $user->setDeviceToken($request->input('device_token'), $request->input('device_type'));
 
+        // تشخيص الإشعارات: بنميّز بين "التطبيق مابعتش توكن" و"التوكن اتخزن"
+        // عشان نقفل على مين المسؤول لو إشعار ما وصّلش.
+        if (trim((string) $request->input('device_token')) === '') {
+            Log::warning('Login بدون device_token — الإشعارات لن توصل لهذا الجهاز حتى يرسل التطبيق توكن', [
+                'user_id' => $user->id,
+                'phone_suffix' => substr((string) $user->phone, -4),
+                'device_type' => $request->input('device_type'),
+            ]);
+        } else {
+            Log::info('تم تخزين device_token عند اللوجين', [
+                'user_id' => $user->id,
+                'phone_suffix' => substr((string) $user->phone, -4),
+                'device_type' => $request->input('device_type'),
+                'token_prefix' => substr(trim((string) $request->input('device_token')), 0, 12).'...',
+            ]);
+        }
+
         if (! uses_fixed_otp($user->phone)) {
             // إرسال كود التحقق إذا لزم الأمر
             try {
@@ -80,6 +97,21 @@ class AuthController extends Controller
         $data['activation_code'] = generate_activation_code($data['phone']);
 
         $user = User::create($data);
+
+        if (trim((string) ($data['device_token'] ?? '')) === '') {
+            Log::warning('Register بدون device_token — الإشعارات لن توصل لهذا الجهاز حتى يرسل التطبيق توكن', [
+                'user_id' => $user->id,
+                'phone_suffix' => substr((string) $user->phone, -4),
+                'device_type' => $request->input('device_type'),
+            ]);
+        } else {
+            Log::info('تم تخزين device_token عند التسجيل', [
+                'user_id' => $user->id,
+                'phone_suffix' => substr((string) $user->phone, -4),
+                'device_type' => $request->input('device_type'),
+                'token_prefix' => substr(trim((string) $data['device_token']), 0, 12).'...',
+            ]);
+        }
 
         $success['user'] = new UserResource($user);
 //        $success['token'] = $user->createToken('MyAuthApp')->plainTextToken;
@@ -235,6 +267,13 @@ class AuthController extends Controller
         }
 
         $user->setDeviceToken($request->input('device_token'), $request->input('device_type'));
+
+        Log::info('تم تحديث device_token من مسار /device-token', [
+            'user_id' => $user->id,
+            'phone_suffix' => substr((string) $user->phone, -4),
+            'device_type' => $request->input('device_type'),
+            'token_prefix' => substr(trim((string) $request->input('device_token')), 0, 12).'...',
+        ]);
 
         return sendResponse(['device_token_saved' => true]);
     }

@@ -70,6 +70,15 @@ class SubjectDataTable extends DataTable
 
                 return e($subject->name_ar ?: '-');
             })
+            ->editColumn('name_en', function ($subject) {
+                $image = $subject->coreSubject?->image ?: $subject->image;
+                $html = self::imageHtml($image);
+                if ($html !== '') {
+                    return $html;
+                }
+
+                return e($subject->name_en ?: '-');
+            })
             ->addColumn('details', function ($subject) {
                 $nameColumn = app()->isLocale('ar') ? 'name_ar' : 'name_en';
                 $grade = $subject->grade ? ($subject->grade->{$nameColumn} ?? '-') : '-';
@@ -83,7 +92,7 @@ class SubjectDataTable extends DataTable
             ->addColumn('subscribers_count', function ($subject) {
                 return (int) ($subject->subscribers_count ?? 0);
             })
-            ->rawColumns(['action', 'status', 'name_ar', 'details'])
+            ->rawColumns(['action', 'status', 'name_ar', 'name_en', 'details'])
 
             ->filterColumn('name_ar', function ($query, $keyword) {
                 $query->where(function ($q) use ($keyword) {
@@ -161,8 +170,7 @@ class SubjectDataTable extends DataTable
     {
         return [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.image'))->orderable(false),
-            Column::make('name_en')->title(__('dataTable.name_en')),
+            localeNameColumn(),
             Column::computed('details')->title(__('general.Details'))->exportable(false)->printable(false),
             Column::make('price')->title(__('general.Price')),
             Column::make('subscribers_count')->title(__('general.subscribers_count'))->orderable(true)->searchable(false),

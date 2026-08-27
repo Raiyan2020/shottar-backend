@@ -51,8 +51,7 @@ class StudyTypeDataTable extends DataTable
     {
         return [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.name_ar')),
-            Column::make('name_en')->title(__('dataTable.name_en')),
+            localeNameColumn(),
             Column::make('status')->title(__('dataTable.status')),
             Column::computed('action')->title(__('dataTable.action'))->exportable(false)->printable(false),
         ];

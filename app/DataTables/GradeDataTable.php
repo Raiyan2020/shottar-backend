@@ -58,8 +58,7 @@ class GradeDataTable extends DataTable
     {
         return [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.name_ar')),
-            Column::make('name_en')->title(__('dataTable.name_en')),
+            localeNameColumn(),
             Column::make('all_materials_price')->title(__('dataTable.all_materials_price')),
             Column::make('status')->title(__('dataTable.status')),
             Column::computed('action')->title(__('dataTable.action'))->exportable(false)->printable(false),

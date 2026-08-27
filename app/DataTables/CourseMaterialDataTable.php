@@ -130,8 +130,7 @@ class CourseMaterialDataTable extends DataTable
     {
         $columns = [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.name_ar')),
-            Column::make('name_en')->title(__('dataTable.name_en')),
+            localeNameColumn(),
 //            Column::make('lesson_section')->title(__('general.lesson_sections')),
         ];
         if (request()->route('type') == 'lesson') {

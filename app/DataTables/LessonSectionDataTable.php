@@ -131,8 +131,7 @@ class LessonSectionDataTable extends DataTable
     {
         return [
             Column::make('id')->title(__('dataTable.id')),
-            Column::make('name_ar')->title(__('dataTable.name_ar')),
-            Column::make('name_en')->title(__('dataTable.name_en')),
+            localeNameColumn(),
             Column::make('subject')->title(__('general.subject')),
             Column::make('status')->title(__('dataTable.status')),
             Column::computed('action')

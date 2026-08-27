@@ -37,6 +37,16 @@
             flex: 0 0 auto;
             margin: 0 !important;
         }
+
+        /*
+         * عرض ثابت (250px) لعمود الاسم المعتمد على اللغة (dt-col-250).
+         * عمود العربي يظهر في اللغة العربية وعمود الإنجليزي في اللغة الإنجليزية.
+         */
+        table.dataTable th.dt-col-250,
+        table.dataTable td.dt-col-250 {
+            min-width: 250px;
+            width: 250px;
+        }
     </style>
 
     {{ $css ?? '' }}
