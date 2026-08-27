@@ -27,8 +27,8 @@ class LoginRequest extends FormRequest
         }
         return [
             'phone' => 'required|string|min:8|max:15',
-            'device_type' => 'nullable|string|in:ios,android',
-            'device_token' => 'nullable|string',
+            'device_type' => 'required|string|in:ios,android',
+            'device_token' => 'required|string|max:500',
             'country_code' => 'required|string|min:1|max:5',
             'phone_not_code' => 'nullable|string|max:20',
         ];

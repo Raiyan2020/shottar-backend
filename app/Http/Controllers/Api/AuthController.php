@@ -38,27 +38,16 @@ class AuthController extends Controller
 
         $user->update($updates);
 
-        // التطبيق ساعات بيعمل لوجين من غير ما يبعت device_token. لو كتبنا null
-        // مكانه بنمسح توكن الجهاز المسجّل ونوقف الإشعارات عن المستخدم من غير
-        // سبب — فبنحدّثه بس لما التطبيق يبعت قيمة فعلية.
+        // LoginRequest requires both values, so every successful login refreshes
+        // the device registration used by push notifications.
         $user->setDeviceToken($request->input('device_token'), $request->input('device_type'));
 
-        // تشخيص الإشعارات: بنميّز بين "التطبيق مابعتش توكن" و"التوكن اتخزن"
-        // عشان نقفل على مين المسؤول لو إشعار ما وصّلش.
-        if (trim((string) $request->input('device_token')) === '') {
-            Log::warning('Login بدون device_token — الإشعارات لن توصل لهذا الجهاز حتى يرسل التطبيق توكن', [
-                'user_id' => $user->id,
-                'phone_suffix' => substr((string) $user->phone, -4),
-                'device_type' => $request->input('device_type'),
-            ]);
-        } else {
-            Log::info('تم تخزين device_token عند اللوجين', [
-                'user_id' => $user->id,
-                'phone_suffix' => substr((string) $user->phone, -4),
-                'device_type' => $request->input('device_type'),
-                'token_prefix' => substr(trim((string) $request->input('device_token')), 0, 12).'...',
-            ]);
-        }
+        Log::info('تم تخزين device_token عند اللوجين', [
+            'user_id' => $user->id,
+            'phone_suffix' => substr((string) $user->phone, -4),
+            'device_type' => $request->input('device_type'),
+            'token_prefix' => substr(trim((string) $request->input('device_token')), 0, 12).'...',
+        ]);
 
         if (! uses_fixed_otp($user->phone)) {
             // إرسال كود التحقق إذا لزم الأمر
