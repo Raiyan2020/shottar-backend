@@ -91,25 +91,29 @@
     <script src="{{ asset('dashboard/app-assets/js/scripts/tables/table-datatables-basic.js') }}"></script>
     <script src="{{ asset('dashboard/app-assets/vendors/js/extensions/sweetalert2.all.min.js') }}"></script>
 
+    @php
+        $dataTableLanguage = [
+            'emptyTable' => __('dataTable.No records available'),
+            'info' => __('dataTable.Showing').' _START_ '.__('dataTable.to').' _END_ '.__('dataTable.of').' _TOTAL_ '.__('dataTable.entries'),
+            'infoEmpty' => __('dataTable.Showing').' 0 '.__('dataTable.to').' 0 '.__('dataTable.of').' 0 '.__('dataTable.entries'),
+            'infoFiltered' => '('.__('dataTable.filtered from').' _MAX_ '.__('dataTable.total records').')',
+            'lengthMenu' => __('dataTable.Show').' _MENU_ '.__('dataTable.entries'),
+            'loadingRecords' => __('general.Initializing...'),
+            'processing' => __('general.Initializing...'),
+            'search' => __('dataTable.Search').':',
+            'zeroRecords' => __('dataTable.No matching records found'),
+            'paginate' => [
+                'first' => __('dataTable.First'),
+                'last' => __('dataTable.Last'),
+                'next' => __('dataTable.Next'),
+                'previous' => __('dataTable.Previous'),
+            ],
+        ];
+    @endphp
+
     <script>
         $.extend(true, $.fn.dataTable.defaults, {
-            language: @json([
-                'emptyTable' => __('dataTable.No records available'),
-                'info' => __('dataTable.Showing').' _START_ '.__('dataTable.to').' _END_ '.__('dataTable.of').' _TOTAL_ '.__('dataTable.entries'),
-                'infoEmpty' => __('dataTable.Showing').' 0 '.__('dataTable.to').' 0 '.__('dataTable.of').' 0 '.__('dataTable.entries'),
-                'infoFiltered' => '('.__('dataTable.filtered from').' _MAX_ '.__('dataTable.total records').')',
-                'lengthMenu' => __('dataTable.Show').' _MENU_ '.__('dataTable.entries'),
-                'loadingRecords' => __('general.Initializing...'),
-                'processing' => __('general.Initializing...'),
-                'search' => __('dataTable.Search').':',
-                'zeroRecords' => __('dataTable.No matching records found'),
-                'paginate' => [
-                    'first' => __('dataTable.First'),
-                    'last' => __('dataTable.Last'),
-                    'next' => __('dataTable.Next'),
-                    'previous' => __('dataTable.Previous'),
-                ],
-            ])
+            language: {!! json_encode($dataTableLanguage, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) !!}
         });
     </script>
 
