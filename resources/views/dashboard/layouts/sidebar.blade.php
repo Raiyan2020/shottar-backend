@@ -172,16 +172,18 @@
                 // بارامتر المادة من الراوت ممكن يكون موديل (Route Model Binding) أو مجرد نص (ID)
                 // فلازم نتعامل مع الحالتين لتجنب خطأ Attempt to read property "id" on string
                 $routeSubjectParam = request()->route('subject');
-                $activeSubjectId = is_object($routeSubjectParam) ? ($routeSubjectParam->id ?? null) : $routeSubjectParam;
+                $activeSubjectId = is_object($routeSubjectParam) && method_exists($routeSubjectParam, 'getKey')
+                    ? $routeSubjectParam->getKey()
+                    : $routeSubjectParam;
             @endphp
-            <li class="menu-header">{{ __('general.lesson_sections') }}</li>
+            <li class="menu-header">{{ __('general.subjects') }}</li>
             @foreach($teacherSubjectItems ?? [] as $item)
                 <li class="menu-item {{ (int) $activeSubjectId === (int) $item->subject->id ? 'active' : '' }}">
                     <a href="{{ route('teacher.subjects.sections.index', $item->subject->id) }}" class="menu-link"
-                       title="{{ __('general.lesson_sections').' - '.$item->subject_name.($item->meta ? ' - '.$item->meta : '') }}">
+                       title="{{ $item->subject_name.($item->meta ? ' - '.$item->meta : '') }}">
                         <i class="menu-icon tf-icons ti ti-book"></i>
                         <div style="white-space: normal; line-height: 1.25;">
-                            {{ __('general.lesson_sections') }} — {{ $item->subject_name }}
+                            {{ $item->subject_name }}
                             <small class="d-block text-muted">{{ $item->meta ?: '-' }}</small>
                         </div>
                     </a>
