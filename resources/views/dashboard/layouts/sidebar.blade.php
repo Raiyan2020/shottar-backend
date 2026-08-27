@@ -168,14 +168,14 @@
         </li>
         @endif
         @if(auth()->user()->hasRole('teacher'))
-            <li class="menu-header">Sections</li>
+            <li class="menu-header">{{ __('general.lesson_sections') }}</li>
             @foreach($teacherSubjectItems ?? [] as $item)
-                <li class="menu-item {{ request()->is('teacher/subjects/'.$item->subject->id) ? 'active' : '' }}">
+                <li class="menu-item {{ request()->route('subject')?->id === $item->subject->id ? 'active' : '' }}">
                     <a href="{{ route('teacher.subjects.sections.index', $item->subject->id) }}" class="menu-link"
-                       title="{{ $item->subject->name_en . ($item->meta ? ' - ' . $item->meta : '') }}">
+                       title="{{ __('general.lesson_sections').' - '.$item->subject->name_en.($item->meta ? ' - '.$item->meta : '') }}">
                         <i class="menu-icon tf-icons ti ti-book"></i>
                         <div style="white-space: normal; line-height: 1.25;">
-                            {{ $item->subject->name_en }}
+                            {{ __('general.lesson_sections') }} — {{ $item->subject->name_en }}
                             <small class="d-block text-muted">{{ $item->meta ?: '-' }}</small>
                         </div>
                     </a>

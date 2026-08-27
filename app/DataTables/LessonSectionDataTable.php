@@ -31,8 +31,9 @@ class LessonSectionDataTable extends DataTable
                                 'section' => $section->id
                             ]),
                             'title' => __('general.lessons'),
-                            'icon' => 'bi bi-play-circle', // أيقونة الدروس
+                            'icon' => 'bi bi-play-btn-fill',
                             'btn' => 'btn btn-primary',
+                            'showLabel' => true,
                         ],
                         [
                             'route' => route(panelPrefix().'.subjects.materials.index', [
@@ -41,17 +42,19 @@ class LessonSectionDataTable extends DataTable
                                 'section' => $section->id
                             ]),
                             'title' => __('general.notes'),
-                            'icon' => 'bi bi-journal-text', // أيقونة المذكرات
+                            'icon' => 'bi bi-file-earmark-text-fill',
                             'btn' => 'btn btn-success',
+                            'showLabel' => true,
                         ],
                         [
                             'route' => route(panelPrefix().'.subjects.sections.challenges.index', [
                                 'subject' => $section->subject_id,
                                 'section' => $section->id,
                             ]),
-                            'title' => __('challenges'),
-                            'icon' => 'bi bi-question-circle', // أيقونة التحديات
+                            'title' => __('general.Challenges'),
+                            'icon' => 'bi bi-trophy-fill',
                             'btn' => 'btn btn-warning',
+                            'showLabel' => true,
                         ]
 
 
@@ -63,9 +66,10 @@ class LessonSectionDataTable extends DataTable
                             'subject' => $section->subject_id,
                             'section' => $section->id,
                         ]),
-                        'title' => __('challenges'),
-                        'icon' => 'bi bi-question-circle', // أيقونة التحديات
+                        'title' => __('general.Challenges'),
+                        'icon' => 'bi bi-trophy-fill',
                         'btn' => 'btn btn-warning',
+                        'showLabel' => true,
                     ],
                     ];
 

@@ -243,6 +243,10 @@ return [
     'Update Lesson Section' => 'تحديث قسم دراسي',
     'lesson_sections' => 'الوحدة',
     'unit' => 'الوحدة',
+    'units' => 'الوحدات',
+    'lessons' => 'الدروس',
+    'notes' => 'المذكرات',
+    'Challenges' => 'التحديات',
     'Whole subject (no unit)' => 'المادة كلها (بدون وحدة)',
     'back' => 'عودة',
 
@@ -316,4 +320,3 @@ return [
     'Initializing...' => 'جاري التجهيز...',
     'Please select a video file' => 'من فضلك اختر ملف فيديو',
 ];
-

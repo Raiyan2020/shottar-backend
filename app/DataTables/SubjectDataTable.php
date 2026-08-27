@@ -24,26 +24,30 @@ class SubjectDataTable extends DataTable
                         [
                             'route' => route('admin.subjects.sections.index', $subject->id),
                             'btn' => 'btn btn-warning',
-                            'icon' => 'bi bi-folder-plus',
-                            'title' => __('general.sections'), // أيقونة الأقسام
+                            'icon' => 'bi bi-collection-fill',
+                            'title' => __('general.units'),
+                            'showLabel' => true,
                         ],
                         [
                             'route' => route('admin.subjects.materials.index', ['subject' => $subject->id, 'type' => 'lesson']),
                             'title' => __('general.lessons'),
-                            'icon' => 'bi bi-play-circle', // أيقونة الدروس
+                            'icon' => 'bi bi-play-btn-fill',
                             'btn' => 'btn btn-primary',
+                            'showLabel' => true,
                         ],
                         [
                             'route' => route('admin.subjects.materials.index', ['subject' => $subject->id, 'type' => 'note']),
                             'title' => __('general.notes'),
-                            'icon' => 'bi bi-journal-text',
+                            'icon' => 'bi bi-file-earmark-text-fill',
                             'btn' => 'btn btn-success',
+                            'showLabel' => true,
                         ],
                         [
                             'route' => route('admin.subjects.exams.index', $subject->id),
                             'title' => __('general.exams'),
-                            'icon' => 'bi bi-file-earmark-pdf',
+                            'icon' => 'bi bi-clipboard-check-fill',
                             'btn' => 'btn btn-danger',
+                            'showLabel' => true,
                         ],
 
                     ]

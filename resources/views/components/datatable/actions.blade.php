@@ -93,23 +93,27 @@
         @if(str_contains($action['btn'], 'delete-btn'))
             {{-- زر الحذف كبوتون --}}
             <button type="button"
-                    class="{{ $action['btn'] }} btn-sm rounded rounded-2 mb-2 mr-2"
+                    class="{{ $action['btn'] }} btn-sm rounded rounded-2 mb-2 mr-2{{ !empty($action['showLabel']) ? ' d-inline-flex align-items-center text-nowrap' : '' }}"
                     data-url="{{ $action['route'] }}"
                     data-name="{{ $name }}"
                     title="{{ $action['title'] }}">
                 <i class="{{ $action['icon'] }}"></i>
+                @if(!empty($action['showLabel']))
+                    <span class="ms-1">{{ $action['title'] }}</span>
+                @endif
             </button>
 
 
         @else
             {{-- الأزرار العادية --}}
-            <a href="{{ $action['route'] }}" class="{{ $action['btn'] }} btn-sm rounded rounded-2 mb-2 mr-2"
+            <a href="{{ $action['route'] }}" class="{{ $action['btn'] }} btn-sm rounded rounded-2 mb-2 mr-2{{ !empty($action['showLabel']) ? ' d-inline-flex align-items-center text-nowrap' : '' }}"
                title="{{ $action['title'] }}">
                 <i class="{{ $action['icon'] }}"></i>
+                @if(!empty($action['showLabel']))
+                    <span class="ms-1">{{ $action['title'] }}</span>
+                @endif
             </a>
         @endif
     @endforeach
 @endif
-
-
 
