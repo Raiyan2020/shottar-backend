@@ -1,3 +1,4 @@
+<div class="datatable-actions" role="group" aria-label="{{ __('dataTable.action') }}">
 @if(isset($subjectId))
     {{-- Routes that require subjectId --}}
     @if(!empty($routeEdit))
@@ -116,4 +117,4 @@
         @endif
     @endforeach
 @endif
-
+</div>

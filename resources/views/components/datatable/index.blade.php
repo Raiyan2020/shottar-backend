@@ -9,6 +9,36 @@
     <link rel="stylesheet" href="{{ asset('dashboard/assets/vendor/libs/sweetalert2/sweetalert2.css') }}" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 
+    <style>
+        .card-datatable.table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .card-datatable table.dataTable {
+            width: max-content !important;
+            min-width: 100%;
+        }
+
+        .card-datatable table.dataTable th,
+        .card-datatable table.dataTable td {
+            white-space: nowrap;
+        }
+
+        .datatable-actions {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            gap: .375rem;
+            width: max-content;
+        }
+
+        .datatable-actions .btn {
+            flex: 0 0 auto;
+            margin: 0 !important;
+        }
+    </style>
+
     {{ $css ?? '' }}
 @endsection
 @section('content')
