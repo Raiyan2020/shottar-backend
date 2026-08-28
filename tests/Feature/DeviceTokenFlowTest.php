@@ -134,37 +134,24 @@ class DeviceTokenFlowTest extends TestCase
         $this->assertSame('ios', $user->device_type);
     }
 
-    /** اللوجين لا ينجح لو التطبيق لم يجهز FCM token بعد. */
-    public function test_login_requires_device_token(): void
+    /** اللوجين يظل متاحًا لو التطبيق لم يجهز بيانات FCM بعد، ولا يمسح القديم. */
+    public function test_login_without_device_credentials_keeps_previous_values(): void
     {
-        $this->createUser('+96560000003', 'kept-ios-token');
+        $this->createUser('+96560000003', 'kept-ios-token', 'ios');
 
         $this->postJson('/api/login', [
             'country_code' => '+965',
             'phone' => '60000003',
-            'device_type' => 'ios',
-        ])->assertStatus(400)
-            ->assertJsonPath('status', false)
-            ->assertJsonStructure(['data' => ['device_token']]);
+        ])->assertOk();
 
         $this->assertSame(
             'kept-ios-token',
             User::where('phone', '+96560000003')->value('device_token')
         );
-    }
-
-    /** نوع الجهاز إجباري ومحصور في ios أو android. */
-    public function test_login_requires_device_type(): void
-    {
-        $this->createUser('+96560000009');
-
-        $this->postJson('/api/login', [
-            'country_code' => '+965',
-            'phone' => '60000009',
-            'device_token' => 'valid-fcm-token',
-        ])->assertStatus(400)
-            ->assertJsonPath('status', false)
-            ->assertJsonStructure(['data' => ['device_type']]);
+        $this->assertSame(
+            'ios',
+            User::where('phone', '+96560000003')->value('device_type')
+        );
     }
 
     /** ريجستر جديد بتوكن آيفون → لازم يتخزن من أول لحظة */

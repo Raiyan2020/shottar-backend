@@ -38,16 +38,24 @@ class AuthController extends Controller
 
         $user->update($updates);
 
-        // LoginRequest requires both values, so every successful login refreshes
-        // the device registration used by push notifications.
+        // التطبيق قد يعمل login قبل تجهيز FCM token، لذلك لا نمسح التوكن
+        // القديم عندما لا يرسل التطبيق قيمة جديدة.
         $user->setDeviceToken($request->input('device_token'), $request->input('device_type'));
 
-        Log::info('تم تخزين device_token عند اللوجين', [
-            'user_id' => $user->id,
-            'phone_suffix' => substr((string) $user->phone, -4),
-            'device_type' => $request->input('device_type'),
-            'token_prefix' => substr(trim((string) $request->input('device_token')), 0, 12).'...',
-        ]);
+        if (trim((string) $request->input('device_token')) === '') {
+            Log::warning('Login بدون device_token — الإشعارات لن توصل لهذا الجهاز حتى يرسل التطبيق توكن', [
+                'user_id' => $user->id,
+                'phone_suffix' => substr((string) $user->phone, -4),
+                'device_type' => $request->input('device_type'),
+            ]);
+        } else {
+            Log::info('تم تخزين device_token عند اللوجين', [
+                'user_id' => $user->id,
+                'phone_suffix' => substr((string) $user->phone, -4),
+                'device_type' => $request->input('device_type'),
+                'token_prefix' => substr(trim((string) $request->input('device_token')), 0, 12).'...',
+            ]);
+        }
 
         if (! uses_fixed_otp($user->phone)) {
             // إرسال كود التحقق إذا لزم الأمر
