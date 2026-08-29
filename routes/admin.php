@@ -105,7 +105,7 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
             });
             Route::post('subjects/materials/toggle-status/{id}', [CourseMaterialController::class, 'toggleStatus'])->name('subjects.materials.toggleStatus');
             Route::post('subjects/materials/toggle-free/{id}', [CourseMaterialController::class, 'toggleIsFrees'])->name('subjects.materials.toggleIsFree');
-            Route::post('subjects/{section}/materials/reorder', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'sort'])->name('materials.reorder');
+            Route::post('materials/{type}/{section}/reorder', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'sort'])->name('materials.reorder');
 
             Route::prefix('subjects/{subject}/exams')->name('subjects.exams.')->group(function () {
                 Route::get('/', [ExamController::class, 'index'])->name('index');
