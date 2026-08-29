@@ -3,8 +3,12 @@
     {{-- Routes that require subjectId --}}
     @if(!empty($routeEdit))
     <a href="{{ route($routeEdit, ['subject' => $subjectId, $nameUrl => $id ]) }}"
-       class="btn btn-info btn-sm rounded rounded-2 mb-2 mr-2">
+       class="btn btn-info btn-sm rounded rounded-2 mb-2 mr-2{{ !empty($showEditLabel) ? ' d-inline-flex align-items-center text-nowrap' : '' }}"
+       title="{{ $editTitle ?? __('Edit') }}">
         <i class="bi bi-pencil-fill"></i>
+        @if(!empty($showEditLabel))
+            <span class="ms-1">{{ $editTitle ?? __('Edit') }}</span>
+        @endif
     </a>
     @endif
 
@@ -31,8 +35,13 @@
 @else
     {{-- Routes that do not require subjectId --}}
     @if(!empty($routeEdit))
-        <a href="{{ route($routeEdit, $id) }}" type="button" class="btn btn-info btn-sm rounded rounded-2 mb-2 mr-2">
+        <a href="{{ route($routeEdit, $id) }}" type="button"
+           class="btn btn-info btn-sm rounded rounded-2 mb-2 mr-2{{ !empty($showEditLabel) ? ' d-inline-flex align-items-center text-nowrap' : '' }}"
+           title="{{ $editTitle ?? __('Edit') }}">
             <i class="bi bi-pencil-fill"></i>
+            @if(!empty($showEditLabel))
+                <span class="ms-1">{{ $editTitle ?? __('Edit') }}</span>
+            @endif
         </a>
     @endif
 

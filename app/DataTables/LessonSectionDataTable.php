@@ -80,6 +80,8 @@ class LessonSectionDataTable extends DataTable
                     'nameUrl' =>'section',
                     'routeEdit' => panelPrefix().'.subjects.sections.edit',
                     'routeDelete' => panelPrefix().'.subjects.sections.destroy',
+                    'showEditLabel' => true,
+                    'editTitle' => __('Edit'),
 
                     'name' => $section->name_ar,
 
