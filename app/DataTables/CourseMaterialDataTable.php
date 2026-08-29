@@ -25,12 +25,12 @@ class CourseMaterialDataTable extends DataTable
                 $action = [      'id' => $material->id,
                     'subjectId' => $material->subject_id,  // لتمرير معرّف المادة إلى الروت
                     'nameUrl' =>'material',
-//                    'routeEdit' => panelPrefix().'.subjects.materials.edit',
+                    'routeEdit' => panelPrefix().'.subjects.materials.edit',
                     'routeDelete' => panelPrefix().'.subjects.materials.destroy',
-                    'name' => $material->name_ar,];
-                if (request()->route('type') != 'lesson') {
-                    $action['routeEdit'] = panelPrefix().'.subjects.materials.edit';
-                }
+                    'showEditLabel' => true,
+                    'editTitle' => __('Edit'),
+                    'name' => $material->name_ar,
+                ];
                 if ($material->type == 'note' && $material->file) {
                     $action['routeView'] = stored_file_url($material->file);
                     $action['viewTarget'] = '_blank';
