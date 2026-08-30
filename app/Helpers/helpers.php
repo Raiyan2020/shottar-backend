@@ -196,14 +196,14 @@ function image_url(?string $path): ?string
     $relative = ltrim(preg_replace('#^storage/#', '', $path), '/');
     $basename = basename($relative);
 
-    // Auto-heal: move legacy app/public/images files into storage/app/public.
+    // Auto-heal: copy legacy app/public/images files into storage/app/public.
+    // من غير مسح للأصل (شوف الملاحظة في stored_file_url).
     if (! \Illuminate\Support\Facades\Storage::disk('public')->exists($relative)
         && is_file(public_path($relative))) {
         \Illuminate\Support\Facades\Storage::disk('public')->put(
             $relative,
             file_get_contents(public_path($relative))
         );
-        @unlink(public_path($relative));
     }
 
     if ($basename
@@ -214,7 +214,6 @@ function image_url(?string $path): ?string
             $relative,
             file_get_contents(public_path('images/' . $basename))
         );
-        @unlink(public_path('images/' . $basename));
     }
 
     return asset('storage/' . $relative);
@@ -241,13 +240,16 @@ function stored_file_url(?string $path): ?string
 
     $relative = ltrim(preg_replace('#^storage/#', '', $path), '/');
 
+    // ملاحظة: الدالة دي **بتبني رابط** — ممنوع تمسح ملفات.
+    // كانت بتنسخ الملف لمخزن الـ public وبعدين @unlink للأصل، يعني مجرد عرض
+    // مذكرة في الـ API كان ممكن يمسح الملف من المكان اللي بيتقدّم منه.
+    // بنسيب نسخة في المكانين — ملف مكرر أهون بكتير من ملف ضايع.
     if (! \Illuminate\Support\Facades\Storage::disk('public')->exists($relative)
         && is_file(public_path($relative))) {
         \Illuminate\Support\Facades\Storage::disk('public')->put(
             $relative,
             file_get_contents(public_path($relative))
         );
-        @unlink(public_path($relative));
     }
 
     return asset('storage/' . $relative);
