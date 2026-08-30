@@ -52,6 +52,7 @@ class AuditMaterialFiles extends Command
         $bar->start();
 
         $ok = 0;
+        $present = [];
         $recovered = 0;
         $recoverable = [];
         $missing = [];
@@ -67,6 +68,7 @@ class AuditMaterialFiles extends Command
 
             if (Storage::disk('public')->exists($relative)) {
                 $ok++;
+                $present[] = $rec;
                 continue;
             }
 
@@ -105,6 +107,23 @@ class AuditMaterialFiles extends Command
             }
             $this->newLine();
             $this->info('لاسترجاعها: php artisan files:audit-materials --fix');
+        }
+
+        if ($missing !== [] && $present !== []) {
+            $this->newLine();
+            $this->line('<comment>تواريخ الرفع — بتحدد الباك أب اللي محتاجه:</comment>');
+            $this->table(
+                ['المجموعة', 'العدد', 'أقدم رفع', 'أحدث رفع'],
+                [
+                    ['موجودة', count($present), $this->minDate($present), $this->maxDate($present)],
+                    ['ضايعة', count($missing), $this->minDate($missing), $this->maxDate($missing)],
+                ]
+            );
+
+            $latestMissing = $this->maxDate($missing);
+            if ($latestMissing !== '-') {
+                $this->line("  → دوّر على باك أب متاخد <options=bold>بعد {$latestMissing}</> عشان يكون شامل كل الملفات الضايعة.");
+            }
         }
 
         if ($missing !== []) {
@@ -146,6 +165,7 @@ class AuditMaterialFiles extends Command
                         'title' => $r->name_ar ?: $r->name_en ?: '-',
                         'subject' => optional($r->subject)->name_ar ?? ('#' . $r->subject_id),
                         'file' => (string) $r->file,
+                        'created_at' => optional($r->created_at)->toDateString(),
                     ];
                 }
             });
@@ -161,6 +181,7 @@ class AuditMaterialFiles extends Command
                         'title' => $r->name_ar ?: $r->name_en ?: '-',
                         'subject' => optional($r->subject)->name_ar ?? ('#' . $r->subject_id),
                         'file' => (string) $r->file,
+                        'created_at' => optional($r->created_at)->toDateString(),
                     ];
                 }
             });
@@ -232,14 +253,28 @@ class AuditMaterialFiles extends Command
         }
     }
 
+    protected function minDate(array $rows): string
+    {
+        $dates = array_filter(array_column($rows, 'created_at'));
+
+        return $dates === [] ? '-' : min($dates);
+    }
+
+    protected function maxDate(array $rows): string
+    {
+        $dates = array_filter(array_column($rows, 'created_at'));
+
+        return $dates === [] ? '-' : max($dates);
+    }
+
     protected function writeCsv(string $path, array $missing): void
     {
         $fh = fopen($path, 'w');
         fwrite($fh, "\xEF\xBB\xBF"); // BOM عشان إكسل يقرأ العربي
-        fputcsv($fh, ['type', 'id', 'subject', 'title', 'stored_path']);
+        fputcsv($fh, ['type', 'id', 'subject', 'title', 'stored_path', 'uploaded_at']);
 
         foreach ($missing as $r) {
-            fputcsv($fh, [$r['type'], $r['id'], $r['subject'], $r['title'], $r['file']]);
+            fputcsv($fh, [$r['type'], $r['id'], $r['subject'], $r['title'], $r['file'], $r['created_at'] ?? '']);
         }
 
         fclose($fh);
