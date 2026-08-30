@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\DataTables\CourseMaterialDataTable;
 use App\Http\Controllers\Controller;
+use App\Jobs\SyncVimeoDurationJob;
 use App\Http\Requests\CourseMaterialRequest;
 use App\Jobs\UploadVideoToVimeoJob;
 use App\Models\CourseMaterial;
@@ -100,9 +101,12 @@ class CourseMaterialController extends Controller
                             $data['video'] = $body['link'];
                         }
 
-                        if (isset($body['duration'])) {
-                            $data['duration'] = $body['duration'];
-                            $data['duration_text'] = gmdate('H:i:s', $body['duration']);
+                        // ⚠️ Vimeo لسه بيرمّز الفيديو في اللحظة دي، فالـ duration
+                        // بيرجع 0. بنحفظه بس لو رقم حقيقي، والباقي بيتظبط من
+                        // SyncVimeoDurationJob بعد ما الترميز يخلص.
+                        if (! empty($body['duration'])) {
+                            $data['duration'] = (int) $body['duration'];
+                            $data['duration_text'] = gmdate('H:i:s', (int) $body['duration']);
                         }
                     } else {
                         \Log::error('Failed to fetch Vimeo info', [
@@ -121,6 +125,11 @@ class CourseMaterialController extends Controller
             $data['order_by'] = $maxOrder ? $maxOrder + 1 : 1;
 
             $material = $subject->courseMaterials()->create($data);
+
+            // لو المدة لسه مش جاهزة (Vimeo بيرمّز)، نجيبها لاحقًا بدل ما تفضل صفر.
+            if ($material->type === 'lesson' && empty($material->duration) && ! empty($material->video)) {
+                SyncVimeoDurationJob::dispatch($material->id)->delay(now()->addMinutes(2));
+            }
 
             return redirect()
                 ->route(panelPrefix().'.subjects.materials.index', [

@@ -51,6 +51,12 @@ class SubjectDetailResource extends JsonResource
             ->exists();
         $progressPercent = $user ? $this->progressPercentForUser($user->id) : 0.0;
 
+        // نفس فلتر SubjectResource بالظبط (الدروس المفعّلة بس)
+        $totalDurationSeconds = (int) $courseMaterials
+            ->where('type', 'lesson')
+            ->where('status', 1)
+            ->sum('duration');
+
 
 
         return [
@@ -59,10 +65,10 @@ class SubjectDetailResource extends JsonResource
             // صورة المادة الأساسية (العامة)، مش صورة نسخة الفصل/السنة
             'image' => image_url(optional($this->coreSubject)->image ?? $this->image),
             'total_lessons' => $courseMaterials->where('type', 'lesson')->count(),
-            'total_duration' => DurationFormatter(
-                $courseMaterials->where('type', 'lesson')->sum('duration'),
-                $lang
-            ) ?? 0,
+            'total_duration' => DurationFormatter($totalDurationSeconds, $lang),
+            'total_duration_seconds' => $totalDurationSeconds,
+            'hours' => (int) floor($totalDurationSeconds / 3600),
+            'minutes' => (int) floor(($totalDurationSeconds % 3600) / 60),
             'price' => number_format($this->price, 3),
             'ios_product_id' => $this->ios_product_id,
             'is_purchased' => $isPurchased,
