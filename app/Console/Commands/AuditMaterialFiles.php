@@ -22,7 +22,8 @@ class AuditMaterialFiles extends Command
 {
     protected $signature = 'files:audit-materials
                             {--fix : انسخ الملف للمكان الصح لو اتلقى في مكان تاني}
-                            {--csv= : احفظ السجلات الناقصة في ملف CSV}';
+                            {--csv= : احفظ السجلات الناقصة في ملف CSV}
+                            {--root=* : أماكن إضافية يدوّر فيها (مثال: --root=~/public_html)}';
 
     protected $description = 'Audit note/exam files on disk and recover ones that moved';
 
@@ -183,16 +184,36 @@ class AuditMaterialFiles extends Command
      */
     protected function buildIndex(): void
     {
-        $roots = array_unique(array_filter([
+        $extra = [];
+
+        foreach ((array) $this->option('root') as $dir) {
+            // ندعم ~ عشان سهولة الكتابة
+            $dir = preg_replace('#^~#', rtrim((string) getenv('HOME'), '/'), (string) $dir);
+            $real = realpath($dir);
+
+            if ($real && is_dir($real)) {
+                $extra[] = $real;
+            } else {
+                $this->warn("مسار مش موجود، اتتجاهل: {$dir}");
+            }
+        }
+
+        $roots = array_unique(array_filter(array_merge([
             storage_path('app/public'),
             public_path(),
             storage_path('app'),
-        ], 'is_dir'));
+        ], $extra), 'is_dir'));
+
+        foreach ($roots as $root) {
+            $this->line('  بيدوّر في: ' . $root);
+        }
 
         foreach ($roots as $root) {
             $iterator = new \RecursiveIteratorIterator(
                 new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::SELF_FIRST
+                \RecursiveIteratorIterator::SELF_FIRST,
+                // مجلدات ممنوعة الوصول متوقّفش المسح
+                \RecursiveIteratorIterator::CATCH_GET_CHILD
             );
 
             foreach ($iterator as $file) {
