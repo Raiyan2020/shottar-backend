@@ -26,19 +26,28 @@ class CheckAppleReviewMode extends Command
         $fix = (bool) $this->option('fix');
         $ok = true;
 
-        // ── 1) وسيلة apple_iap ───────────────────────────────────────────
-        $this->line('<comment>1) وسيلة الدفع apple_iap</comment>');
-        $iap = PaymentMethod::where('slug', PaymentMethod::SLUG_APPLE_IAP)->first();
+        $reviewSlug = trim((string) setting('review_payment_slug', PaymentMethod::SLUG_CASH))
+            ?: PaymentMethod::SLUG_CASH;
+
+        // ── 1) وسيلة الدفع أثناء المراجعة ────────────────────────────────
+        $this->line("<comment>1) وسيلة الدفع أثناء المراجعة (review_payment_slug = {$reviewSlug})</comment>");
+        $iap = PaymentMethod::where('slug', $reviewSlug)->first();
 
         if (! $iap) {
             $ok = false;
             $this->error('   ✘ مش موجودة خالص');
 
             if ($fix) {
+                $names = [
+                    PaymentMethod::SLUG_APPLE_IAP => ['شراء داخل التطبيق (آبل)', 'Apple In-App Purchase'],
+                    PaymentMethod::SLUG_CASH => ['نقدي', 'Cash'],
+                ];
+                [$ar, $en] = $names[$reviewSlug] ?? [$reviewSlug, $reviewSlug];
+
                 $iap = PaymentMethod::create([
-                    'name_ar' => 'شراء داخل التطبيق (آبل)',
-                    'name_en' => 'Apple In-App Purchase',
-                    'slug' => PaymentMethod::SLUG_APPLE_IAP,
+                    'name_ar' => $ar,
+                    'name_en' => $en,
+                    'slug' => $reviewSlug,
                     'status' => 1,
                 ]);
                 $this->info("   ✔ اتعملت (id={$iap->id})");
@@ -97,7 +106,7 @@ class CheckAppleReviewMode extends Command
             $isReviewer = app_in_apple_review($device, $version);
 
             $methods = $isReviewer
-                ? PaymentMethod::where('slug', PaymentMethod::SLUG_APPLE_IAP)->pluck('slug')
+                ? PaymentMethod::where('slug', $reviewSlug)->pluck('slug')
                 : PaymentMethod::where('status', 1)->pluck('slug');
 
             $rows[] = [
@@ -116,6 +125,9 @@ class CheckAppleReviewMode extends Command
             $this->line('  (المحاكاة انتهت — الإعداد رجع زي ما كان)');
         }
 
+        $this->newLine();
+        $this->warn("⚠️  التطبيق لازم يفلتر على نفس الـ slug ده ({$reviewSlug}).");
+        $this->line('   لو التطبيق بيفلتر على slug تاني، المراجع هيشوف قايمة فاضية.');
         $this->newLine();
 
         if (! $ok) {

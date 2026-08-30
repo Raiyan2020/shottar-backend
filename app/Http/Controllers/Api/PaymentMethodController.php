@@ -21,6 +21,10 @@ class PaymentMethodController extends Controller
      *
      * أول ما آبل توافق: الأدمن يمسح الحقل أو يحط النسخة اللي بعدها، ومستخدمي
      * نفس النسخة يرجعوا يشوفوا كل الوسائل على طول.
+     *
+     * ⚠️ الوسيلة اللي بتترجع أثناء المراجعة محددة في إعداد `review_payment_slug`
+     * (الافتراضي `cash`). لازم تطابق اللي التطبيق بيفلتر عليه، وإلا القايمة
+     * بتطلع فاضية عند المراجع.
      */
     public function __invoke(Request $request)
     {
@@ -32,9 +36,14 @@ class PaymentMethodController extends Controller
         $query = PaymentMethod::query();
 
         if ($isReviewer) {
-            // الشراء داخل التطبيق بس — ومن غير شرط status عشان لو حد قفلها
-            // بالغلط المراجع ميلاقيش قايمة فاضية (= رفض مؤكد).
-            $query->where('slug', PaymentMethod::SLUG_APPLE_IAP);
+            // وسيلة واحدة بس أثناء المراجعة. الـ slug بيتحدد من الإعدادات
+            // (review_payment_slug) عشان يتغيّر من غير نشر كود لو لزم.
+            // من غير شرط status عشان لو حد قفلها بالغلط المراجع ميلاقيش
+            // قايمة فاضية (= رفض مؤكد).
+            $slug = trim((string) setting('review_payment_slug', PaymentMethod::SLUG_CASH))
+                ?: PaymentMethod::SLUG_CASH;
+
+            $query->where('slug', $slug);
         } else {
             $query->where('status', 1);
         }
