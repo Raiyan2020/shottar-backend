@@ -306,6 +306,40 @@ function setting($key, $default = null)
     return \App\Models\Setting::where('key_id', $key)->value('value') ?? $default;
 }
 
+/**
+ * §9 — هل الطلب جاي من مراجع آبل؟
+ *
+ * الشرط: الجهاز iOS **و** رقم النسخة مطابق بالحرف لنسخة تحت المراجعة المحفوظة
+ * في الإعدادات. القرار بيتاخد على السيرفر مش من الطلب — لو التطبيق هو اللي
+ * بيقول "أنا مراجع" يبقى أي حد يقدر يدّعي ده ويقفل وسائل الدفع على نفسه.
+ *
+ * لما آبل توافق على النسخة، الأدمن بيمسح الحقل أو يحط النسخة اللي بعدها،
+ * فالمستخدمين على نفس النسخة بيرجعوا طبيعي على طول من غير أي فترة انتظار.
+ */
+function app_in_apple_review(?string $deviceType, ?string $appVersion): bool
+{
+    $reviewVersion = trim((string) setting('ios_review_version', ''));
+
+    // مفيش نسخة تحت المراجعة — الوضع الطبيعي
+    if ($reviewVersion === '') {
+        return false;
+    }
+
+    if (strtolower(trim((string) $deviceType)) !== 'ios') {
+        return false;
+    }
+
+    $appVersion = trim((string) $appVersion);
+
+    // هيدر ناقص (بيلد قديم) = مش مراجع
+    if ($appVersion === '') {
+        return false;
+    }
+
+    // مطابقة بالحرف — نسخة واحدة بس هي اللي بتاخد true
+    return hash_equals($reviewVersion, $appVersion);
+}
+
 function socials(): array
 {
     return [

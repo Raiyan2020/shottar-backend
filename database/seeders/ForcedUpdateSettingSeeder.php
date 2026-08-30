@@ -59,6 +59,18 @@ class ForcedUpdateSettingSeeder extends Seeder
             ]
         );
 
+        // §9 — نسخة iOS تحت مراجعة آبل (فاضية = مفيش)
+        Setting::updateOrCreate(
+            ['key_id' => 'ios_review_version'],
+            [
+                'title_en' => 'iOS version under App Review (leave empty when none)',
+                'title_ar' => 'إصدار iOS تحت مراجعة آبل (اتركه فارغًا لو مفيش)',
+                'value'    => '',
+                'set_group'=> 'app',
+                'is_object'=> '1',
+            ]
+        );
+
         Setting::updateOrCreate(
             ['key_id' => 'force_close'],
             [
