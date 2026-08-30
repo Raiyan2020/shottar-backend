@@ -121,8 +121,18 @@ class AuditMaterialFiles extends Command
             );
 
             $latestMissing = $this->maxDate($missing);
+            $earliestPresent = $this->minDate($present);
+
             if ($latestMissing !== '-') {
-                $this->line("  → دوّر على باك أب متاخد <options=bold>بعد {$latestMissing}</> عشان يكون شامل كل الملفات الضايعة.");
+                $this->line("  → الباك أب لازم يكون متاخد <options=bold>بعد {$latestMissing}</>");
+
+                // انقسام نظيف (مفيش تداخل) = فيه حدث ضياع بين التاريخين
+                if ($earliestPresent !== '-' && $earliestPresent > $latestMissing) {
+                    $this->line("    و<options=bold>قبل {$earliestPresent}</> — دي اللحظة اللي الملفات اتفقدت فيها.");
+                    $this->newLine();
+                    $this->line('  <comment>ملاحظة:</comment> الانقسام نظيف من غير تداخل، يعني الملفات مضاعتش واحدة واحدة —');
+                    $this->line("  فيه حاجة واحدة مسحتهم كلهم مرة واحدة بين {$latestMissing} و {$earliestPresent}.");
+                }
             }
         }
 
