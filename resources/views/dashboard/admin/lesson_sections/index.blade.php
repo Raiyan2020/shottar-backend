@@ -56,8 +56,12 @@
                     delay: 200,
                     delayOnTouchOnly: true,
 
-                    // حركة أقل من 8px متبدأش سحب (اهتزاز الصوابع الطبيعي)
-                    touchStartThreshold: 8,
+                    // ده مش "حد أدنى للسحب" — ده حد "لو الصباع اتحرك أكتر منه *أثناء*
+                    // الـ 200ms delay، السحب بيتلغي ويتحول لسكرول". 8px صغيرة جدًا:
+                    // أي سحب حقيقي بيبدأ يتحرك فورًا مع اللمس، فكان بيتلغي قبل ما
+                    // يبدأ خالص على شاشة اللمس (ده اللي كان بيمنع السحب لفوق تحديدًا،
+                    // لأن مفيش سكرول بديل يحصل هناك فيبان إن حاجة مش بتتحرك خالص).
+                    touchStartThreshold: 25,
                     onEnd: async function () {
                         let order = [];
                         document.querySelectorAll('#datatable tbody tr').forEach((row, index) => {

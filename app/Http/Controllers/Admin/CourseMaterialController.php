@@ -254,10 +254,15 @@ class CourseMaterialController extends Controller
 
     //stor
 
-    public function sort(Request $request, $type,$sectionId)
+    public function sort(Request $request, $type, $sectionId)
     {
+        $data = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*.id' => ['required', 'integer', 'distinct'],
+            'order.*.order_by' => ['required', 'integer'],
+        ]);
 
-        foreach ($request->order as $item) {
+        foreach ($data['order'] as $item) {
             CourseMaterial::where('id', $item['id'])
                 ->where('lesson_section_id', $sectionId) // 🔒 تأكد أنه لن يعدل إلا على أقسام هذه المادة
                     ->where('type',$type)
