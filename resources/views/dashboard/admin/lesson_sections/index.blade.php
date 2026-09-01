@@ -21,7 +21,15 @@
     </x-slot:header>
 
     <x-slot:script>
-        <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+        {{-- مستضافة محليًا: الاعتماد على CDN خارجي وقت التشغيل فشل قبل كده على
+             شبكات بعض المدرّسين (نفس مشكلة tus في رفع الفيديو). --}}
+        <script src="{{ asset('dashboard/cdn/Sortable.min.js') }}"></script>
+        <script>
+            // احتياطي لو الملف المحلي مش موجود
+            if (typeof Sortable === 'undefined') {
+                document.write('<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"><\/script>');
+            }
+        </script>
         <script>
             function initSortable() {
                 const tableBody = document.querySelector('#datatable tbody');
@@ -32,7 +40,24 @@
 
                 Sortable.create(tableBody, {
                     animation: 150,
-                    handle: null, // كامل الصف قابل للسحب
+
+                    // الصف كله قابل للسحب، بس الأزرار والروابط مستثناة — من غير كده
+                    // SortableJS بيخطف الـ touchstart على التابلت ويعتبر أي لمسة بداية
+                    // سحب، فأزرار Edit/Lessons/Notes مكانتش بتضغط خالص (كانت شغالة
+                    // على الديسكتوب لأن الماوس بيفرّق بين الضغط والسحب).
+                    filter: 'a, button, input, select, textarea, label, .btn',
+
+                    // مهم: من غير دي SortableJS بيعمل preventDefault على العناصر
+                    // المستثناة وبيمنع الضغطة نفسها.
+                    preventOnFilter: false,
+
+                    // على اللمس بس: لازم ضغطة مستمرة 200ms قبل ما السحب يبدأ،
+                    // فاللمسة السريعة تفضل ضغطة عادية.
+                    delay: 200,
+                    delayOnTouchOnly: true,
+
+                    // حركة أقل من 8px متبدأش سحب (اهتزاز الصوابع الطبيعي)
+                    touchStartThreshold: 8,
                     onEnd: async function () {
                         let order = [];
                         document.querySelectorAll('#datatable tbody tr').forEach((row, index) => {
