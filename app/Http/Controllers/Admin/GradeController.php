@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\DataTables\GradeDataTable;
 use App\Http\Controllers\Controller;
 use \App\Traits\HasStatusToggle;
+use App\Traits\HandlesRowOrdering;
 use App\Http\Requests\GradeRequest;
 use App\Models\Grade;
+use App\Services\RowOrderService;
 use App\Models\IosBundleProduct;
 use App\Models\Semester;
 use App\Rules\IosProductIdRule;
@@ -14,7 +16,7 @@ use Illuminate\Http\Request;
 
 class GradeController extends Controller
 {
-    use HasStatusToggle;
+    use HasStatusToggle, HandlesRowOrdering;
     public function index(GradeDataTable $dataTable)
     {
         return $dataTable->render('dashboard.admin.grades.index');
@@ -80,11 +82,26 @@ class GradeController extends Controller
     }
     public function sort(Request $request)
     {
-        foreach ($request->order as $item) {
-            Grade::where('id', $item['id'])->update(['order_by' => $item['order_by']]);
-        }
+        $data = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*.id' => ['required', 'integer', 'distinct'],
+        ]);
 
-        return response()->json(['status' => true]);
+        // بيحافظ على المراكز العامة بدل ما يرقّم الصفوف الظاهرة من 1.
+        app(RowOrderService::class)->applyVisibleOrder(
+            fn () => Grade::query(),
+            collect($data['order'])->pluck('id')->all()
+        );
+
+        return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * نقل صف مركز واحد في الترتيب العام. نطاق الترتيب هنا هو الجدول كله.
+     */
+    public function move(Request $request, Grade $grade)
+    {
+        return $this->moveRow($request, $grade, fn () => Grade::query());
     }
 
     protected function syncIosBundles(Grade $grade, array $ids): void

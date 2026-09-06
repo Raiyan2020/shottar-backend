@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\LessonSection;
+use App\Services\RowOrderService;
 use App\Models\Subject;
 use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\EloquentDataTable;
@@ -12,9 +13,28 @@ class LessonSectionDataTable extends DataTable
 {
     protected string $statusRoute = '.sections.toggleStatus';
 
+    /** نطاق ترتيب الوحدات: وحدات نفس المادة بس. */
+    protected function orderScope(): \Closure
+    {
+        $subject = request()->route('subject');
+
+        return fn () => LessonSection::query()->where('subject_id', $subject->id);
+    }
+
     public function dataTable($query): EloquentDataTable
     {
+        $order = app(RowOrderService::class)->positionMap($this->orderScope());
+        $subject = request()->route('subject');
+        $prefix = panelPrefix();
+
         return (new EloquentDataTable($query))
+            ->addColumn('reorder', function ($section) use ($order, $subject, $prefix) {
+                return view('dashboard.partials._reorder-cell', [
+                    'moveUrl' => route($prefix.'.sections.move', [$subject->id, $section->id]),
+                    'position' => $order['positions'][$section->id] ?? 1,
+                    'total' => $order['total'],
+                ])->render();
+            })
             ->setRowId('id') // <-- مهم جدًا لتحديد ID للصف
             ->setRowAttr([
                 'class' => 'sortable-row', // لسهولة استهدافه من الجافاسكربت
@@ -100,7 +120,7 @@ class LessonSectionDataTable extends DataTable
 
                 return $section->subject?->{$nameColumn} ?? '-';
             })
-            ->rawColumns(['action', 'status']);
+            ->rawColumns(['action', 'status', 'reorder']);
     }
 
     public function query(LessonSection $model)
@@ -132,6 +152,8 @@ class LessonSectionDataTable extends DataTable
     public function getColumns(): array
     {
         return [
+            Column::computed('reorder')->title('')->exportable(false)->printable(false)
+                ->searchable(false)->orderable(false)->addClass('reorder-col'),
             Column::make('id')->title(__('dataTable.id')),
             localeNameColumn(),
             Column::make('subject')->title(__('general.subject')),

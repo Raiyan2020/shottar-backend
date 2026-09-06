@@ -7,13 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\LessonSectionRequest;
 use App\Models\LessonSection;
 use App\Models\Subject;
+use App\Services\RowOrderService;
+use App\Traits\HandlesRowOrdering;
 use App\Traits\HasStatusToggle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class LessonSectionController extends Controller
 {
-    use HasStatusToggle;
+    use HasStatusToggle, HandlesRowOrdering;
 
     public function index(LessonSectionDataTable $dataTable, Subject $subject)
     {
@@ -85,16 +87,29 @@ class LessonSectionController extends Controller
 
         abort_unless($ownedSectionsCount === $sectionIds->count(), 422, __('Invalid section order.'));
 
-        DB::transaction(function () use ($data, $subject) {
-            foreach ($data['order'] as $index => $item) {
-                LessonSection::query()
-                    ->where('subject_id', $subject->id)
-                    ->whereKey($item['id'])
-                    ->update(['order_by' => $index + 1]);
-            }
-        });
+        // بيحافظ على المراكز العامة بدل ما يرقّم الصفوف الظاهرة من 1.
+        app(RowOrderService::class)->applyVisibleOrder(
+            fn () => LessonSection::query()->where('subject_id', $subject->id),
+            collect($data['order'])->pluck('id')->all()
+        );
 
         return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * نقل وحدة مركز واحد داخل نفس المادة. النطاق = وحدات المادة دي بس.
+     */
+    public function move(Request $request, Subject $subject, LessonSection $section)
+    {
+        $this->authorizeTeacherSubject($subject);
+
+        abort_unless($section->subject_id === $subject->id, 404);
+
+        return $this->moveRow(
+            $request,
+            $section,
+            fn () => LessonSection::query()->where('subject_id', $subject->id)
+        );
     }
 
     private function authorizeTeacherSubject(Subject $subject): void

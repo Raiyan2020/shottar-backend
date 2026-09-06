@@ -49,6 +49,7 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
             Route::post('grades/toggle-status/{grade}', [GradeController::class, 'toggleStatus'])->name('grades.toggleStatus');
 //            Route::post('grades/sort', [GradeController::class, 'sort'])->name('grades.sort');
             Route::post('grades/reorder', [GradeController::class, 'sort'])->name('grades.reorder');
+            Route::post('grades/{grade}/move', [GradeController::class, 'move'])->name('grades.move');
 
             //study-types
 //            Route::resource('study-types', StudyTypeController::class);
@@ -88,6 +89,7 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
                 Route::delete('/{challenge}', [\App\Http\Controllers\Admin\ChallengeController::class, 'destroy'])->name('destroy');
             });
             Route::post('subjects/{subject}/sections/reorder', [\App\Http\Controllers\Admin\LessonSectionController::class, 'sort'])->name('sections.reorder');
+            Route::post('subjects/{subject}/sections/{section}/move', [\App\Http\Controllers\Admin\LessonSectionController::class, 'move'])->name('sections.move');
 
 
 
@@ -106,6 +108,7 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
             Route::post('subjects/materials/toggle-status/{id}', [CourseMaterialController::class, 'toggleStatus'])->name('subjects.materials.toggleStatus');
             Route::post('subjects/materials/toggle-free/{id}', [CourseMaterialController::class, 'toggleIsFrees'])->name('subjects.materials.toggleIsFree');
             Route::post('materials/{type}/{section}/reorder', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'sort'])->name('materials.reorder');
+            Route::post('materials/{type}/{section}/{material}/move', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'move'])->name('materials.move');
 
             Route::prefix('subjects/{subject}/exams')->name('subjects.exams.')->group(function () {
                 Route::get('/', [ExamController::class, 'index'])->name('index');

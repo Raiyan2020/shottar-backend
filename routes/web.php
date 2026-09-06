@@ -72,6 +72,7 @@ Route::middleware(['auth:admin', 'role:teacher'])
         });
         Route::post('sections/{section}/toggle-status', [\App\Http\Controllers\Admin\LessonSectionController::class, 'toggleStatus'])->name('sections.toggleStatus');
         Route::post('subjects/{subject}/sections/reorder', [\App\Http\Controllers\Admin\LessonSectionController::class, 'sort'])->name('sections.reorder');
+        Route::post('subjects/{subject}/sections/{section}/move', [\App\Http\Controllers\Admin\LessonSectionController::class, 'move'])->name('sections.move');
 
         // المواد (الدروس والملاحظات)
         Route::prefix('subjects/{subject}/materials')->name('subjects.materials.')->group(function () {
@@ -86,6 +87,7 @@ Route::middleware(['auth:admin', 'role:teacher'])
         Route::post('subjects/materials/toggle-free/{id}', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'toggleIsFrees'])->name('subjects.materials.toggleIsFree');
 
         Route::post('materials/{type}/{section}/reorder', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'sort'])->name('materials.reorder');
+        Route::post('materials/{type}/{section}/{material}/move', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'move'])->name('materials.move');
 
         Route::get('/vimeo-upload-video', [\App\Http\Controllers\Admin\CourseMaterialController::class, 'getVimeoUploadUrlVideo']);
 

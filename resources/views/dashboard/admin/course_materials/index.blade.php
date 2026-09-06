@@ -1,13 +1,4 @@
 <x-datatable :dataTable="$dataTable" :title="__('general.lesson_sections')">
-    <x-slot:css>
-        <style>
-            @if(filled($sectionId))
-            #datatable tbody tr {
-                cursor: move;
-            }
-            @endif
-        </style>
-    </x-slot:css>
     <x-slot:header>
         <a href="{{ route(panelPrefix().'.subjects.materials.create',[$subject->id,$type,'section' => $sectionId]) }}" type="button" class="btn btn-primary waves-effect waves-light">{{__('dataTable.add')}}</a>
         @if(auth('admin')->user()->hasRole('admin'))

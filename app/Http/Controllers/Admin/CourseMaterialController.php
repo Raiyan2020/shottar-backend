@@ -12,14 +12,16 @@ use App\Models\LessonSection;
 use App\Models\Subject;
 use App\Traits\ImageTrait;
 use Illuminate\Http\Request;
+use App\Traits\HandlesRowOrdering;
 use App\Traits\HasStatusToggle;
+use App\Services\RowOrderService;
 use App\Services\VimeoService;
 use Illuminate\Support\Facades\Http;
 use Vimeo\Vimeo;
 
 class CourseMaterialController extends Controller
 {
-    use HasStatusToggle , ImageTrait;
+    use HasStatusToggle , ImageTrait, HandlesRowOrdering;
 
     protected ?Vimeo $client = null;
 
@@ -262,13 +264,37 @@ class CourseMaterialController extends Controller
             'order.*.order_by' => ['required', 'integer'],
         ]);
 
-        foreach ($data['order'] as $item) {
-            CourseMaterial::where('id', $item['id'])
-                ->where('lesson_section_id', $sectionId) // 🔒 تأكد أنه لن يعدل إلا على أقسام هذه المادة
-                    ->where('type',$type)
-                ->update(['order_by' => $item['order_by']]);
-        }
+        // 🔒 النطاق (الوحدة + النوع) بيمنع التعديل على مواد بره الوحدة دي،
+        // وبيحافظ على المراكز العامة بدل ما يرقّم الصفوف الظاهرة من 1.
+        app(RowOrderService::class)->applyVisibleOrder(
+            fn () => CourseMaterial::query()
+                ->where('lesson_section_id', $sectionId)
+                ->where('type', $type),
+            collect($data['order'])->pluck('id')->all()
+        );
+
         return response()->json(['status' => 'success']);
+    }
+
+    /**
+     * نقل درس/ملاحظة مركز واحد داخل نفس الوحدة ونفس النوع.
+     *
+     * نطاق الترتيب هو نفس نطاق sort() بالظبط: lesson_section_id + type.
+     */
+    public function move(Request $request, $type, $sectionId, CourseMaterial $material)
+    {
+        abort_unless(
+            (int) $material->lesson_section_id === (int) $sectionId && $material->type === $type,
+            404
+        );
+
+        return $this->moveRow(
+            $request,
+            $material,
+            fn () => CourseMaterial::query()
+                ->where('lesson_section_id', $sectionId)
+                ->where('type', $type)
+        );
     }
 
 

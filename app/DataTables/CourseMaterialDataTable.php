@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\CourseMaterial;
+use App\Services\RowOrderService;
 use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Column;
@@ -12,9 +13,44 @@ class CourseMaterialDataTable extends DataTable
     protected string $statusRoute = '.subjects.materials.toggleStatus';
     protected string $isFreeRoute = '.subjects.materials.toggleIsFree';
 
+    /**
+     * نطاق ترتيب المواد: نفس الوحدة ونفس النوع — مطابق لنطاق sort().
+     * بيرجّع null لو الصفحة مفتوحة من غير تحديد وحدة (الترتيب مش متاح ساعتها).
+     */
+    protected function orderScope(): ?\Closure
+    {
+        $sectionId = request()->get('section');
+        $type = request()->route('type');
+
+        if (blank($sectionId)) {
+            return null;
+        }
+
+        return fn () => CourseMaterial::query()
+            ->where('lesson_section_id', $sectionId)
+            ->where('type', $type);
+    }
+
     public function dataTable($query): EloquentDataTable
     {
+        $scope = $this->orderScope();
+        $order = $scope ? app(RowOrderService::class)->positionMap($scope) : null;
+        $sectionId = request()->get('section');
+        $type = request()->route('type');
+        $prefix = panelPrefix();
+
         return (new EloquentDataTable($query))
+            ->addColumn('reorder', function ($material) use ($order, $sectionId, $type, $prefix) {
+                if (! $order) {
+                    return '';
+                }
+
+                return view('dashboard.partials._reorder-cell', [
+                    'moveUrl' => route($prefix.'.materials.move', [$type, $sectionId, $material->id]),
+                    'position' => $order['positions'][$material->id] ?? 1,
+                    'total' => $order['total'],
+                ])->render();
+            })
             ->setRowId('id') // <-- مهم جدًا لتحديد ID للصف
             ->setRowAttr([
                 'class' => 'sortable-row', // لسهولة استهدافه من الجافاسكربت
@@ -82,7 +118,7 @@ class CourseMaterialDataTable extends DataTable
             ->editColumn('type', function ($material) {
                 return $material->type == 'lesson' ? __('general.Lesson') : __('general.Note');
             })
-            ->rawColumns(['action', 'status','is_free', 'type','url']);
+            ->rawColumns(['action', 'status','is_free', 'type','url','reorder']);
     }
 
     public function query(CourseMaterial $model)
@@ -117,11 +153,13 @@ class CourseMaterialDataTable extends DataTable
             ->setTableId('datatable')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0, 'desc')
             ->addTableClass('table table-hover')
             ->parameters([
                 'lengthMenu' => [[10, 20, 25, 50, 100], [10, 20, 25, 50, 100]],
                 'pageLength' => 20,
+                // الترتيب الافتراضي بالـ id كان بيلغي ترتيب order_by الجاي من
+                // الاستعلام. [] معناها سيب ترتيب الاستعلام زي ما هو.
+                'order' => [],
             ]);
 
     }
@@ -129,6 +167,8 @@ class CourseMaterialDataTable extends DataTable
     public function getColumns(): array
     {
         $columns = [
+            Column::computed('reorder')->title('')->exportable(false)->printable(false)
+                ->searchable(false)->orderable(false)->addClass('reorder-col'),
             Column::make('id')->title(__('dataTable.id')),
             localeNameColumn(),
 //            Column::make('lesson_section')->title(__('general.lesson_sections')),
