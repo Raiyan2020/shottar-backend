@@ -3,6 +3,7 @@
 namespace App\DataTables;
 
 use App\Models\Exam;
+use App\Services\RowOrderService;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Column;
 use Yajra\DataTables\Services\DataTable;
@@ -14,7 +15,20 @@ class ExamDataTable extends DataTable
 
     public function dataTable($query): EloquentDataTable
     {
+        $subject = request()->route('subject');
+        $scope = fn () => Exam::query()->where('subject_id', $subject->id);
+        $order = app(RowOrderService::class)->positionMap($scope);
+
         return (new EloquentDataTable($query))
+            ->addColumn('reorder', function (Exam $exam) use ($subject, $order) {
+                return view('dashboard.partials._reorder-cell', [
+                    'moveUrl' => route('admin.subjects.exams.move', [$subject->id, $exam->id]),
+                    'position' => $order['positions'][$exam->id] ?? 1,
+                    'total' => $order['total'],
+                ])->render();
+            })
+            ->setRowId('id')
+            ->setRowAttr(['class' => 'sortable-row'])
             ->addColumn('action', function (Exam $exam) {
                 $action = [
                     'id' => $exam->id,
@@ -68,7 +82,7 @@ class ExamDataTable extends DataTable
 
                 return '<a href="' . e($url) . '" target="_blank" class="btn btn-sm btn-outline-primary">PDF</a>';
             })
-            ->rawColumns(['action', 'status', 'is_free', 'file']);
+            ->rawColumns(['reorder', 'action', 'status', 'is_free', 'file']);
     }
 
     public function query(Exam $model)
@@ -88,13 +102,15 @@ class ExamDataTable extends DataTable
             ->setTableId('datatable')
             ->columns($this->getColumns())
             ->minifiedAjax()
-            ->orderBy(0, 'desc')
-            ->addTableClass('table table-hover');
+            ->addTableClass('table table-hover')
+            ->parameters(['order' => []]);
     }
 
     public function getColumns(): array
     {
         return [
+            Column::computed('reorder')->title('')->exportable(false)->printable(false)
+                ->searchable(false)->orderable(false)->addClass('reorder-col'),
             Column::make('id')->title(__('dataTable.id')),
             localeNameColumn(),
             Column::make('unit')->title(__('general.unit'))->orderable(false),
