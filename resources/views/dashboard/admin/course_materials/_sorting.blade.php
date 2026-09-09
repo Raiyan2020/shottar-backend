@@ -3,14 +3,15 @@
 
     السلوك المشترك (السحب من المسكة + أسهم فوق/تحت) اتنقل لـ
     dashboard.partials._reorder-script عشان الكود ميتكررش في تلات جداول.
-    الملف ده فاضل مسؤول عن حاجة واحدة: الترتيب متاح بس لما تكون فيه وحدة
-    محددة — من غير وحدة مفيش نطاق ترتيب واضح أصلاً.
+    السحب متاح عند فتح وحدة محددة فقط، أما أسهم كل صف فتظل متاحة في صفحة كل
+    الدروس وتحرّك الدرس داخل وحدته من غير خلط الوحدات ببعض.
 --}}
-@if(filled($sectionId))
-    @include('dashboard.partials._reorder-script', [
-        'reorderUrl' => route($reorderRouteName, [
+@include('dashboard.partials._reorder-script', [
+    'reorderUrl' => filled($sectionId)
+        ? route($reorderRouteName, [
             'type' => $type,
             'section' => $sectionId,
-        ]),
-    ])
-@endif
+            'subject' => $subject->id,
+        ])
+        : null,
+])

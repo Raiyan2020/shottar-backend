@@ -114,6 +114,8 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
                 Route::get('/', [ExamController::class, 'index'])->name('index');
                 Route::get('/create', [ExamController::class, 'create'])->name('create');
                 Route::post('/', [ExamController::class, 'store'])->name('store');
+                Route::post('/reorder', [ExamController::class, 'sort'])->name('reorder');
+                Route::post('/{exam}/move', [ExamController::class, 'move'])->name('move');
                 Route::get('/{exam}/edit', [ExamController::class, 'edit'])->name('edit');
                 Route::put('/{exam}', [ExamController::class, 'update'])->name('update');
                 Route::delete('/{exam}', [ExamController::class, 'destroy'])->name('destroy');

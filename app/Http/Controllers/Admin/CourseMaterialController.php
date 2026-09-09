@@ -48,6 +48,8 @@ class CourseMaterialController extends Controller
 
     public function index(CourseMaterialDataTable $dataTable, Subject $subject,$type)
     {
+        $this->authorizeTeacherSubject($subject);
+
         //type lesson or note
         $type = $type ?? 'lesson'; // Default to 'lesson' if not provided
         $sectionId = request()->get('section'); // Get section ID from query parameters
@@ -259,17 +261,27 @@ class CourseMaterialController extends Controller
     public function sort(Request $request, $type, $sectionId)
     {
         $data = $request->validate([
+            'subject' => ['required', 'integer', 'exists:subjects,id'],
             'order' => ['required', 'array', 'min:1'],
             'order.*.id' => ['required', 'integer', 'distinct'],
             'order.*.order_by' => ['required', 'integer'],
         ]);
 
-        // 🔒 النطاق (الوحدة + النوع) بيمنع التعديل على مواد بره الوحدة دي،
+        $subject = Subject::findOrFail($data['subject']);
+        $this->authorizeTeacherSubject($subject);
+        $scope = $this->materialOrderScope($subject, $type, $sectionId);
+
+        $materialIds = collect($data['order'])->pluck('id');
+        abort_unless(
+            $scope()->whereIn('id', $materialIds)->count() === $materialIds->count(),
+            422,
+            __('Invalid material order.')
+        );
+
+        // 🔒 النطاق بيمنع التعديل على مواد بره المادة/النوع/الوحدة الحالية،
         // وبيحافظ على المراكز العامة بدل ما يرقّم الصفوف الظاهرة من 1.
         app(RowOrderService::class)->applyVisibleOrder(
-            fn () => CourseMaterial::query()
-                ->where('lesson_section_id', $sectionId)
-                ->where('type', $type),
+            $scope,
             collect($data['order'])->pluck('id')->all()
         );
 
@@ -283,18 +295,45 @@ class CourseMaterialController extends Controller
      */
     public function move(Request $request, $type, $sectionId, CourseMaterial $material)
     {
-        abort_unless(
-            (int) $material->lesson_section_id === (int) $sectionId && $material->type === $type,
-            404
-        );
+        $data = $request->validate([
+            'subject' => ['required', 'integer', 'exists:subjects,id'],
+            'direction' => ['required', 'string', 'in:up,down'],
+        ]);
+
+        $subject = Subject::findOrFail($data['subject']);
+        $this->authorizeTeacherSubject($subject);
+        $scope = $this->materialOrderScope($subject, $type, $sectionId);
+
+        abort_unless($scope()->whereKey($material->id)->exists(), 404);
 
         return $this->moveRow(
             $request,
             $material,
-            fn () => CourseMaterial::query()
-                ->where('lesson_section_id', $sectionId)
-                ->where('type', $type)
+            $scope
         );
+    }
+
+    private function materialOrderScope(Subject $subject, string $type, $sectionId): \Closure
+    {
+        return function () use ($subject, $type, $sectionId) {
+            return CourseMaterial::query()
+                ->where('subject_id', $subject->id)
+                ->where('type', $type)
+                ->when(
+                    $sectionId === 'none',
+                    fn ($query) => $query->whereNull('lesson_section_id'),
+                    fn ($query) => $query->where('lesson_section_id', $sectionId)
+                );
+        };
+    }
+
+    private function authorizeTeacherSubject(Subject $subject): void
+    {
+        $user = auth('admin')->user();
+
+        if ($user?->hasRole('teacher')) {
+            abort_unless($subject->teachers()->whereKey($user->id)->exists(), 403);
+        }
     }
 
 

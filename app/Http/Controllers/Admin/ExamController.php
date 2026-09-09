@@ -7,12 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ExamRequest;
 use App\Models\Exam;
 use App\Models\Subject;
+use App\Services\RowOrderService;
+use App\Traits\HandlesRowOrdering;
 use App\Traits\HasStatusToggle;
 use App\Traits\ImageTrait;
+use Illuminate\Http\Request;
 
 class ExamController extends Controller
 {
-    use HasStatusToggle, ImageTrait {
+    use HasStatusToggle, ImageTrait, HandlesRowOrdering {
         HasStatusToggle::toggleIsFree as toggleModelIsFree;
     }
 
@@ -91,6 +94,39 @@ class ExamController extends Controller
         $exam->delete();
 
         return response()->json('success');
+    }
+
+    public function sort(Request $request, Subject $subject)
+    {
+        $data = $request->validate([
+            'order' => ['required', 'array', 'min:1'],
+            'order.*.id' => ['required', 'integer', 'distinct'],
+        ]);
+
+        $examIds = collect($data['order'])->pluck('id');
+        abort_unless(
+            Exam::query()->where('subject_id', $subject->id)->whereIn('id', $examIds)->count() === $examIds->count(),
+            422,
+            __('Invalid exam order.')
+        );
+
+        app(RowOrderService::class)->applyVisibleOrder(
+            fn () => Exam::query()->where('subject_id', $subject->id),
+            $examIds->all()
+        );
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function move(Request $request, Subject $subject, Exam $exam)
+    {
+        abort_unless($exam->subject_id === $subject->id, 404);
+
+        return $this->moveRow(
+            $request,
+            $exam,
+            fn () => Exam::query()->where('subject_id', $subject->id)
+        );
     }
 
     public function toggleStatus($id)

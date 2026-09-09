@@ -3,7 +3,6 @@
 namespace App\DataTables;
 
 use App\Models\CourseMaterial;
-use App\Services\RowOrderService;
 use Yajra\DataTables\Services\DataTable;
 use Yajra\DataTables\EloquentDataTable;
 use Yajra\DataTables\Html\Column;
@@ -13,40 +12,44 @@ class CourseMaterialDataTable extends DataTable
     protected string $statusRoute = '.subjects.materials.toggleStatus';
     protected string $isFreeRoute = '.subjects.materials.toggleIsFree';
 
-    /**
-     * نطاق ترتيب المواد: نفس الوحدة ونفس النوع — مطابق لنطاق sort().
-     * بيرجّع null لو الصفحة مفتوحة من غير تحديد وحدة (الترتيب مش متاح ساعتها).
-     */
-    protected function orderScope(): ?\Closure
-    {
-        $sectionId = request()->get('section');
-        $type = request()->route('type');
-
-        if (blank($sectionId)) {
-            return null;
-        }
-
-        return fn () => CourseMaterial::query()
-            ->where('lesson_section_id', $sectionId)
-            ->where('type', $type);
-    }
-
     public function dataTable($query): EloquentDataTable
     {
-        $scope = $this->orderScope();
-        $order = $scope ? app(RowOrderService::class)->positionMap($scope) : null;
-        $sectionId = request()->get('section');
         $type = request()->route('type');
+        $subject = request()->route('subject');
         $prefix = panelPrefix();
 
+        // كل درس يتحرك داخل وحدته فقط. في صفحة "كل الدروس" نحسب خريطة
+        // مستقلة لكل وحدة حتى لا يبدّل السهم درسًا مع درس من وحدة ثانية.
+        $orders = CourseMaterial::query()
+            ->where('subject_id', $subject->id)
+            ->where('type', $type)
+            ->orderBy('order_by')
+            ->orderBy('id')
+            ->get(['id', 'lesson_section_id'])
+            ->groupBy(fn ($material) => $material->lesson_section_id === null ? 'none' : (string) $material->lesson_section_id)
+            ->map(function ($materials) {
+                return [
+                    'positions' => $materials->values()->mapWithKeys(
+                        fn ($material, $index) => [$material->id => $index + 1]
+                    )->all(),
+                    'total' => $materials->count(),
+                ];
+            });
+
         return (new EloquentDataTable($query))
-            ->addColumn('reorder', function ($material) use ($order, $sectionId, $type, $prefix) {
-                if (! $order) {
-                    return '';
-                }
+            ->addColumn('reorder', function ($material) use ($orders, $type, $subject, $prefix) {
+                $sectionKey = $material->lesson_section_id === null
+                    ? 'none'
+                    : (string) $material->lesson_section_id;
+                $order = $orders->get($sectionKey, ['positions' => [], 'total' => 1]);
 
                 return view('dashboard.partials._reorder-cell', [
-                    'moveUrl' => route($prefix.'.materials.move', [$type, $sectionId, $material->id]),
+                    'moveUrl' => route($prefix.'.materials.move', [
+                        'type' => $type,
+                        'section' => $sectionKey,
+                        'material' => $material->id,
+                        'subject' => $subject->id,
+                    ]),
                     'position' => $order['positions'][$material->id] ?? 1,
                     'total' => $order['total'],
                 ])->render();
@@ -123,28 +126,17 @@ class CourseMaterialDataTable extends DataTable
 
     public function query(CourseMaterial $model)
     {
-        $prefix = auth('admin')->user()->hasRole('admin') ? 'admin' : 'teacher';
-
         $subject = request()->route('subject') ?? null;
         $type = request()->route('type'); // استلام قيمة الـ type من request (lesson أو note مثلاً)
         $sectionId = request()->get('section');
 
-        if ($prefix == 'admin'){
-            $query = $model->newQuery()->where('subject_id', $subject->id)
-//                ->where('lesson_section_id',$sectionId)
-                ->where('type', $type)
-                ->orderBy('order_by');
-        }else{
-            $query = $model->newQuery()->where('subject_id', $subject->id)
-                ->where('lesson_section_id',$sectionId)
-                ->where('type', $type)
-                ->orderBy('order_by');
-        }
-
-
-
-
-        return $query->with('subject','section');
+        return $model->newQuery()
+            ->where('subject_id', $subject->id)
+            ->where('type', $type)
+            ->when(filled($sectionId), fn ($query) => $query->where('lesson_section_id', $sectionId))
+            ->orderBy('order_by')
+            ->orderBy('id')
+            ->with('subject', 'section');
     }
 
     public function html()

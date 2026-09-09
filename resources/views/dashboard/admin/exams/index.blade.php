@@ -9,4 +9,10 @@
             {{ __('general.back') }}
         </a>
     </x-slot:header>
+
+    <x-slot:script>
+        @include('dashboard.partials._reorder-script', [
+            'reorderUrl' => route('admin.subjects.exams.reorder', $subject->id),
+        ])
+    </x-slot:script>
 </x-datatable>
