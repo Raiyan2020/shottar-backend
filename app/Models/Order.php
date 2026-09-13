@@ -15,6 +15,7 @@ class Order extends Model
         'status',
         'payment_method_id',
         'payment_reference',
+        'myfatoorah_invoice_id',
         'apple_transaction_id',
         'apple_original_transaction_id',
         'apple_product_id',

@@ -20,11 +20,6 @@ class Kernel extends ConsoleKernel
         // تقرير أسبوعي للمدرسين (فيديوهات الدروس) على واتساب (للادمن فقط)
         $schedule->command('reports:weekly-teachers-videos')
             ->weeklyOn(1, '09:00');
-
-        // شبكة أمان لطلبات pending لو الـ redirect والـ webhook مالحقوش يوصلوا.
-        $schedule->command('orders:reconcile-pending')
-            ->everyFiveMinutes()
-            ->withoutOverlapping();
     }
 
     /**

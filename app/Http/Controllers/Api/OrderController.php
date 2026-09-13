@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Subject;
 use App\Services\MyFatoorahService;
+use App\Services\OrderPaymentReconciler;
 use App\Services\OrderPricingService;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
@@ -138,7 +139,7 @@ class OrderController extends Controller
         }
 
         try {
-            $paymentUrl = (new PaymentService($user, $order))->createInvoice();
+            $invoice = (new PaymentService($user, $order))->createInvoice();
         } catch (\Exception $e) {
             Log::error('Shottar order invoice failed', [
                 'user_id' => $user->id,
@@ -153,10 +154,18 @@ class OrderController extends Controller
             return sendError($e->getMessage());
         }
 
+        // بنخزّن invoice_id الحقيقي من MyFatoorah عشان reconciliation (cron/
+        // webhook/check-payment) يتأكدوا بيه بدل CustomerReference (order_id)
+        // اللي ممكن يتكرر مع فواتير تجار تانيين في الـ sandbox المشترك.
+        if (! empty($invoice['invoice_id'])) {
+            $order->myfatoorah_invoice_id = $invoice['invoice_id'];
+            $order->save();
+        }
+
         return sendResponse(array_merge([
             'success' => true,
             'order_id' => $order->id,
-            'payment_url' => $paymentUrl,
+            'payment_url' => $invoice['payment_url'],
             'payment_status' => $order->status,
             'payment_method' => $paymentMethod->slug,
         ], $this->breakdown($quote)), $lang === 'ar'
@@ -326,6 +335,33 @@ class OrderController extends Controller
         });
 
         echo 'error';
+    }
+
+    /**
+     * التطبيق بينادي عليه لما يرجع من صفحة الدفع (بدل ما يستنى الـ cron كل 5
+     * دقايق) — بيتأكد من MyFatoorah فورًا ويرجّع حالة الطلب الحالية. بيستخدم
+     * نفس OrderPaymentReconciler اللي الـ webhook والـ cron بيستخدموه، فمفيش
+     * تعارض بينهم؛ أيًا منهم يوصل الأول بيكسب والباقي بيلاقي الحالة اتغيرت
+     * ومعملش حاجة (lockForUpdate جوه reconcile()).
+     */
+    public function checkPaymentStatus(Request $request, int $id, OrderPaymentReconciler $reconciler)
+    {
+        $lang = $request->header('lang') === 'ar' ? 'ar' : 'en';
+
+        $order = Order::where('id', $id)->where('user_id', $request->user()->id)->first();
+
+        if (! $order) {
+            return sendError($lang === 'ar' ? 'الطلب غير موجود.' : 'Order not found.', [], 404);
+        }
+
+        $reconciler->reconcile($order, 'app');
+
+        $order->refresh();
+
+        return sendResponse(
+            ['order_id' => $order->id, 'payment_status' => $order->status],
+            $lang === 'ar' ? 'تم التحقق من حالة الدفع.' : 'Payment status checked.'
+        );
     }
 
 }

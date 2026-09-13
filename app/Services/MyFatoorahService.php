@@ -8,7 +8,10 @@ use Illuminate\Validation\ValidationException;
 
 class MyFatoorahService
 {
-    public function executePayment(array $data, $orderId): string
+    /**
+     * @return array{payment_url: string, invoice_id: ?string}
+     */
+    public function executePayment(array $data, $orderId): array
     {
         $response = Http::withToken(config('services.myfatoorah.token'))
             ->withHeaders([
@@ -30,14 +33,13 @@ class MyFatoorahService
             ]);
         }
 
-        return $response['Data']['PaymentURL'];
-
-// this when you want to user webhook
-//        return [
-//            'payment_url' => $response['Data']['PaymentURL'],
-//            'invoice_id'  => $response['Data']['InvoiceId'],
-//        ];
-
+        return [
+            'payment_url' => $response['Data']['PaymentURL'],
+            // بنخزّنه على الأوردر عشان GetPaymentStatus بعدين يستخدم InvoiceId
+            // (فريد ومضمون من MyFatoorah) بدل CustomerReference (نص حر ممكن
+            // يتكرر مع فواتير تجار تانيين في sandbox المشترك).
+            'invoice_id' => $response['Data']['InvoiceId'] ?? null,
+        ];
     }
 
     /**

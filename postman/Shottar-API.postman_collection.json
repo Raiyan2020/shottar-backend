@@ -438,6 +438,19 @@
 					}
 				},
 				{
+					"name": "Check Payment Status",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": {
+							"raw": "{{base_url}}/order/{{order_id}}/check-payment",
+							"host": [ "{{base_url}}" ],
+							"path": [ "order", "{{order_id}}", "check-payment" ]
+						},
+						"description": "Call this after the app returns from the payment page for near-instant confirmation, instead of waiting on the webhook. Verifies directly with MyFatoorah (by the order's stored `myfatoorah_invoice_id` when present) and returns the current `{order_id, payment_status}`. Uses the same lock-protected reconciler as the webhook, so it can't race with it or double-process. Only works on an order owned by the authenticated user (404 otherwise)."
+					}
+				},
+				{
 					"name": "Verify Apple IAP",
 					"request": {
 						"method": "POST",

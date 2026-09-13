@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * منطق مشترك لتأكيد/تصليح حالة الطلب من MyFatoorah — بيستخدمه الـ webhook
- * والـ cron (orders:reconcile-pending). مقصود إنه منفصل تمامًا عن
- * OrderController@paymentSuccess/@paymentError الموجودين، من غير ما يمسّهم،
- * فهو طبقة إضافية للتأكد بس، مش بديل ليهم.
+ * وendpoint الـ check-payment (OrderController@checkPaymentStatus). مقصود إنه
+ * منفصل تمامًا عن OrderController@paymentSuccess/@paymentError الموجودين، من
+ * غير ما يمسّهم، فهو طبقة إضافية للتأكد بس، مش بديل ليهم.
  */
 class OrderPaymentReconciler
 {
@@ -32,9 +32,34 @@ class OrderPaymentReconciler
             return null;
         }
 
-        // نسأل MyFatoorah الأول (call شبكة ممكن ياخد وقت) قبل ما نمسك أي lock
-        // على الصف، عشان مانقفلش الأوردر لمدة طويلة على حاجة برة الداتابيز.
-        $status = $this->myFatoorah->getPaymentStatus((string) $order->id, 'CustomerReference');
+        // بنفضّل نسأل بـ InvoiceId الحقيقي (فريد ومضمون من MyFatoorah) لو
+        // متخزّن على الأوردر. CustomerReference نص حر ممكن يتكرر مع فواتير
+        // تجار تانيين في sandbox المشترك — حصل فعلاً في الاختبار: order_id="3"
+        // اتلاقى matched مع فاتورة حد تاني خالص كانت Paid. من غير InvoiceId
+        // منسيبش الأوردر يتصلّح خالص لحد ما نتأكد إضافي (شوف تحت).
+        if ($order->myfatoorah_invoice_id) {
+            $status = $this->myFatoorah->getPaymentStatus($order->myfatoorah_invoice_id, 'InvoiceId');
+        } else {
+            $status = $this->myFatoorah->getPaymentStatus((string) $order->id, 'CustomerReference');
+
+            // تأكيد إضافي وإحنا مضطرين نستخدم CustomerReference (أوردرات قديمة
+            // اتعملت قبل ما نبدأ نخزّن invoice_id): لازم قيمة الفاتورة تقارب
+            // مبلغ الأوردر، وإلا نعتبرها مش نفس الفاتورة ونتجاهلها كإجراء أمان.
+            if (($status['is_paid'] ?? false) || ($status['is_failed'] ?? false)) {
+                $invoiceValue = (float) ($status['invoice_value'] ?? 0);
+
+                if (abs($invoiceValue - (float) $order->total) > 0.01) {
+                    Log::warning('Shottar reconcile: CustomerReference matched but InvoiceValue mismatch — likely a collision with another merchant\'s invoice, ignoring', [
+                        'order_id' => $order->id,
+                        'order_total' => $order->total,
+                        'invoice_value' => $invoiceValue,
+                        'source' => $source,
+                    ]);
+
+                    return null;
+                }
+            }
+        }
 
         if (! ($status['is_paid'] ?? false) && ! ($status['is_failed'] ?? false)) {
             return null;

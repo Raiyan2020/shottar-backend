@@ -110,6 +110,11 @@ Route::middleware('auth:sanctum')->group(function () {
     //coupon check
     Route::post('coupon/check', [OrderController::class, 'checkCoupon']);
 
+    // التطبيق ينادي عليه بعد الرجوع من صفحة الدفع عشان يتأكد فورًا من الحالة
+    // بدل ما يستنى الـ cron أو الـ webhook — من غير تعارض بينهم (نفس الـ
+    // reconciler المحمي بـ lock).
+    Route::get('order/{id}/check-payment', [OrderController::class, 'checkPaymentStatus'])->whereNumber('id');
+
 
     //Challenge
     Route::get('challenge/{subject_id}',[ChallengeController::class,'ChallengeSubjects']);
