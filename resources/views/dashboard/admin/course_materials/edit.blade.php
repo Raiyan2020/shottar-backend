@@ -54,30 +54,15 @@
                                     <div class="form-group">
                                         <label class="col-form-label-sm" for="lesson_section_id">{{ __('general.lesson_sections') }}</label>
 
-                                        @if(auth('admin')->check() && auth('admin')->user()->hasRole('teacher'))
-                                            {{-- إذا المستخدم مدرس نخليها مقفلة --}}
-                                            <select name="lesson_section_id" id="lesson_section_id" class="form-control form-control-sm" disabled>
-                                                @foreach($sections as $section)
-                                                    <option value="{{ $section->id }}"
-                                                        {{ (old('lesson_section_id', $material->lesson_section_id) == $section->id) ? 'selected' : '' }}>
-                                                        {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            {{-- نخزن القيمة في hidden input --}}
-                                            <input type="hidden" name="lesson_section_id" value="{{ old('lesson_section_id', $material->lesson_section_id) }}">
-                                        @else
-                                            {{-- الوضع الطبيعي (أدمن أو غير مدرس) --}}
-                                            <select name="lesson_section_id" id="lesson_section_id"
-                                                    class="form-control form-control-sm @error('lesson_section_id') is-invalid @enderror" required>
-                                                @foreach($sections as $section)
-                                                    <option value="{{ $section->id }}"
-                                                        {{ (old('lesson_section_id', $material->lesson_section_id) == $section->id) ? 'selected' : '' }}>
-                                                        {{ $section->name_ar }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        @endif
+                                        <select name="lesson_section_id" id="lesson_section_id"
+                                                class="form-control form-control-sm @error('lesson_section_id') is-invalid @enderror" required>
+                                            @foreach($sections as $section)
+                                                <option value="{{ $section->id }}"
+                                                    {{ (old('lesson_section_id', $material->lesson_section_id) == $section->id) ? 'selected' : '' }}>
+                                                    {{ $section->name_ar }}
+                                                </option>
+                                            @endforeach
+                                        </select>
 
                                         @error('lesson_section_id')
                                         <span class="col-form-label-sm text-danger">{{ $message }}</span>

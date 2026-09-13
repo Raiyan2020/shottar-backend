@@ -69,24 +69,13 @@
                                     <div class="form-group">
                                         <label class="col-form-label-sm" for="lesson_section_id">{{ __('general.lesson_sections') }}</label>
 
-                                        @if(auth('admin')->check() && auth('admin')->user()->hasRole('teacher'))
-                                            <select name="lesson_section_id" id="lesson_section_id" class="form-control form-control-sm" disabled>
-                                                @foreach($sections as $section)
-                                                    <option value="{{ $section->id }}" {{ request('section') == $section->id ? 'selected' : '' }}>
-                                                        {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                            <input type="hidden" name="lesson_section_id" value="{{ request('section') }}">
-                                        @else
-                                            <select name="lesson_section_id" id="lesson_section_id" class="form-control form-control-sm @error('lesson_section_id') is-invalid @enderror" required>
-                                                @foreach($sections as $section)
-                                                    <option value="{{ $section->id }}" {{ old('lesson_section_id') == $section->id ? 'selected' : '' }}>
-                                                        {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        @endif
+                                        <select name="lesson_section_id" id="lesson_section_id" class="form-control form-control-sm @error('lesson_section_id') is-invalid @enderror" required>
+                                            @foreach($sections as $section)
+                                                <option value="{{ $section->id }}" {{ old('lesson_section_id', request('section')) == $section->id ? 'selected' : '' }}>
+                                                    {{ app()->isLocale('ar') ? $section->name_ar : $section->name_en }}
+                                                </option>
+                                            @endforeach
+                                        </select>
 
                                         @error('lesson_section_id')
                                         <span class="col-form-label-sm text-danger">{{ $message }}</span>

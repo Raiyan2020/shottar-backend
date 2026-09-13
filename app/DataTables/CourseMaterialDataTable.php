@@ -167,8 +167,12 @@ class CourseMaterialDataTable extends DataTable
         ];
         if (request()->route('type') == 'lesson') {
 //            $columns[] = Column::make('duration')->title(__('general.Duration'));
-            //url
-            $columns[] = Column::make('url')->title(__('general.url'));
+            // 'url' مش عمود حقيقي في الجدول (القيمة محسوبة في editColumn من
+            // عمود video)، فلازم يبقى computed مش make() وإلا الـ DataTables
+            // بيحاول يعمل WHERE على عمود اسمه url مش موجود أصلاً ويطلع SQL
+            // error عند البحث.
+            $columns[] = Column::computed('url')->title(__('general.url'))
+                ->exportable(false)->printable(false)->searchable(false)->orderable(false);
             $columns[] = Column::make('upload_status')->title(__('general.upload_status'));
 
         }
