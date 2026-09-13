@@ -260,21 +260,47 @@ class OrderController extends Controller
     }
 
     //paymentSuccess
-    public function paymentSuccess(Request $request)
+    public function paymentSuccess(Request $request, MyFatoorahService $myFatoorah)
     {
         $orderId = $request->input('order_id');
         $order = Order::findOrFail($orderId);
+        $paymentId = $request->input('paymentId');
 
-        // idempotent: لو الكولباك اتنادى مرتين، عدّاد الكوبون ميزيدش مرتين.
-        $wasPaid = $order->isPaid();
+        // بنتأكد فعليًا من MyFatoorah (call الشبكة) قبل ما نمسك أي lock على
+        // الصف، عشان مانقفلش الأوردر لمدة طويلة على حاجة برة الداتابيز.
+        $status = $paymentId
+            ? $myFatoorah->getPaymentStatus($paymentId, 'PaymentId')
+            : ['is_paid' => false];
 
-        $order->status = 'paid';
-        $order->payment_reference = $request->paymentId ?? null;
-        $order->save();
+        // لحظة الكتابة بس جوه lock + إعادة فحص الحالة — عشان لو الـ webhook
+        // أو الـ cron وصلوا لنفس الأوردر في نفس اللحظة (أو الكولباك اتنادى
+        // مرتين)، واحد بس يكتب ويزود الكوبون، والتاني يلاقي الحالة اتغيرت
+        // ويطلع من غير ما يعمل حاجة.
+        DB::transaction(function () use ($order, $paymentId, $status) {
+            $locked = Order::where('id', $order->id)->lockForUpdate()->first();
 
-        if (! $wasPaid) {
-            $this->markCouponUsed($order);
-        }
+            if (! $locked || $locked->isPaid()) {
+                return;
+            }
+
+            // لو MyFatoorah أكّدت الدفع فعلاً، بنفعّل الطلب. لو لسه مأكدتش،
+            // منسجّلش "paid" غلط. مهم: رد الـ redirect لازم يفضل زي ما هو
+            // بالظبط ("success") عشان التطبيق شغال على الـ production
+            // ومتعتمدش عليه.
+            if ($status['is_paid'] ?? false) {
+                $locked->status = 'paid';
+                $locked->payment_reference = $paymentId;
+                $locked->save();
+
+                $this->markCouponUsed($locked);
+            } else {
+                Log::warning('Shottar payment callback could not be verified with MyFatoorah', [
+                    'order_id' => $locked->id,
+                    'payment_id' => $paymentId,
+                    'status' => $status,
+                ]);
+            }
+        });
 
         echo 'success';
     }
@@ -283,9 +309,21 @@ class OrderController extends Controller
     {
         $orderId = $request->input('order_id');
         $order = Order::findOrFail($orderId);
-        $order->status = 'failed';
-        $order->payment_reference = $request->paymentId ?? null;
-        $order->save();
+        $paymentId = $request->input('paymentId');
+
+        DB::transaction(function () use ($order, $paymentId) {
+            $locked = Order::where('id', $order->id)->lockForUpdate()->first();
+
+            // مهم: لو الطلب already paid (اتأكد عن طريق webhook/cron/كولباك
+            // تاني)، ميتنزلش لـ failed تاني — الـ paid دايمًا بيكسب.
+            if (! $locked || $locked->isPaid()) {
+                return;
+            }
+
+            $locked->status = 'failed';
+            $locked->payment_reference = $paymentId;
+            $locked->save();
+        });
 
         echo 'error';
     }

@@ -129,3 +129,9 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('callback/success', [OrderController::class, 'paymentSuccess'])->name('ordersSuccess');
 Route::get('callback/error', [OrderController::class, 'paymentError'])->name('ordersError');
 Route::post('apple/notifications', [AppleIapController::class, 'notifications']);
+
+// طبقة تأكيد إضافية لحالة الدفع (webhook حقيقي من MyFatoorah) — مستقلة تمامًا
+// عن الـ callback/success و callback/error فوق ومبتلمسهمش.
+Route::post('webhooks/myfatoorah', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'myFatoorah'])
+    ->middleware('throttle:60,1')
+    ->name('webhooks.myfatoorah');

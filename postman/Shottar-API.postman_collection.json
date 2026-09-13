@@ -1,0 +1,689 @@
+{
+	"info": {
+		"_postman_id": "b4a9f0a0-1e2d-4e2a-9d1a-shottar-api",
+		"name": "Shottar API",
+		"description": "Mobile API for the Shottar backend (routes/api.php). Auth is Laravel Sanctum bearer tokens. Most endpoints expect a `lang` header (`ar`|`en`) for localized messages. Use the accompanying environment (Shottar API - Local) and set `base_url`, then run Auth > Activate Account (or Confirm Phone Change) to populate `token` automatically.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [ { "key": "token", "value": "{{token}}", "type": "string" } ]
+	},
+	"variable": [
+		{ "key": "base_url", "value": "http://shottar-backend.test/api" },
+		{ "key": "lang", "value": "ar" },
+		{ "key": "token", "value": "" }
+	],
+	"item": [
+		{
+			"name": "Public",
+			"item": [
+				{
+					"name": "Get Settings",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/settings", "host": [ "{{base_url}}" ], "path": [ "settings" ] }
+					}
+				},
+				{
+					"name": "Get Payment Methods",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/payment-method", "host": [ "{{base_url}}" ], "path": [ "payment-method" ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User\",\n  \"phone\": \"{{phone}}\",\n  \"country_code\": \"{{country_code}}\",\n  \"device_type\": \"android\",\n  \"device_token\": \"\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/register", "host": [ "{{base_url}}" ], "path": [ "register" ] }
+					}
+				},
+				{
+					"name": "Login",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"{{phone}}\",\n  \"country_code\": \"{{country_code}}\",\n  \"device_type\": \"android\",\n  \"device_token\": \"\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/login", "host": [ "{{base_url}}" ], "path": [ "login" ] },
+						"description": "Sends an OTP to the phone (via WhatsApp). Does not return a token."
+					}
+				},
+				{
+					"name": "Activate Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  const token = body?.data?.token;",
+									"  if (token) pm.collectionVariables.set('token', token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"{{phone}}\",\n  \"country_code\": \"{{country_code}}\",\n  \"activation_code\": 1234\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/activateAccount", "host": [ "{{base_url}}" ], "path": [ "activateAccount" ] },
+						"description": "On success, saves `data.token` into the `token` collection variable automatically."
+					}
+				},
+				{
+					"name": "Resend Activation Code",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"{{phone}}\",\n  \"country_code\": \"{{country_code}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/resendActivation", "host": [ "{{base_url}}" ], "path": [ "resendActivation" ] }
+					}
+				},
+				{
+					"name": "Update Device Token",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"device_token\": \"\",\n  \"device_type\": \"android\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/device-token", "host": [ "{{base_url}}" ], "path": [ "device-token" ] }
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/logout", "host": [ "{{base_url}}" ], "path": [ "logout" ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Show Profile",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/show-profile", "host": [ "{{base_url}}" ], "path": [ "show-profile" ] }
+					}
+				},
+				{
+					"name": "Update Profile",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{ "key": "name", "value": "Test User", "type": "text" },
+								{ "key": "grade_id", "value": "1", "type": "text" },
+								{ "key": "semester_id", "value": "1", "type": "text" },
+								{ "key": "image", "type": "file", "src": [], "disabled": true }
+							]
+						},
+						"url": { "raw": "{{base_url}}/update-profile", "host": [ "{{base_url}}" ], "path": [ "update-profile" ] }
+					}
+				},
+				{
+					"name": "Update User Settings",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"notification_enabled\": true,\n  \"language\": \"ar\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/update-user-settings", "host": [ "{{base_url}}" ], "path": [ "update-user-settings" ] }
+					}
+				},
+				{
+					"name": "Request Phone Change",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"{{phone}}\",\n  \"country_code\": \"{{country_code}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/profile/phone/request-change", "host": [ "{{base_url}}" ], "path": [ "profile", "phone", "request-change" ] }
+					}
+				},
+				{
+					"name": "Confirm Phone Change",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  const token = body?.data?.token;",
+									"  if (token) pm.collectionVariables.set('token', token);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"{{phone}}\",\n  \"country_code\": \"{{country_code}}\",\n  \"activation_code\": 1234\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/profile/phone/confirm-change", "host": [ "{{base_url}}" ], "path": [ "profile", "phone", "confirm-change" ] },
+						"description": "Issues a new token and revokes old sessions — saved into `token` automatically."
+					}
+				},
+				{
+					"name": "Delete Account",
+					"request": {
+						"method": "DELETE",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/account", "host": [ "{{base_url}}" ], "path": [ "account" ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Content",
+			"item": [
+				{
+					"name": "FAQs",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/faqs", "host": [ "{{base_url}}" ], "path": [ "faqs" ] }
+					}
+				},
+				{
+					"name": "Grades",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/grades", "host": [ "{{base_url}}" ], "path": [ "grades" ] }
+					}
+				},
+				{
+					"name": "Semesters",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/semesters", "host": [ "{{base_url}}" ], "path": [ "semesters" ] }
+					}
+				},
+				{
+					"name": "Subjects (list)",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search\": \"\",\n  \"grade_id\": 1,\n  \"semester_id\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/subjects", "host": [ "{{base_url}}" ], "path": [ "subjects" ] }
+					}
+				},
+				{
+					"name": "Subjects (purchased)",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"search\": \"\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/subjects/purchased", "host": [ "{{base_url}}" ], "path": [ "subjects", "purchased" ] }
+					}
+				},
+				{
+					"name": "Subject Details",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/subjects/1", "host": [ "{{base_url}}" ], "path": [ "subjects", "1" ] }
+					}
+				},
+				{
+					"name": "Video Details",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/video-details/1", "host": [ "{{base_url}}" ], "path": [ "video-details", "1" ] }
+					}
+				},
+				{
+					"name": "Record Material View",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"course_material_id\": 1,\n  \"duration_watched\": 30,\n  \"viewed_at\": \"2026-09-13 10:00:00\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/subjects/material-view", "host": [ "{{base_url}}" ], "path": [ "subjects", "material-view" ] }
+					}
+				},
+				{
+					"name": "Download Material File (note/exam)",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": {
+							"raw": "{{base_url}}/material-file/note/1",
+							"host": [ "{{base_url}}" ],
+							"path": [ "material-file", "note", "1" ]
+						},
+						"description": "`type` must be `note` or `exam`; `id` is numeric."
+					}
+				},
+				{
+					"name": "Notifications",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/notification", "host": [ "{{base_url}}" ], "path": [ "notification" ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Orders & Payments",
+			"item": [
+				{
+					"name": "Check Coupon",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"code\": \"SAVE10\",\n  \"items\": [1, 2],\n  \"is_all_materials\": false\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/coupon/check", "host": [ "{{base_url}}" ], "path": [ "coupon", "check" ] }
+					}
+				},
+				{
+					"name": "Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  const orderId = body?.data?.order_id;",
+									"  if (orderId) pm.collectionVariables.set('order_id', orderId);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"items\": [1, 2],\n  \"is_all_materials\": false,\n  \"coupon_code\": \"\",\n  \"payment_method_id\": 1,\n  \"total\": 10.000\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/order", "host": [ "{{base_url}}" ], "path": [ "order" ] },
+						"description": "`total` is informational only — the server recalculates it. `payment_method_id` must reference an active PaymentMethod; omit/ignore for a 100%-discounted (free) order."
+					}
+				},
+				{
+					"name": "Verify Apple IAP",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_id\": \"com.shottar.subject.1\",\n  \"receipt\": \"base64-receipt-data\",\n  \"transaction_id\": \"\",\n  \"source\": \"purchase\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/order/apple/verify", "host": [ "{{base_url}}" ], "path": [ "order", "apple", "verify" ] }
+					}
+				},
+				{
+					"name": "Payment Callback - Success",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/callback/success?order_id={{order_id}}&paymentId=",
+							"host": [ "{{base_url}}" ],
+							"path": [ "callback", "success" ],
+							"query": [
+								{ "key": "order_id", "value": "{{order_id}}" },
+								{ "key": "paymentId", "value": "" }
+							]
+						},
+						"description": "Called by MyFatoorah's redirect, not by the app. Included for reference/debugging only."
+					}
+				},
+				{
+					"name": "Payment Callback - Error",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/callback/error?order_id={{order_id}}&paymentId=",
+							"host": [ "{{base_url}}" ],
+							"path": [ "callback", "error" ],
+							"query": [
+								{ "key": "order_id", "value": "{{order_id}}" },
+								{ "key": "paymentId", "value": "" }
+							]
+						},
+						"description": "Called by MyFatoorah's redirect, not by the app. Included for reference/debugging only."
+					}
+				},
+				{
+					"name": "Apple Server Notifications (App Store)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"signedPayload\": \"\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/apple/notifications", "host": [ "{{base_url}}" ], "path": [ "apple", "notifications" ] },
+						"description": "Called by Apple's App Store Server Notifications, not by the app."
+					}
+				}
+			]
+		},
+		{
+			"name": "Challenges",
+			"item": [
+				{
+					"name": "Subject Challenges",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/challenge/1", "host": [ "{{base_url}}" ], "path": [ "challenge", "1" ] }
+					}
+				},
+				{
+					"name": "Start Challenge",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  const sessionId = body?.data?.session_id;",
+									"  if (sessionId) pm.collectionVariables.set('session_id', sessionId);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject_id\": 1,\n  \"lesson_section_id\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/challenge/start", "host": [ "{{base_url}}" ], "path": [ "challenge", "start" ] }
+					}
+				},
+				{
+					"name": "Store Answer",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"session_id\": \"{{session_id}}\",\n  \"question_id\": 1,\n  \"answer_id\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/challenge/store-answer", "host": [ "{{base_url}}" ], "path": [ "challenge", "store-answer" ] }
+					}
+				},
+				{
+					"name": "Finish Challenge",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"session_id\": \"{{session_id}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/challenge/finish", "host": [ "{{base_url}}" ], "path": [ "challenge", "finish" ] }
+					}
+				},
+				{
+					"name": "Previous Challenges",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"subject_id\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/challenges/previous", "host": [ "{{base_url}}" ], "path": [ "challenges", "previous" ] }
+					}
+				},
+				{
+					"name": "Challenge Result",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"session_id\": \"{{session_id}}\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/challenge/result", "host": [ "{{base_url}}" ], "path": [ "challenge", "result" ] }
+					}
+				}
+			]
+		},
+		{
+			"name": "Daily Challenge",
+			"item": [
+				{
+					"name": "Get Today's Daily Challenge",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": {
+							"raw": "{{base_url}}/daily-challenge?grade_id=1&semester_id=1",
+							"host": [ "{{base_url}}" ],
+							"path": [ "daily-challenge" ],
+							"query": [
+								{ "key": "grade_id", "value": "1" },
+								{ "key": "semester_id", "value": "1" }
+							]
+						}
+					}
+				},
+				{
+					"name": "Answer Daily Challenge",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"challenge_id\": 1,\n  \"question_id\": 1,\n  \"option_id\": 1\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/daily-challenge/answer", "host": [ "{{base_url}}" ], "path": [ "daily-challenge", "answer" ] }
+					}
+				},
+				{
+					"name": "Daily Challenge History",
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": {
+							"raw": "{{base_url}}/daily-challenge/history?grade_id=1&semester_id=1",
+							"host": [ "{{base_url}}" ],
+							"path": [ "daily-challenge", "history" ],
+							"query": [
+								{ "key": "grade_id", "value": "1" },
+								{ "key": "semester_id", "value": "1" }
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "MyFatoorah (Direct)",
+			"description": "Calls MyFatoorah's own API directly (not your backend) — useful for manually checking/reconciling an order stuck in `pending` when the payment redirect never reached callback/success.",
+			"item": [
+				{
+					"name": "Get Payment Status (by CustomerReference / order_id)",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{myfatoorah_token}}", "type": "string" } ] },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"Key\": \"{{order_id}}\",\n  \"KeyType\": \"CustomerReference\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{myfatoorah_base_url}}/GetPaymentStatus", "host": [ "{{myfatoorah_base_url}}" ], "path": [ "GetPaymentStatus" ] },
+						"description": "KeyType `CustomerReference` uses your order id directly. Response `Data.InvoiceStatus` is `Paid`/`Pending`/`Failed`/`Expired`."
+					}
+				},
+				{
+					"name": "Get Payment Status (by PaymentId)",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{myfatoorah_token}}", "type": "string" } ] },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"Key\": \"\",\n  \"KeyType\": \"PaymentId\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{myfatoorah_base_url}}/GetPaymentStatus", "host": [ "{{myfatoorah_base_url}}" ], "path": [ "GetPaymentStatus" ] },
+						"description": "KeyType `PaymentId` uses the `paymentId` query param MyFatoorah appends to the callback redirect."
+					}
+				},
+				{
+					"name": "Execute Payment (create invoice)",
+					"request": {
+						"auth": { "type": "bearer", "bearer": [ { "key": "token", "value": "{{myfatoorah_token}}", "type": "string" } ] },
+						"method": "POST",
+						"header": [
+							{ "key": "Accept", "value": "application/json" },
+							{ "key": "Content-Type", "value": "application/json" }
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"InvoiceValue\": 10.000,\n  \"PaymentMethodId\": 1,\n  \"CustomerName\": \"Test User\",\n  \"CustomerEmail\": \"info@shottar.com\",\n  \"CallBackUrl\": \"{{base_url}}/callback/success?order_id={{order_id}}\",\n  \"ErrorUrl\": \"{{base_url}}/callback/error?order_id={{order_id}}\",\n  \"CustomerReference\": \"{{order_id}}\",\n  \"Language\": \"ar\",\n  \"DisplayCurrencyIso\": \"KWD\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{myfatoorah_base_url}}/ExecutePayment", "host": [ "{{myfatoorah_base_url}}" ], "path": [ "ExecutePayment" ] },
+						"description": "Mirrors what MyFatoorahService::executePayment sends — mainly useful for debugging invoice creation in isolation from your /order endpoint."
+					}
+				}
+			]
+		},
+		{
+			"name": "Misc",
+			"item": [
+				{
+					"name": "Contact Us",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User\",\n  \"phone\": \"{{phone}}\",\n  \"problem_type\": \"technical\",\n  \"message\": \"Sample message describing the issue.\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/contact-us", "host": [ "{{base_url}}" ], "path": [ "contact-us" ] }
+					}
+				},
+				{
+					"name": "WhatsApp Send Image",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"phone\": \"{{phone}}\",\n  \"image_url\": \"\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": { "raw": "{{base_url}}/whatsapp/send-image", "host": [ "{{base_url}}" ], "path": [ "whatsapp", "send-image" ] }
+					}
+				},
+				{
+					"name": "WhatsApp Broadcast Image",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": { "raw": "{{base_url}}/whatsapp/broadcast-image", "host": [ "{{base_url}}" ], "path": [ "whatsapp", "broadcast-image" ] }
+					}
+				}
+			]
+		}
+	]
+}
