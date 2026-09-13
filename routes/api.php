@@ -134,6 +134,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //notification
     Route::get('notification', [\App\Http\Controllers\Api\NotificationController::class, 'index']);
+    Route::post('notification/{id}/read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead']);
 
 
 

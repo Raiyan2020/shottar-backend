@@ -389,6 +389,14 @@
 						"header": [ { "key": "lang", "value": "{{lang}}" } ],
 						"url": { "raw": "{{base_url}}/notification", "host": [ "{{base_url}}" ], "path": [ "notification" ] }
 					}
+				},
+				{
+					"name": "Mark Notification As Read",
+					"request": {
+						"method": "POST",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": { "raw": "{{base_url}}/notification/:id/read", "host": [ "{{base_url}}" ], "path": [ "notification", ":id", "read" ], "variable": [ { "key": "id", "value": "1" } ] }
+					}
 				}
 			]
 		},
