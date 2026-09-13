@@ -12,7 +12,8 @@
 	"variable": [
 		{ "key": "base_url", "value": "http://shottar-backend.test/api" },
 		{ "key": "lang", "value": "ar" },
-		{ "key": "token", "value": "" }
+		{ "key": "token", "value": "" },
+		{ "key": "signed_material_url", "value": "" }
 	],
 	"item": [
 		{
@@ -323,6 +324,62 @@
 							"path": [ "material-file", "note", "1" ]
 						},
 						"description": "`type` must be `note` or `exam`; `id` is numeric."
+					}
+				},
+				{
+					"name": "Download Material File - Range (test partial/206)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{ "key": "lang", "value": "{{lang}}" },
+							{ "key": "Range", "value": "bytes=0-1023" }
+						],
+						"url": {
+							"raw": "{{base_url}}/material-file/note/1",
+							"host": [ "{{base_url}}" ],
+							"path": [ "material-file", "note", "1" ]
+						},
+						"description": "Same endpoint as above with a `Range` header added — should return `206 Partial Content` with a `Content-Range` header, proving the server supports byte-range/progressive downloads."
+					}
+				},
+				{
+					"name": "Get Signed Download URL (note/exam)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"  const body = pm.response.json();",
+									"  const url = body?.data?.url;",
+									"  if (url) pm.collectionVariables.set('signed_material_url', url);",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [ { "key": "lang", "value": "{{lang}}" } ],
+						"url": {
+							"raw": "{{base_url}}/material-file/note/1/signed-url",
+							"host": [ "{{base_url}}" ],
+							"path": [ "material-file", "note", "1", "signed-url" ]
+						},
+						"description": "Authenticated — same access check as the normal download endpoint. Returns a permanent (non-expiring) signed URL with no `Authorization` header required, tied to this user's `user_id` and re-validated against `hasAccess()` on every download. Saves the URL into `signed_material_url` automatically."
+					}
+				},
+				{
+					"name": "Download via Signed URL (no auth header)",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"url": {
+							"raw": "{{signed_material_url}}",
+							"host": [ "{{signed_material_url}}" ]
+						},
+						"description": "Run 'Get Signed Download URL' first to populate `signed_material_url`. This request deliberately sends NO Authorization header — it should still succeed (200), proving a native PDF viewer could load this URL directly. Add a `Range` header here too to confirm 206 support on the signed link."
 					}
 				},
 				{

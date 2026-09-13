@@ -69,6 +69,13 @@ Route::middleware('auth:sanctum')->group(function () {
         ->whereNumber('id')
         ->name('api.material-file');
 
+    // بديل تجريبي progressive/range loading — إضافي جنب الراوت اللي فوق،
+    // مش بديل ليه. التطبيق الحالي مش محتاج يتغيّر عشانه.
+    Route::get('material-file/{type}/{id}/signed-url', [MaterialFileController::class, 'signedUrl'])
+        ->whereIn('type', ['note', 'exam'])
+        ->whereNumber('id')
+        ->name('api.material-file.signed-url');
+
     //update-user-settings
     Route::post('update-user-settings', [UserController::class, 'updateUserSettings']);
 
@@ -135,3 +142,11 @@ Route::post('apple/notifications', [AppleIapController::class, 'notifications'])
 Route::post('webhooks/myfatoorah', [\App\Http\Controllers\Api\PaymentWebhookController::class, 'myFatoorah'])
     ->middleware('throttle:60,1')
     ->name('webhooks.myfatoorah');
+
+// رابط التحميل الموقّع (من material-file/{type}/{id}/signed-url فوق) — من غير
+// Authorization header عشان الـ native PDF viewer يقدر يفتحه/يعمل range عليه
+// مباشرة. الحماية هنا كلها بالتوقيع + user_id المدموج فيه، مش بتوكن.
+Route::get('material-file/{type}/{id}/download', [MaterialFileController::class, 'signedDownload'])
+    ->whereIn('type', ['note', 'exam'])
+    ->whereNumber('id')
+    ->name('material-file.signed-download');

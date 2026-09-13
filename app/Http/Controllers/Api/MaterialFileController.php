@@ -8,6 +8,7 @@ use App\Models\Exam;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -69,6 +70,126 @@ class MaterialFileController extends Controller
             'Content-Type' => 'application/pdf',
             'Content-Length' => (string) filesize($absolutePath),
             // الاسم العربي لازم يتكوّد RFC 5987، مع بديل ASCII للعملاء القديمة
+            'Content-Disposition' => sprintf(
+                'inline; filename="%s"; filename*=UTF-8\'\'%s',
+                $this->asciiName($record, $fileName),
+                rawurlencode($fileName)
+            ),
+            'Cache-Control' => 'private, max-age=3600',
+            'Accept-Ranges' => 'bytes',
+        ]);
+
+        if ($response instanceof BinaryFileResponse) {
+            $response->setAutoLastModified();
+        }
+
+        return $response;
+    }
+
+    /**
+     * §بديل تجريبي (progressive PDF): بيرجّع رابط موقّع (signed) بدل ما يبعت
+     * الملف مباشرة. الرابط ده مش محتاج Authorization header، فالـ native PDF
+     * viewer على الموبايل يقدر يفتحه مباشرة ويعمل range requests بنفسه وهو
+     * بيقلّب الصفحات، بدل ما التطبيق ينزّل الملف كامل الأول. مش بديل لـ show()
+     * الحالي — endpoint إضافي جنبه، والتطبيق الحالي مش محتاج يتغيّر عشانه.
+     */
+    public function signedUrl(Request $request, string $type, int $id)
+    {
+        $lang = $request->header('lang') === 'en' ? 'en' : 'ar';
+
+        [$record, $subjectId] = match ($type) {
+            'note' => $this->resolveNote($id),
+            'exam' => $this->resolveExam($id),
+            default => [null, null],
+        };
+
+        if (! $record) {
+            return sendError(
+                $lang === 'ar' ? 'الملف غير موجود.' : 'File not found.',
+                [],
+                404
+            );
+        }
+
+        if (! $record->is_free && ! $this->hasAccess($request->user()?->id, $subjectId)) {
+            return sendError(
+                $lang === 'ar' ? 'هذا الملف متاح للمشتركين فقط.' : 'This file is available to subscribers only.',
+                [],
+                403
+            );
+        }
+
+        // رابط دائم (من غير expires) — عشان القراءة ممكن تاخد وقت أطول من أي
+        // مهلة نحطها. الحماية الحقيقية مش في وقت انتهاء الرابط، هي إن
+        // hasAccess() بتتفحص تاني في كل تنزيل (جوه signedDownload تحت)، فلو
+        // الاشتراك اتلغى بعدين الرابط بيوقف يشتغل فورًا من غير ما نحتاج expiry.
+        $url = URL::signedRoute(
+            'material-file.signed-download',
+            ['type' => $type, 'id' => $id, 'user_id' => $request->user()->id]
+        );
+
+        return sendResponse(
+            ['url' => $url],
+            $lang === 'ar' ? 'تم إنشاء رابط التحميل.' : 'Download URL generated.'
+        );
+    }
+
+    /**
+     * الرابط الموقّع اللي بيرجّعه signedUrl() فوق بينزّل عليه — من غير
+     * Authorization header، التحقق هنا كله على التوقيع + user_id المدموج في
+     * الرابط نفسه (متزوّرش لأنه جزء من التوقيع).
+     */
+    public function signedDownload(Request $request, string $type, int $id)
+    {
+        $lang = $request->header('lang') === 'en' ? 'en' : 'ar';
+
+        if (! $request->hasValidSignature()) {
+            return sendError(
+                $lang === 'ar' ? 'الرابط غير صالح أو منتهي الصلاحية.' : 'Link is invalid or expired.',
+                [],
+                403
+            );
+        }
+
+        [$record, $subjectId] = match ($type) {
+            'note' => $this->resolveNote($id),
+            'exam' => $this->resolveExam($id),
+            default => [null, null],
+        };
+
+        if (! $record) {
+            return sendError(
+                $lang === 'ar' ? 'الملف غير موجود.' : 'File not found.',
+                [],
+                404
+            );
+        }
+
+        $signedUserId = (int) $request->query('user_id');
+
+        if (! $record->is_free && ! $this->hasAccess($signedUserId, $subjectId)) {
+            return sendError(
+                $lang === 'ar' ? 'هذا الملف متاح للمشتركين فقط.' : 'This file is available to subscribers only.',
+                [],
+                403
+            );
+        }
+
+        $absolutePath = $this->resolveAbsolutePath($record->file);
+
+        if (! $absolutePath) {
+            return sendError(
+                $lang === 'ar' ? 'الملف غير موجود على السيرفر.' : 'The file is missing on the server.',
+                [],
+                404
+            );
+        }
+
+        $fileName = $this->downloadName($record, $lang);
+
+        $response = response()->file($absolutePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Length' => (string) filesize($absolutePath),
             'Content-Disposition' => sprintf(
                 'inline; filename="%s"; filename*=UTF-8\'\'%s',
                 $this->asciiName($record, $fileName),
