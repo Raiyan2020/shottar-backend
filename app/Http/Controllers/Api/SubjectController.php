@@ -48,7 +48,7 @@ class SubjectController extends Controller
         // Query to get subjects based on semester and grade
 
         $subjectQuery = Subject::with(['courseMaterials','grade.iosBundleProducts','semester','teachers','coreSubject'])
-            ->where('status', 1)
+            ->active()
             ->where('grade_id', $gradeId)
             ->where(function ($q) use ($semesterId) {
                 $q->where('semester_id', $semesterId)
@@ -152,6 +152,7 @@ class SubjectController extends Controller
 
         // جلب جميع المواد التي تنتمي لنفس الصفوف والفصول
         $purchasedQuery = Subject::with(['courseMaterials','grade.iosBundleProducts','semester','teachers','coreSubject'])
+            ->active()
             ->whereIn('grade_id', $gradeIds)
             ->where(function ($q) use ($semesterIds) {
                 $q->whereIn('semester_id', $semesterIds)
@@ -174,7 +175,9 @@ class SubjectController extends Controller
     public function details($id)
     {
 
-        $subject = Subject::with(['courseMaterials.section', 'orders', 'exams', 'grade.iosBundleProducts', 'coreSubject'])->find($id);
+        $subject = Subject::with(['activeCourseMaterials.section', 'orders', 'exams', 'grade.iosBundleProducts', 'coreSubject'])
+            ->active()
+            ->find($id);
 
 
         if (!$subject) {

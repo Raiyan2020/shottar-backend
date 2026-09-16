@@ -15,7 +15,9 @@ class SubjectDetailResource extends JsonResource
         $user = auth()->user();
         $lang = $request->header('lang', 'ar');
 
-        $courseMaterials = $this->courseMaterials;
+        // لا نعرض في التطبيق إلا الدروس والمذكرات المفعّلة، ويجب أن تكون
+        // الوحدة التابعة لها مفعّلة أيضًا. المواد التي بلا وحدة تظل مدعومة.
+        $courseMaterials = $this->activeCourseMaterials;
 
         // تجميع الأقسام ومحتواها
         $sections = $courseMaterials

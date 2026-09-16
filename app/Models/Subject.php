@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -42,6 +43,12 @@ class Subject extends Model
     protected $casts = [
         'rating' => 'float',
     ];
+
+    /** Only subjects that are visible in the mobile application. */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where($this->qualifyColumn('status'), true);
+    }
 
     /** نص الشارة بلغة الطلب (null لو المادة مش متعلّم عليها شارة) */
     public function tagLabel(?string $lang = null): ?string
@@ -123,6 +130,19 @@ class Subject extends Model
         // المدرّس بيرتب الدروس بالسحب في الداشبورد (materials.reorder)، فلازم كل
         // استعلام يرجّعهم بنفس الترتيب ده مش بترتيب الإدخال.
         return $this->hasMany(CourseMaterial::class)->orderBy('order_by')->orderBy('id');
+    }
+
+    /** Active lessons/notes that may be displayed in the mobile application. */
+    public function activeCourseMaterials()
+    {
+        return $this->hasMany(CourseMaterial::class)
+            ->where('status', true)
+            ->where(function ($query) {
+                $query->whereNull('lesson_section_id')
+                    ->orWhereHas('section', fn ($section) => $section->where('status', true));
+            })
+            ->orderBy('order_by')
+            ->orderBy('id');
     }
 
     public function exams()

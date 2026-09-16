@@ -114,15 +114,38 @@ today's endpoint.
 You don't construct this URL — you get it verbatim from §2.1's response and
 hand it to your PDF viewer as-is. Supports HTTP `Range` requests
 (`206 Partial Content`), so the viewer can request just the pages it needs.
+Verified directly against production: a `Range: bytes=0-2047` request returns
+`206 Partial Content` with only ~2KB back in under a second, versus ~10s for
+the full ~1.2MB file with no `Range` header.
 
 - Valid signature + still has access → PDF bytes, `Accept-Ranges: bytes`.
 - Invalid/tampered link → `403 { "status": false, "message": "الرابط غير صالح أو منتهي الصلاحية." }`
 - Access revoked since the link was issued (e.g. subscription ended) → `403`
   subscribers-only message, same as §2.1.
 
+**⚠️ Important: use this endpoint, not `material-file/{type}/{id}` with a
+manual `Range` header, for progressive loading.** Both technically support
+`206 Partial Content` — but a real PDF viewer doesn't make one request, it
+makes *many* range requests internally as the user scrolls, through its own
+networking code, not through whatever request object your app built.
+`material-file/{type}/{id}` requires `Authorization: Bearer <token>` on every
+one of those internal requests, and whether a given PDF-viewer
+library/plugin re-attaches that header to *all* of its own internal range
+fetches is inconsistent and library-dependent — it can silently break on some
+pages/versions. The signed `/download` link needs **no header at all** (the
+token is baked into the URL's `signature` instead), so every range request the
+viewer makes internally just works, regardless of the library.
+
 **Suggested use:** if your PDF viewer library supports opening a URL directly
 (with range-request support), call §2.1 once, then open the returned `url` in
 the viewer instead of downloading via §2.1's older sibling endpoint.
+
+**Note on total load time:** Range support doesn't make a *full* download
+faster — it only helps once your PDF viewer actually requests small ranges
+instead of the whole file. If the library you end up using still downloads
+the entire file up front (no per-page range requests), you'll still see the
+full ~10s for a ~1.2MB file regardless of which endpoint you use — that part
+depends on picking a PDF viewer package that genuinely streams via ranges.
 
 ---
 
