@@ -4,18 +4,20 @@
 
 Covers: one new endpoint (device token cleanup), two bug fixes in the
 lesson-section Challenges flow, two new fields on exams (solution video), a
-new, now-populated `category` field on notifications, and two known/in-progress
-issues you should be aware of even though no client change is needed for them
-yet.
+new, now-populated `category` field on notifications, a backend phone-lookup
+fix (fewer false "user not found" errors), a Vimeo privacy fix so uploaded
+videos are actually playable, and known/in-progress issues you should be
+aware of even though no client change is needed for them yet.
 
 > **Short version:** one new opt-in endpoint (`DELETE /device-token`), two
 > small response-shape changes in the Challenges feature (`/challenge/start`,
 > `/challenge/{subject_id}`) that make existing fields more correct, two new
-> additive fields on exams (`solution_video`, `solution_video_status`), and a
+> additive fields on exams (`solution_video`, `solution_video_status`), a
 > new `category` field on notifications (`general`/`educational`/
-> `achievement`/`transaction`) that's now actually populated by real events —
-> nothing renamed, nothing removed except a field that should never have been
-> read.
+> `achievement`/`transaction`) that's now actually populated by real events,
+> a backend-only phone-lookup fix, and a Vimeo privacy fix for video
+> playback — nothing renamed, nothing removed except a field that should
+> never have been read.
 
 ---
 
@@ -273,7 +275,52 @@ is.
 
 ---
 
-## 9) Note on notes/exams occasionally 404'ing when viewing
+## 8) Phone number lookup fix — `login` / `activateAccount` / `resendActivation`
+
+**Why:** some users were getting `"user not found"` on login, account
+activation, or resend-code, even though their account definitely existed.
+Root cause: some phone numbers were stored with a leading `+`
+(`+96555558718`) and others without it (`96555558718`), and the backend was
+doing an exact string match — any mismatch in the `+` prefix meant "not
+found," even for the right phone number.
+
+**What changed:** `POST /login`, `POST /activateAccount`, and
+`POST /resendActivation` now all fall back to a `+`-tolerant lookup if the
+exact match fails, so this class of false "user not found" is fixed.
+
+**What changes for you:** nothing — no request/response shape changed, this
+is purely a backend lookup fix. If you were adding any client-side
+`+`/country-code normalization workaround for this, it's no longer needed
+(though it also doesn't hurt to leave it).
+
+---
+
+## 9) Solution/lesson video links now actually playable (Vimeo privacy fix)
+
+**Why:** newly-uploaded videos (lesson videos and exam solution videos —
+both go through the same upload endpoint) were being created on Vimeo with
+the account's default privacy setting, which turned out to be too strict —
+opening the video's `link` in a browser or player gave Vimeo's "Sorry, we
+couldn't find that page," even though the video existed and `solution_video`
+had a real URL. Every video uploaded through the dashboard **before this
+fix** is still affected.
+
+**What changed:** new uploads now explicitly request Vimeo's `unlisted`
+privacy, so the returned link is actually playable by anyone who has it —
+no Vimeo login required.
+
+**What changes for you:** nothing on your side — no field or response shape
+changed, `video` / `solution_video` are still just a URL string. But if
+you've seen reports of a lesson or exam video failing to load/play in the
+app (blank player, generic error), that's very likely this — it should
+start resolving for new uploads immediately, and we're going back to fix
+privacy on already-uploaded videos too. If you still see a video fail to
+play after this date, that's worth a fresh bug report rather than assuming
+it's the same known issue.
+
+---
+
+## 10) Note on notes/exams occasionally 404'ing when viewing
 
 If you've seen reports of a note or exam PDF 404'ing right after upload for
 some users, that turned out to be a server storage-configuration issue
@@ -286,7 +333,7 @@ silently serving broken content.
 
 ---
 
-## 10) Your checklist
+## 11) Your checklist
 
 - [ ] Optional: call `DELETE /device-token` when a user disables notifications
       in-app, and/or alongside logout if you want the token cleared then too
@@ -302,7 +349,11 @@ silently serving broken content.
       `category` field / `?category=` query param on `GET /notification` —
       the three real-content categories (`transaction`, `achievement`,
       `educational`) are now actually populated
-- [ ] No action needed for §5, §7.1, and §9 — informational only
+- [ ] If you had any `+`/country-code workaround for login/activation "user
+      not found" false negatives, it's safe to drop (see §8)
+- [ ] If you were tracking a "video won't play" bug report, re-test it — it
+      should be resolved for new uploads (see §9)
+- [ ] No action needed for §5, §7.1, and §10 — informational only
 
 **Nothing here breaks existing flows.** The only field actually removed
 (`is_correct` in `/challenge/start`) was a bug — the correct answer was never
