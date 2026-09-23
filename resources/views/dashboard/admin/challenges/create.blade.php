@@ -67,7 +67,7 @@
                                 </div>
 
                                 {{-- Answers Section --}}
-                                <div class="col-12 mt-1">
+                                <div class="col-12 mt-4">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
                                         <h5 class="mb-0">{{ __('general.answers') }}</h5>
                                         <button type="button" id="addAnswer" class="btn btn-sm btn-success">
@@ -75,7 +75,7 @@
                                         </button>
                                     </div>
 
-                                    <div id="answersContainer" class="border rounded p-2 bg-light">
+                                    <div id="answersContainer" class="p-2">
                                         {{-- إجابة افتراضية واحدة --}}
                                         <div class="answer-item row align-items-center mb-2">
                                             <div class="col-12 col-md-4 mb-1">
