@@ -112,6 +112,18 @@ class User extends Authenticatable
         ]))->save();
     }
 
+    /**
+     * بيمسح توكن الجهاز بتاع المستخدم ده — لما يعطّل الإشعارات من التطبيق
+     * أو يسجّل خروج، عشان محدش يبعتله إشعارات بعد كده على الجهاز ده.
+     */
+    public function clearDeviceToken(): void
+    {
+        $this->forceFill([
+            'device_token' => null,
+            'device_type' => null,
+        ])->save();
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class);

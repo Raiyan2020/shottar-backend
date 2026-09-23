@@ -78,22 +78,22 @@
                                         @foreach($challengeQuestion->answers as $index => $answer)
                                             <div class="answer-item row align-items-center mb-2">
                                                 <input type="hidden" name="answers[{{ $index }}][id]" value="{{ $answer->id }}">
-                                                <div class="col-md-4 mb-1">
+                                                <div class="col-12 col-md-4 mb-1">
                                                     <input type="text" name="answers[{{ $index }}][title_ar]"
                                                            value="{{ old("answers.$index.title_ar", $answer->title_ar) }}"
                                                            class="form-control form-control-sm" placeholder="{{ __('general.title_ar') }}" required>
                                                 </div>
-                                                <div class="col-md-4 mb-1">
+                                                <div class="col-12 col-md-4 mb-1">
                                                     <input type="text" name="answers[{{ $index }}][title_en]"
                                                            value="{{ old("answers.$index.title_en", $answer->title_en) }}"
                                                            class="form-control form-control-sm" placeholder="{{ __('general.title_en') }}">
                                                 </div>
-                                                <div class="col-md-2 mb-1 text-center">
+                                                <div class="col-6 col-md-2 mb-1 text-center">
                                                     <input type="radio" name="correct_answer" value="{{ $index }}"
                                                            class="form-check-input" {{ $answer->is_correct ? 'checked' : '' }}>
                                                     <label class="form-check-label small">{{ __('general.correct') }}</label>
                                                 </div>
-                                                <div class="col-md-2 text-center mb-1">
+                                                <div class="col-6 col-md-2 text-center mb-1">
                                                     <button type="button" class="btn btn-sm btn-danger removeAnswer">
                                                         <i class="fa fa-times"></i>
                                                     </button>
@@ -133,19 +133,19 @@
                 newAnswer.classList.add('answer-item', 'row', 'align-items-center', 'mb-2');
 
                 newAnswer.innerHTML = `
-            <div class="col-md-4 mb-1">
+            <div class="col-12 col-md-4 mb-1">
                 <input type="text" name="answers[${answerIndex}][title_ar]" class="form-control form-control-sm"
                        placeholder="{{ __('general.title_ar') }}" required>
             </div>
-            <div class="col-md-4 mb-1">
+            <div class="col-12 col-md-4 mb-1">
                 <input type="text" name="answers[${answerIndex}][title_en]" class="form-control form-control-sm"
                        placeholder="{{ __('general.title_en') }}">
             </div>
-            <div class="col-md-2 mb-1 text-center">
+            <div class="col-6 col-md-2 mb-1 text-center">
                 <input type="radio" name="correct_answer" value="${answerIndex}" class="form-check-input" id="correct-${answerIndex}">
                 <label for="correct-${answerIndex}" class="form-check-label small">{{ __('general.correct') }}</label>
             </div>
-            <div class="col-md-2 text-center mb-1">
+            <div class="col-6 col-md-2 text-center mb-1">
                 <button type="button" class="btn btn-sm btn-danger removeAnswer">
                     <i class="fa fa-times"></i>
                 </button>

@@ -275,6 +275,29 @@ class AuthController extends Controller
         return sendResponse(['device_token_saved' => true]);
     }
 
+    /**
+     * مسح توكن الجهاز — لما المستخدم يعطّل الإشعارات من التطبيق، أو التطبيق
+     * عايز يتأكد إن السيرفر مش هيبعت إشعارات لجهاز بعينه بدون ما يسجّل خروج
+     * كامل (فقدان الـ auth token).
+     */
+    public function deleteDeviceToken(Request $request)
+    {
+        $user = auth()->user();
+
+        if (! $user) {
+            return sendError('unauthenticated');
+        }
+
+        $user->clearDeviceToken();
+
+        Log::info('تم مسح device_token من مسار /device-token', [
+            'user_id' => $user->id,
+            'phone_suffix' => substr((string) $user->phone, -4),
+        ]);
+
+        return sendResponse(['device_token_deleted' => true]);
+    }
+
     public function logout(Request $request)
     {
         if (auth()->user()) {

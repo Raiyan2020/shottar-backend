@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // تحديث توكن الإشعارات لوحده — التطبيق بيناديه عند onTokenRefresh وعند فتح
     // التطبيق، من غير ما المستخدم يضطر يسجّل خروج ودخول.
     Route::post('device-token', [AuthController::class, 'updateDeviceToken']);
+    Route::delete('device-token', [AuthController::class, 'deleteDeviceToken']);
     Route::delete('account', [UserController::class, 'deleteAccount']);
 //    //profile
     Route::get('show-profile/{user_id?}', [UserController::class, 'show']);

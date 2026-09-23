@@ -221,4 +221,45 @@ class DeviceTokenFlowTest extends TestCase
         // التوكن الفعلي بتاع الصلاحية اتشال زي المتوقع
         $this->assertSame(0, $user->tokens()->count());
     }
+
+    /** مسار DELETE /device-token بمسح التوكن والنوع بعد ما المستخدم يعطّل الإشعارات */
+    public function test_delete_device_token_endpoint_clears_token_and_type(): void
+    {
+        $user = $this->createUser('+96560000009', 'token-to-be-deleted', 'android');
+        $bearer = $user->createToken('auth')->plainTextToken;
+
+        $this->deleteJson('/api/device-token', [], ['Authorization' => 'Bearer '.$bearer])
+            ->assertOk();
+
+        $user->refresh();
+        $this->assertNull($user->device_token);
+        $this->assertNull($user->device_type);
+    }
+
+    /** غير اللوجن مينفعش يمسح توكن حد تاني */
+    public function test_delete_device_token_requires_authentication(): void
+    {
+        $this->createUser('+96560000010', 'token-untouched', 'android');
+
+        $this->deleteJson('/api/device-token')->assertUnauthorized();
+
+        $this->assertSame(
+            'token-untouched',
+            User::where('phone', '+96560000010')->value('device_token')
+        );
+    }
+
+    /** مسح التوكن مبيأثرش على باقي بيانات المستخدم أو على توكنات مستخدمين تانيين */
+    public function test_delete_device_token_does_not_affect_other_users(): void
+    {
+        $user = $this->createUser('+96560000011', 'my-token-to-delete', 'ios');
+        $other = $this->createUser('+96560000012', 'other-token-stays', 'ios');
+        $bearer = $user->createToken('auth')->plainTextToken;
+
+        $this->deleteJson('/api/device-token', [], ['Authorization' => 'Bearer '.$bearer])
+            ->assertOk();
+
+        $this->assertNull($user->refresh()->device_token);
+        $this->assertSame('other-token-stays', $other->refresh()->device_token);
+    }
 }
