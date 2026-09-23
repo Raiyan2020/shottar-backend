@@ -2,9 +2,6 @@
 @extends('dashboard.layouts.master')
 @section('title', __('general.Update User') )
 @section('css')
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/bootstrap-extended.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/components.css') }}">
 @endsection
 @section('content')
     <section id="multiple-column-form">

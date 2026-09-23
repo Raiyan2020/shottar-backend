@@ -2,9 +2,6 @@
 @section('title', __('general.Edit Teacher') )
 
 @section('css')
-    <link rel="stylesheet" href="{{ URL::asset('dashboard/app-assets/css/bootstrap.css') }}">
-    <link rel="stylesheet" href="{{ URL::asset('dashboard/app-assets/css/bootstrap-extended.css') }}">
-    <link rel="stylesheet" href="{{ URL::asset('dashboard/app-assets/css/components.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endsection
 

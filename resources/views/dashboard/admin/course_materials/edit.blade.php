@@ -1,9 +1,6 @@
 @extends('dashboard.layouts.master')
 @section('title', $type == 'lesson' ? __('general.Update Lesson') : __('general.Update Note'))
 @section('css')
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/bootstrap-extended.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/components.css') }}">
 @endsection
 
 @section('content')

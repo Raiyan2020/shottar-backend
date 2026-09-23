@@ -2,9 +2,6 @@
 @section('title', $type == 'lesson' ? __('general.Add Lesson') : __('general.Add Note'))
 
 @section('css')
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/bootstrap-extended.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ URL::asset('dashboard/app-assets/css/components.css') }}">
     <style>
         .vimeo-progress { height: 10px; }
         .vimeo-status   { font-size: 12px; color: #6c757d; }
