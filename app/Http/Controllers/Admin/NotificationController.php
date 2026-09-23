@@ -37,6 +37,7 @@ class NotificationController extends Controller
     {
         $data = $request->validated();
         $sendType = $data['send_type']; // all - one - group - unpaid
+        $category = $data['category'] ?? 'general';
 
         if ($sendType === 'all') {
             $tokens = User::query()
@@ -47,13 +48,14 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            $pushed = $this->pushOrWarn($tokens, $data, 'all');
+            $pushed = $this->pushOrWarn($tokens, $data, 'all', $category);
 
             Notification::create([
                 'user_id' => null,
                 'title' => $data['title'],
                 'body' => $data['body'],
                 'type' => 'all',
+                'category' => $category,
             ]);
 
             return $this->sendResult($pushed, __('messages.notification_sent'));
@@ -69,7 +71,7 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            $pushed = $this->pushOrWarn($tokens, $data, 'unpaid');
+            $pushed = $this->pushOrWarn($tokens, $data, 'unpaid', $category);
 
             // One broadcast row for unpaid audience (API filters by type).
             Notification::create([
@@ -77,6 +79,7 @@ class NotificationController extends Controller
                 'title' => $data['title'],
                 'body' => $data['body'],
                 'type' => 'unpaid',
+                'category' => $category,
             ]);
 
             return $this->sendResult($pushed, __('messages.notification_sent') . ' (' . $unpaidUsers->count() . ')');
@@ -93,13 +96,14 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            $pushed = $this->pushOrWarn($tokens, $data, 'user');
+            $pushed = $this->pushOrWarn($tokens, $data, 'user', $category);
 
             Notification::create([
                 'user_id' => $user?->id,
                 'title' => $data['title'],
                 'body' => $data['body'],
                 'type' => 'user',
+                'category' => $category,
             ]);
 
             return $this->sendResult($pushed, __('messages.notification_sent'));
@@ -117,7 +121,7 @@ class NotificationController extends Controller
                 ->values()
                 ->all();
 
-            $pushed = $this->pushOrWarn($tokens, $data, 'user');
+            $pushed = $this->pushOrWarn($tokens, $data, 'user', $category);
 
             foreach ($userIds as $id) {
                 Notification::create([
@@ -125,6 +129,7 @@ class NotificationController extends Controller
                     'title' => $data['title'],
                     'body' => $data['body'],
                     'type' => 'user',
+                    'category' => $category,
                 ]);
             }
 
@@ -141,7 +146,7 @@ class NotificationController extends Controller
      * للأدمن، والإشعار مكنش بيتسجل أصلاً. دلوقتي بيتسجل في التطبيق على أي حال
      * والأدمن بيشوف رسالة واضحة.
      */
-    protected function pushOrWarn(array $tokens, array $data, string $type): bool
+    protected function pushOrWarn(array $tokens, array $data, string $type, string $category = 'general'): bool
     {
         if ($tokens === []) {
             Log::warning('Push notification skipped: audience has no device tokens', [
@@ -159,7 +164,7 @@ class NotificationController extends Controller
                 $tokens,
                 $data['title'],
                 $data['body'],
-                ['type' => $type]
+                ['type' => $type, 'category' => $category]
             );
 
             Log::info('Admin push notification result', [

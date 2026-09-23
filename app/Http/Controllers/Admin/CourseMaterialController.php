@@ -9,11 +9,13 @@ use App\Http\Requests\CourseMaterialRequest;
 use App\Jobs\UploadVideoToVimeoJob;
 use App\Models\CourseMaterial;
 use App\Models\LessonSection;
+use App\Models\Notification;
 use App\Models\Subject;
 use App\Traits\ImageTrait;
 use Illuminate\Http\Request;
 use App\Traits\HandlesRowOrdering;
 use App\Traits\HasStatusToggle;
+use App\Services\FirebaseNotificationService;
 use App\Services\RowOrderService;
 use App\Services\VimeoService;
 use Illuminate\Support\Facades\Http;
@@ -130,9 +132,27 @@ class CourseMaterialController extends Controller
 
             $material = $subject->courseMaterials()->create($data);
 
+            // status مش دايمًا موجود في $data (بيعتمد على الـ default بتاع
+            // العمود لما الأدمن ميبعتوش)، فـ create() بيسيبه null في نسخة
+            // الذاكرة رغم إن الداتابيز فعلاً خزّنت true. refresh() بيجيب
+            // الحالة الحقيقية عشان أي شرط بعد كده (زي إشعار الدرس الجديد)
+            // ما يتخدعش بقيمة null فاضية.
+            $material->refresh();
+
             // لو المدة لسه مش جاهزة (Vimeo بيرمّز)، نجيبها لاحقًا بدل ما تفضل صفر.
             if ($material->type === 'lesson' && empty($material->duration) && ! empty($material->video)) {
                 SyncVimeoDurationJob::dispatch($material->id)->delay(now()->addMinutes(2));
+            }
+
+            // إشعار "تعليمية" لكل المشتركين في المادة لما درس جديد ومفعّل
+            // يتضاف. اتحط في try مستقل عشان فشل الإشعار (مثلاً Firebase
+            // واقع) ميوقّعش الصفحة بـ"فشل الحفظ" رغم إن الدرس اتسجّل فعلاً.
+            if ($material->type === 'lesson' && $material->status) {
+                try {
+                    $this->notifySubjectSubscribers($subject, $material);
+                } catch (\Throwable $notifyError) {
+                    \Log::error('Educational notification failed: '.$notifyError->getMessage());
+                }
             }
 
             return redirect()
@@ -197,6 +217,60 @@ class CourseMaterialController extends Controller
         return response()->json(['status' => true]);
     }
 
+    /**
+     * بيبعت إشعار "تعليمية" لكل المستخدمين اللي مشتركين في المادة (أوردر
+     * status=paid يحتوي عليها)، لما درس جديد ومفعّل يتضاف. بنعمل insert
+     * جماعي للصفوف وبوش واحد multicast بدل ما نلف على كل مستخدم بنداء
+     * منفصل لـ Firebase — العدد ممكن يبقى كبير حسب شعبية المادة.
+     */
+    private function notifySubjectSubscribers(Subject $subject, CourseMaterial $material): void
+    {
+        $userIds = $subject->orders()->where('status', 'paid')->pluck('user_id')->unique()->values();
+
+        if ($userIds->isEmpty()) {
+            return;
+        }
+
+        $users = \App\Models\User::query()
+            ->whereIn('id', $userIds)
+            ->get(['id', 'device_token', 'notification_enabled']);
+
+        $titleAr = 'درس جديد في '.$subject->name_ar;
+        $bodyAr = 'تم إضافة درس جديد: '.$material->name_ar;
+        $titleEn = 'New lesson in '.($subject->name_en ?: $subject->name_ar);
+        $bodyEn = 'A new lesson has been added: '.($material->name_en ?: $material->name_ar);
+
+        $now = now();
+        $rows = $users->map(fn ($u) => [
+            'user_id' => $u->id,
+            'title' => $titleAr,
+            'title_en' => $titleEn,
+            'body' => $bodyAr,
+            'body_en' => $bodyEn,
+            'type' => 'user',
+            'category' => 'educational',
+            'is_read' => false,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ])->all();
+
+        Notification::insert($rows);
+
+        $tokens = $users->where('notification_enabled', true)
+            ->pluck('device_token')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        if ($tokens !== []) {
+            app(FirebaseNotificationService::class)->sendNotification($tokens, $titleAr, $bodyAr, [
+                'type' => 'user',
+                'category' => 'educational',
+            ]);
+        }
+    }
+
     public function toggleStatus($materialId)
     {
         return $this->toggleStatu(CourseMaterial::class, $materialId);
@@ -224,6 +298,13 @@ class CourseMaterialController extends Controller
                         'size'     => (int) $data['size'],
                     ],
                     'name' => $data['name'] ?? 'Untitled',
+                    // من غير كده الفيديو بياخد privacy الحساب الافتراضي (عادة
+                    // private)، فالرابط بيرجع "couldn't find that page" لأي
+                    // حد مش مسجّل دخول على نفس حساب Vimeo — حتى بعد ما نحفظ
+                    // الرابط الصحيح من الـ API.
+                    'privacy' => [
+                        'view' => 'unlisted',
+                    ],
                 ],
                 'POST',
                 [ 'Accept' => 'application/vnd.vimeo.*+json;version=3.4' ]

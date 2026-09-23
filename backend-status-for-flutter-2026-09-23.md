@@ -3,14 +3,17 @@
 **Date:** 23 September 2026 · Base URL: `https://shottarapp.com/api`
 
 Covers: one new endpoint (device token cleanup), two bug fixes in the
-lesson-section Challenges flow, two new fields on exams (solution video),
-and two known/in-progress issues you should be aware of even though no
-client change is needed for them yet.
+lesson-section Challenges flow, two new fields on exams (solution video), a
+new, now-populated `category` field on notifications, and two known/in-progress
+issues you should be aware of even though no client change is needed for them
+yet.
 
 > **Short version:** one new opt-in endpoint (`DELETE /device-token`), two
 > small response-shape changes in the Challenges feature (`/challenge/start`,
-> `/challenge/{subject_id}`) that make existing fields more correct, and two
-> new additive fields on exams (`solution_video`, `solution_video_status`) —
+> `/challenge/{subject_id}`) that make existing fields more correct, two new
+> additive fields on exams (`solution_video`, `solution_video_status`), and a
+> new `category` field on notifications (`general`/`educational`/
+> `achievement`/`transaction`) that's now actually populated by real events —
 > nothing renamed, nothing removed except a field that should never have been
 > read.
 
@@ -177,7 +180,100 @@ anywhere else `ExamResource` is used).
 
 ---
 
-## 7) Note on notes/exams occasionally 404'ing when viewing
+## 7) Notifications — new `category` field, now actually populated
+
+**Why:** the notifications list already had a `type` field, but `type` was
+only ever `"all"`, `"user"`, or `"unpaid"` — that's audience targeting, not a
+content category. If your notifications screen has tabs like "تعليمية"
+(educational) / "إنجازات" (achievement) / "معاملات" (transaction), there was
+no field to filter on and nothing ever populated those buckets. That's fixed
+now with a new, separate `category` field.
+
+**`GET /notification`** — every item now includes `category`:
+
+```json
+{
+  "id": 1,
+  "user_id": 5,
+  "order_id": 12,
+  "type": "user",
+  "category": "transaction",
+  "title": "تم تأكيد اشتراكك بنجاح",
+  "body": "تم الدفع وتفعيل المواد اللي اشتركت فيها. بالتوفيق في مذاكرتك!",
+  "data": null,
+  "is_read": false,
+  "created_at": "2 minutes ago"
+}
+```
+
+`category` is one of: `"general"` (default — includes anything the admin
+sends manually without picking a category, and everything sent before this
+change), `"educational"`, `"achievement"`, `"transaction"`.
+
+**Optional query param — filter by category:**
+
+```
+GET /notification?category=achievement
+```
+
+Pass `category` with any of the four values above to get only that bucket
+(useful for building the tabs directly from separate calls instead of
+filtering client-side). Omit it (or pass an unrecognized value) to get
+everything, exactly like before — this param is additive and 100% optional.
+
+**What now actually creates each category, automatically (no admin action
+needed):**
+- `transaction` — sent to a user the moment their order is confirmed paid
+  (regular checkout, cash/offline, 100%-discount/free orders, and Apple IAP
+  all covered).
+- `achievement` — sent once, the moment a student's daily-challenge answers
+  push `daily_goal_done` to reach `daily_goal` for the first time that they
+  cross the threshold. Not sent again on later answers past the goal.
+- `educational` — sent to every user with a paid order containing that
+  subject, when a teacher/admin publishes a new active lesson in it.
+
+Admin-sent broadcast/manual notifications (the existing "Send Notification"
+dashboard page) can now also tag a category from a dropdown — defaults to
+`general` if the admin doesn't pick one, so old behavior is unchanged unless
+they opt in.
+
+**What changes for you:** nothing required. `category` is purely additive —
+if you don't build category tabs yet, ignore the field. When you do, filter
+either client-side on `category` or via the new `?category=` query param.
+
+---
+
+## 7.1) Note — a user can receive a push even when the admin dashboard says it "failed"
+
+**Why:** when an admin sends a notification to one specific user (not a
+broadcast), the dashboard sometimes shows a delivery error even though the
+notification arrives on that user's phone. Root cause: Firebase can mark a
+device token as stale/invalid in its response for reasons that don't always
+mean the token is actually dead — a message can still reach the device
+around the same time. When this happens, the backend already clears that
+stale `device_token` from the user's account server-side (same as it always
+did for genuinely dead tokens).
+
+**This is what the existing `DELETE /api/device-token` endpoint (see §1) is
+for** — no new endpoint was added. If a user reports they've stopped getting
+push notifications after a case like this, the fix is for the app to
+register a fresh token, which already happens automatically the next time it
+calls `POST /device-token` (login, app open, or whenever you already
+register/refresh the token). If your settings screen has a manual
+"disable/clear notifications" action, it's already wired to
+`DELETE /device-token` per §1 — that's the same action that resolves this,
+nothing extra needed.
+
+**What changes for you:** nothing required — just a heads-up in case a QA
+tester reports "admin says it failed but I got the notification anyway."
+That's expected and harmless: the row already exists in `GET /notification`
+regardless of push delivery status, so the in-app notification list is never
+affected by this — only the OS-level push banner delivery timing/reporting
+is.
+
+---
+
+## 9) Note on notes/exams occasionally 404'ing when viewing
 
 If you've seen reports of a note or exam PDF 404'ing right after upload for
 some users, that turned out to be a server storage-configuration issue
@@ -190,7 +286,7 @@ silently serving broken content.
 
 ---
 
-## 8) Your checklist
+## 10) Your checklist
 
 - [ ] Optional: call `DELETE /device-token` when a user disables notifications
       in-app, and/or alongside logout if you want the token cleared then too
@@ -202,7 +298,11 @@ silently serving broken content.
       `ready_for_challenge` for them
 - [ ] Optional: show a "watch solution" button on an exam when
       `solution_video_status === "done"`, using `solution_video`
-- [ ] No action needed for §5 and §7 — informational only
+- [ ] If your notifications screen has category tabs, wire them up to the new
+      `category` field / `?category=` query param on `GET /notification` —
+      the three real-content categories (`transaction`, `achievement`,
+      `educational`) are now actually populated
+- [ ] No action needed for §5, §7.1, and §9 — informational only
 
 **Nothing here breaks existing flows.** The only field actually removed
 (`is_correct` in `/challenge/start`) was a bug — the correct answer was never

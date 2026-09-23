@@ -16,6 +16,7 @@ class NotificationsResource extends JsonResource
             'user_id' => $this->user_id,
             'order_id' => $this->order_id,
             'type' => (string) ($this->type ?? 'general'),
+            'category' => (string) ($this->category ?? 'general'),
             'title' => $lang === 'en'
                 ? ($this->title_en ?: $this->title)
                 : ($this->title ?: $this->title_en),

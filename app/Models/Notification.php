@@ -17,9 +17,13 @@ class Notification extends Model
         'body',
         'body_en',
         'type',
+        'category',
         'data',
         'is_read',
     ];
+
+    /** التصنيفات المتاحة لمحتوى الإشعار — دي اللي التبويبات في التطبيق بتفلتر عليها. */
+    public const CATEGORIES = ['general', 'educational', 'achievement', 'transaction'];
 
     public function user()
     {

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DailyChallenge;
 use App\Models\DailyChallengeUserAnswer;
+use App\Services\UserNotifier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -80,7 +81,9 @@ class DailyChallengeController extends Controller
         $earnedPoints = $isCorrect ? (int) $challenge->reward_points : 0;
         $correctOptionId = optional($challenge->options->firstWhere('is_correct', true))->id;
 
-        $totalPoints = DB::transaction(function () use ($challenge, $user, $option, $isCorrect, $earnedPoints) {
+        $goalJustReached = false;
+
+        $totalPoints = DB::transaction(function () use ($challenge, $user, $option, $isCorrect, $earnedPoints, &$goalJustReached) {
             DailyChallengeUserAnswer::create([
                 'daily_challenge_id' => $challenge->id,
                 'user_id' => $user->id,
@@ -91,10 +94,28 @@ class DailyChallengeController extends Controller
             ]);
 
             $user->increment('points', $earnedPoints);
-            $user->increment('daily_goal_done');
 
-            return (int) $user->refresh()->points;
+            // بنسجّل قبل/بعد الزيادة عشان نبعت إشعار "إنجاز" مرة واحدة بس
+            // لحظة ما الطالب يوصل لهدفه اليومي، مش في كل إجابة بعد كده.
+            $beforeGoalDone = (int) $user->daily_goal_done;
+            $user->increment('daily_goal_done');
+            $user->refresh();
+            $goalJustReached = $beforeGoalDone < (int) $user->daily_goal
+                && (int) $user->daily_goal_done >= (int) $user->daily_goal;
+
+            return (int) $user->points;
         });
+
+        if ($goalJustReached) {
+            app(UserNotifier::class)->notify(
+                $user,
+                'achievement',
+                'أحسنت! حققت هدفك اليومي 🎉',
+                'وصلت لعدد التحديات اللي حطيتها هدف لنفسك اليوم. استمر كده!',
+                'Great job! Daily goal reached 🎉',
+                "You've hit today's challenge goal. Keep it up!",
+            );
+        }
 
         return sendResponse([
             'is_correct' => $isCorrect,

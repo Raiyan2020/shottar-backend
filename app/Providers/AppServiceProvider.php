@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Models\Order;
 use App\Models\Subject;
+use App\Observers\OrderObserver;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -22,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Order::observe(OrderObserver::class);
+
         View::composer('dashboard.layouts.sidebar', function ($view) {
             if (Auth::check() && Auth::user()->hasRole('teacher')) {
                 $subjects = Subject::whereHas('teachers', function ($q) {

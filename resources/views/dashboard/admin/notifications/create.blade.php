@@ -36,6 +36,19 @@
                                     </div>
                                 </div>
 
+                                <!-- Category -->
+                                <div class="col-md-6 col-12">
+                                    <div class="form-group">
+                                        <label class="col-form-label-sm">{{ __('general.Notification Category') }}</label>
+                                        <select name="category" class="form-control form-control-sm">
+                                            <option value="general">{{ __('general.General') }}</option>
+                                            <option value="educational">{{ __('general.Educational') }}</option>
+                                            <option value="achievement">{{ __('general.Achievement') }}</option>
+                                            <option value="transaction">{{ __('general.Transaction') }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <!-- Send Type -->
                                 <div class="col-md-6 col-12">
                                     <div class="form-group">
@@ -96,8 +109,13 @@
 
     <script>
         // Select2
-        $('.select2_single_user').select2();
-        $('.select2_multi_users').select2();
+        // الصندوقين دول بيبدأوا مخفيين (d-none) لحد ما المستخدم يختار "مستخدم
+        // واحد"/"مجموعة مستخدمين" من "إرسال إلى" — لو Select2 اتبنى وهو
+        // العنصر الأب لسه display:none، بيحسب العرض غلط (0 أو auto) وبيطلع
+        // صغير وف مكان غلط أول ما الصندوق يظهر. width:'100%' بيخليه دايمًا
+        // ياخد عرض الكونتينر بتاعه صح بدل ما يعتمد على العرض وقت البناء.
+        $('.select2_single_user').select2({width: '100%'});
+        $('.select2_multi_users').select2({width: '100%'});
 
         // Show/Hide Fields Based on Send Type
         $('#send_type').on('change', function () {
