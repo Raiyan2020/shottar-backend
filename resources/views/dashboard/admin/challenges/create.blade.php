@@ -90,8 +90,10 @@
                                                        placeholder="{{ __('general.title_en') }}">
                                             </div>
                                             <div class="col-6 col-md-2 mb-1 text-center">
-                                                <input type="radio" name="correct_answer" value="0" class="form-check-input" checked>
-                                                <label class="form-check-label small">{{ __('general.correct') }}</label>
+                                                <div class="form-check d-inline-flex align-items-center gap-1">
+                                                    <input type="radio" name="correct_answer" value="0" class="form-check-input" checked>
+                                                    <label class="form-check-label small">{{ __('general.correct') }}</label>
+                                                </div>
                                             </div>
                                             <div class="col-6 col-md-2 text-center mb-1">
                                                 <button type="button" class="btn btn-sm btn-danger removeAnswer">
@@ -141,9 +143,10 @@
                        placeholder="{{ __('general.title_en') }}">
             </div>
             <div class="col-6 col-md-2 mb-1 text-center">
-                <input type="radio" name="correct_answer" value="${answerIndex}" class="form-check-input" id="correct-${answerIndex}">
-                <label for="correct-${answerIndex}" class="form-check-label small ">{{ __('general.correct') }}</label>
-
+                <div class="form-check d-inline-flex align-items-center gap-1">
+                    <input type="radio" name="correct_answer" value="${answerIndex}" class="form-check-input" id="correct-${answerIndex}">
+                    <label for="correct-${answerIndex}" class="form-check-label small">{{ __('general.correct') }}</label>
+                </div>
             </div>
             <div class="col-6 col-md-2 text-center mb-1">
                 <button type="button" class="btn btn-sm btn-danger removeAnswer">
