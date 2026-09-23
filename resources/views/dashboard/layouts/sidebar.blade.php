@@ -78,7 +78,7 @@
             </a>
         </li>
 
-        <li class="menu-item {{ Route::is('admin.challenges.*') ? 'active' : '' }}">
+        <li class="menu-item {{ Route::is('admin.challenge.sessions.*') || Route::is('admin.subjects.sections.challenges.*') ? 'active' : '' }}">
             <a href="{{ route('admin.challenge.sessions.index') }}" class="menu-link side-sclaex">
                 <i class="menu-icon tf-icons ti ti-puzzle"></i>
                 <div>{{__('general.Challenges')}}</div>

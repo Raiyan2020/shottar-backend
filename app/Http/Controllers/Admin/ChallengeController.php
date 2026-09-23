@@ -25,7 +25,7 @@ class ChallengeController extends Controller
      */
     public function index($subject, $section, ChallengeQuestionDataTable $dataTable)
     {
-        $lessonSection = LessonSection::findOrFail($section);
+        $lessonSection = LessonSection::where('subject_id', $subject)->findOrFail($section);
 
         return $dataTable->with(['lesson_section_id' => $lessonSection->id])
             ->render('dashboard.admin.challenges.index', compact('lessonSection'));
@@ -36,7 +36,7 @@ class ChallengeController extends Controller
      */
     public function create($subject, $section)
     {
-        $lessonSection = LessonSection::findOrFail($section);
+        $lessonSection = LessonSection::where('subject_id', $subject)->findOrFail($section);
         return view('dashboard.admin.challenges.create', compact('lessonSection'));
     }
 
@@ -45,9 +45,11 @@ class ChallengeController extends Controller
      */
     public function store(StoreChallengeQuestionRequest $request, $subject, $section)
     {
+        $lessonSection = LessonSection::where('subject_id', $subject)->findOrFail($section);
+
         // بيانات السؤال
         $data = $request->validated();
-        $data['lesson_section_id'] = $section;
+        $data['lesson_section_id'] = $lessonSection->id;
 
         // أنشئ السؤال أولًا
         $challengeQuestion = $this->challengeQuestionService->createChallengeQuestion($data);
@@ -77,8 +79,8 @@ class ChallengeController extends Controller
      */
     public function edit($subject, $section, $id)
     {
-        $challengeQuestion = ChallengeQuestion::findOrFail($id);
-        $lessonSection = LessonSection::findOrFail($section);
+        $lessonSection = LessonSection::where('subject_id', $subject)->findOrFail($section);
+        $challengeQuestion = ChallengeQuestion::where('lesson_section_id', $lessonSection->id)->findOrFail($id);
 
         // جلب الإجابات المرتبطة، إذا لم توجد فتعطي مصفوفة فارغة
         $challengeAnswers = $challengeQuestion->answers ?? collect(); // Laravel Collection فارغة
@@ -91,10 +93,12 @@ class ChallengeController extends Controller
      */
     public function update(UpdateChallengeQuestionRequest $request, $subject, $section, $id)
     {
-        $data = $request->validated();
-        $data['lesson_section_id'] = $section;
+        $lessonSection = LessonSection::where('subject_id', $subject)->findOrFail($section);
 
-        $question = ChallengeQuestion::findOrFail($id);
+        $data = $request->validated();
+        $data['lesson_section_id'] = $lessonSection->id;
+
+        $question = ChallengeQuestion::where('lesson_section_id', $lessonSection->id)->findOrFail($id);
         $this->challengeQuestionService->updateChallengeQuestion($question, $data);
 
         $answers = $request->input('answers', []);
@@ -140,7 +144,8 @@ class ChallengeController extends Controller
      */
     public function destroy($subject, $section, $id)
     {
-        $challengeQuestion = ChallengeQuestion::findOrFail($id);
+        $lessonSection = LessonSection::where('subject_id', $subject)->findOrFail($section);
+        $challengeQuestion = ChallengeQuestion::where('lesson_section_id', $lessonSection->id)->findOrFail($id);
         $this->challengeQuestionService->deleteChallengeQuestion($challengeQuestion);
         return response()->json('success');
     }

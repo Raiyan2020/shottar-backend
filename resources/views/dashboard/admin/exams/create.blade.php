@@ -12,7 +12,7 @@
                         <h4 class="card-title mb-0">{{ __('general.Add Exam') }} — {{ app()->isLocale('ar') ? $subject->name_ar : $subject->name_en }}</h4>
                     </div>
                     <div class="card-body">
-                        <form class="form" action="{{ route('admin.subjects.exams.store', $subject->id) }}" method="post" enctype="multipart/form-data">
+                        <form class="form" action="{{ route(panelPrefix().'.subjects.exams.store', $subject->id) }}" method="post" enctype="multipart/form-data">
                             @csrf
                             <input type="hidden" name="subject_id" value="{{ $subject->id }}">
 
@@ -91,7 +91,7 @@
 
                                 <div class="col-12">
                                     <button type="submit" class="btn btn-primary">{{ __('general.Save') }}</button>
-                                    <a href="{{ route('admin.subjects.exams.index', $subject->id) }}" class="btn btn-secondary">{{ __('general.Back') }}</a>
+                                    <a href="{{ route(panelPrefix().'.subjects.exams.index', $subject->id) }}" class="btn btn-secondary">{{ __('general.Back') }}</a>
                                 </div>
                             </div>
                         </form>

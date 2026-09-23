@@ -10,32 +10,30 @@ use Yajra\DataTables\Services\DataTable;
 
 class ExamDataTable extends DataTable
 {
-    protected string $statusRoute = 'admin.subjects.exams.toggleStatus';
-    protected string $isFreeRoute = 'admin.subjects.exams.toggleIsFree';
-
     public function dataTable($query): EloquentDataTable
     {
         $subject = request()->route('subject');
+        $prefix = panelPrefix();
         $scope = fn () => Exam::query()->where('subject_id', $subject->id);
         $order = app(RowOrderService::class)->positionMap($scope);
 
         return (new EloquentDataTable($query))
-            ->addColumn('reorder', function (Exam $exam) use ($subject, $order) {
+            ->addColumn('reorder', function (Exam $exam) use ($subject, $order, $prefix) {
                 return view('dashboard.partials._reorder-cell', [
-                    'moveUrl' => route('admin.subjects.exams.move', [$subject->id, $exam->id]),
+                    'moveUrl' => route($prefix.'.subjects.exams.move', [$subject->id, $exam->id]),
                     'position' => $order['positions'][$exam->id] ?? 1,
                     'total' => $order['total'],
                 ])->render();
             })
             ->setRowId('id')
             ->setRowAttr(['class' => 'sortable-row'])
-            ->addColumn('action', function (Exam $exam) {
+            ->addColumn('action', function (Exam $exam) use ($prefix) {
                 $action = [
                     'id' => $exam->id,
                     'subjectId' => $exam->subject_id,
                     'nameUrl' => 'exam',
-                    'routeEdit' => 'admin.subjects.exams.edit',
-                    'routeDelete' => 'admin.subjects.exams.destroy',
+                    'routeEdit' => $prefix.'.subjects.exams.edit',
+                    'routeDelete' => $prefix.'.subjects.exams.destroy',
                     'name' => $exam->name_ar,
                 ];
 
@@ -57,20 +55,20 @@ class ExamDataTable extends DataTable
                         ->orWhere('name_en', 'like', '%'.$keyword.'%');
                 });
             })
-            ->editColumn('status', function (Exam $exam) {
+            ->editColumn('status', function (Exam $exam) use ($prefix) {
                 return view('components.datatable.status-toggle', [
                     'id' => $exam->id,
                     'status' => $exam->status,
                     'name' => 'status',
-                    'url' => route($this->statusRoute, $exam->id),
+                    'url' => route($prefix.'.subjects.exams.toggleStatus', $exam->id),
                 ]);
             })
-            ->editColumn('is_free', function (Exam $exam) {
+            ->editColumn('is_free', function (Exam $exam) use ($prefix) {
                 return view('components.datatable.status-toggle', [
                     'id' => $exam->id,
                     'status' => $exam->is_free,
                     'name' => 'is_free',
-                    'url' => route($this->isFreeRoute, $exam->id),
+                    'url' => route($prefix.'.subjects.exams.toggleIsFree', $exam->id),
                 ]);
             })
             ->editColumn('file', function (Exam $exam) {

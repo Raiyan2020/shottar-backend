@@ -23,8 +23,8 @@ class LessonSectionChallengeResource extends JsonResource
                 })->count();
         }
 
-        // هل أكمل الدروس؟
-        $completedLessons = $totalLessons > 0 && $viewedLessons >= $totalLessons;
+        // هل أكمل الدروس؟ (لو مفيش دروس أصلاً، معناها مفيش حاجة يكملها)
+        $completedLessons = $totalLessons === 0 || $viewedLessons >= $totalLessons;
 
         return [
             'id' => $this->id,

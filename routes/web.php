@@ -102,7 +102,19 @@ Route::middleware(['auth:admin', 'role:teacher'])
         //challenge
         Route::get('/challenge/sessions', [\App\Http\Controllers\Admin\ChallengeSessionController::class, 'index'])->name('challenge.sessions.index');
 
-
+        // الاختبارات (PDF + فيديو الحل)
+        Route::prefix('subjects/{subject}/exams')->name('subjects.exams.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\ExamController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Admin\ExamController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\ExamController::class, 'store'])->name('store');
+            Route::post('/reorder', [\App\Http\Controllers\Admin\ExamController::class, 'sort'])->name('reorder');
+            Route::post('/{exam}/move', [\App\Http\Controllers\Admin\ExamController::class, 'move'])->name('move');
+            Route::get('/{exam}/edit', [\App\Http\Controllers\Admin\ExamController::class, 'edit'])->name('edit');
+            Route::put('/{exam}', [\App\Http\Controllers\Admin\ExamController::class, 'update'])->name('update');
+            Route::delete('/{exam}', [\App\Http\Controllers\Admin\ExamController::class, 'destroy'])->name('destroy');
+        });
+        Route::post('subjects/exams/toggle-status/{id}', [\App\Http\Controllers\Admin\ExamController::class, 'toggleStatus'])->name('subjects.exams.toggleStatus');
+        Route::post('subjects/exams/toggle-free/{id}', [\App\Http\Controllers\Admin\ExamController::class, 'toggleIsFree'])->name('subjects.exams.toggleIsFree');
 
     });
 

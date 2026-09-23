@@ -17,9 +17,31 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     use Functions;
+
+    /**
+     * بحث متسامح عن المستخدم بالتليفون: أرقام قديمة اتخزنت بـ"+" في الأول
+     * وأرقام تانية من غيرها (حسب إصدار التطبيق وقت التسجيل)، فالمطابقة
+     * الحرفية كانت بتفشل على رسائل "إعادة الإرسال" وغيرها لأرقام موجودة
+     * فعلاً في قاعدة البيانات لكن بصيغة مختلفة شوية عن اللي التطبيق باعته.
+     */
+    private function findUserByPhone(string $phone): ?User
+    {
+        $user = User::where('phone', $phone)->first();
+
+        if ($user) {
+            return $user;
+        }
+
+        $digits = ltrim($phone, '+');
+
+        return User::where('phone', $digits)
+            ->orWhere('phone', '+'.$digits)
+            ->first();
+    }
+
     public function login(LoginRequest $request)
     {
-        $user = User::Where('phone', $request->phone)->first();
+        $user = $this->findUserByPhone($request->phone);
 
         if (!$user) {
             $errMsg = $request->header('lang') == 'ar' ? "الرقم غير مسجل" : 'This phone number is not registered';
@@ -130,7 +152,7 @@ class AuthController extends Controller
         ]);
         $lang = $request->header('lang');
         $phone = $request->country_code . $request->phone;
-        $user = User::where('phone',$phone)->first();
+        $user = $this->findUserByPhone($phone);
         if (!$user){
             return sendError('user not found');
         }
@@ -191,7 +213,7 @@ class AuthController extends Controller
             return sendError($validator->errors());
         }
         $phone = $request->country_code . $request->phone;
-        $user = User::where('phone', $phone)->first();
+        $user = $this->findUserByPhone($phone);
         if (!$user) {
             return sendError( 'user not found');
         }

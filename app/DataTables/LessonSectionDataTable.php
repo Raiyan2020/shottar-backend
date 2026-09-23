@@ -75,7 +75,14 @@ class LessonSectionDataTable extends DataTable
                             'icon' => 'bi bi-trophy-fill',
                             'btn' => 'btn btn-warning',
                             'showLabel' => true,
-                        ]
+                        ],
+                        [
+                            'route' => route(panelPrefix().'.subjects.exams.index', $section->subject_id),
+                            'title' => __('general.exams'),
+                            'icon' => 'bi bi-clipboard-check-fill',
+                            'btn' => 'btn btn-danger',
+                            'showLabel' => true,
+                        ],
 
 
                     ];

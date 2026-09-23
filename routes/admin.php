@@ -126,9 +126,6 @@ Route::prefix(LaravelLocalization::setLocale() . '/admin')->middleware(['web'])
 
             //challenge
 //            Route::resource('challenges', \App\Http\Controllers\Admin\ChallengeController::class);
-            Route::post('challenges/{id}/toggle-status', [\App\Http\Controllers\Admin\ChallengeController::class, 'toggleStatus'])
-                ->name('challenges.toggleStatus');
-
 
             Route::get('/challenge/sessions', [\App\Http\Controllers\Admin\ChallengeSessionController::class, 'index'])->name('challenge.sessions.index');
             Route::get('/challenge/sessions/{id}', [\App\Http\Controllers\Admin\ChallengeSessionController::class, 'show'])->name('challenge.sessions.show');

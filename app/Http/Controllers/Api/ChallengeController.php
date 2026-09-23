@@ -61,9 +61,11 @@ class ChallengeController extends Controller
 
         $lang =$request->header('lang');
         $title = $lang == 'ar' ? 'title_ar' : 'title_en';
+        // مينفعش نرجّع is_correct هنا — التحدي لسه ما بدأش، وده كان بيسرّب
+        // الإجابة الصحيحة للطالب قبل ما يجاوب.
         $questions = $section->challengeQuestions()
             ->with(['answers' => function ($q) use ($title) {
-                $q->select('id', 'challenge_question_id', $title, 'is_correct');
+                $q->select('id', 'challenge_question_id', $title);
             }])
             ->select('id', 'lesson_section_id', $title)
             ->get();
@@ -91,6 +93,16 @@ class ChallengeController extends Controller
         $session = ChallengeUserSession::where('id', $request->session_id)
             ->where('user_id', $user->id)
             ->firstOrFail();
+
+        // السؤال لازم يكون تابع لنفس الوحدة اللي الجلسة دي بتخصها — من غيرها
+        // ممكن يبعت إجابة سؤال من وحدة تانية وتأثر على حساب النتيجة.
+        $questionBelongsToSession = ChallengeQuestion::where('id', $request->question_id)
+            ->where('lesson_section_id', $session->lesson_section_id)
+            ->exists();
+
+        if (! $questionBelongsToSession) {
+            return sendError('هذا السؤال لا يخص هذه الجلسة.');
+        }
 
         // تحديد إذا كانت صحيحة أو لا
         $isCorrect = $answer->is_correct ? 1 : 0;

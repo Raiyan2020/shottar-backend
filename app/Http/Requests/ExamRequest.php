@@ -28,6 +28,9 @@ class ExamRequest extends FormRequest
             'name_ar' => ['required', 'string', 'max:255'],
             'name_en' => ['required', 'string', 'max:255'],
             'file' => [$isUpdate ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:102400'],
+            // فيديو حل الاختبار — بيتضاف لاحقًا من صفحة التعديل، مش وقت الإنشاء.
+            'video' => ['nullable', 'url'],
+            'vimeo_uri' => ['nullable', 'string', 'max:255'],
             'status' => ['nullable', 'boolean'],
             'is_free' => ['nullable', 'boolean'],
         ];
